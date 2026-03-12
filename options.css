@@ -1,0 +1,703 @@
+/* ================================================
+   options.css – Windows Vista/7 Aero Glass UI
+   Chrome Extension Options Page
+   ================================================ */
+
+/* ── 1. CSS Custom Properties ───────────────────── */
+:root {
+  --glass-white:       rgba(255, 255, 255, 0.72);
+  --glass-blue-light:  rgba(200, 230, 255, 0.55);
+  --glass-blue-mid:    rgba(160, 210, 245, 0.60);
+  --glass-blue-dark:   rgba(100, 170, 230, 0.50);
+  --glass-border:      rgba(255, 255, 255, 0.68);
+  --glass-border-blue: rgba(140, 200, 240, 0.60);
+  --text-dark:         rgba(25, 55, 100, 0.92);
+  --text-mid:          rgba(50, 90, 140, 0.80);
+  --text-light:        rgba(80, 120, 170, 0.70);
+  --accent-blue:       rgba(55, 130, 230, 0.90);
+  --shadow-blue:       rgba(60, 130, 210, 0.22);
+  --font:              'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+  --radius-sm:         5px;
+  --radius-md:         8px;
+  --radius-lg:         12px;
+  --radius-pill:       24px;
+}
+
+/* ── 2. Reset / Base ────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--font);
+  font-size: 11px;
+  color: var(--text-dark);
+  min-height: 100vh;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 20px;
+
+  /* ── 3. Aurora Background ───────────────────── */
+  background:
+    radial-gradient(ellipse at 15% 60%, rgba(100, 220, 200, 0.28) 0%, transparent 55%),
+    radial-gradient(ellipse at 85% 15%, rgba(80,  200, 240, 0.25) 0%, transparent 50%),
+    radial-gradient(ellipse at 55% 85%, rgba(120, 230, 210, 0.22) 0%, transparent 45%),
+    radial-gradient(ellipse at 40% 30%, rgba(150, 220, 255, 0.20) 0%, transparent 50%),
+    linear-gradient(155deg, #c2eef5 0%, #cdf0e8 35%, #d8f5f0 65%, #e4f8f5 100%);
+}
+
+/* ── 4. Main Panel ──────────────────────────────── */
+.aero-panel {
+  width: 345px;
+  max-height: 96vh;
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--radius-lg);
+  background: rgba(215, 238, 255, 0.42);
+  backdrop-filter: blur(18px) saturate(1.5);
+  -webkit-backdrop-filter: blur(18px) saturate(1.5);
+  border: 1px solid var(--glass-border);
+  box-shadow:
+    0 0 0 1px  rgba(100, 180, 255, 0.14),
+    0 4px 12px rgba(70,  150, 220, 0.20),
+    0 12px 40px rgba(50, 110, 180, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.85),
+    inset 0 -1px 0 rgba(140, 210, 255, 0.28);
+  overflow: hidden;
+}
+
+/* ── 5. Titlebar ────────────────────────────────── */
+.titlebar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 7px 5px 9px;
+  flex-shrink: 0;
+  background: linear-gradient(180deg,
+    rgba(210, 238, 255, 0.88) 0%,
+    rgba(175, 218, 250, 0.72) 48%,
+    rgba(155, 205, 242, 0.80) 52%,
+    rgba(170, 215, 248, 0.75) 100%);
+  border-bottom: 1px solid rgba(110, 175, 225, 0.50);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.92),
+    0 2px 4px rgba(80, 150, 220, 0.12);
+  user-select: none;
+  position: relative;
+}
+
+/* Titlebar top specular line */
+.titlebar::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+}
+
+.titlebar-icon {
+  font-size: 14px;
+  flex-shrink: 0;
+  line-height: 1;
+  margin-right: 2px;
+  filter: drop-shadow(0 1px 2px rgba(60, 120, 200, 0.30));
+}
+
+/* 5a. Tabs ---------------------------------------- */
+.titlebar-tabs {
+  display: flex;
+  gap: 2px;
+  flex: 1;
+}
+
+.tab-btn {
+  padding: 3px 8px;
+  font-size: 10px;
+  font-weight: 600;
+  font-family: var(--font);
+  letter-spacing: 0.04em;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(180, 215, 245, 0.45);
+  background: rgba(255, 255, 255, 0.22);
+  color: var(--text-mid);
+  cursor: pointer;
+  transition: background 0.15s, box-shadow 0.15s;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.tab-btn:hover {
+  background: rgba(255, 255, 255, 0.40);
+  border-color: rgba(200, 230, 255, 0.65);
+}
+.tab-btn.active {
+  background: linear-gradient(180deg,
+    rgba(255, 255, 255, 0.75) 0%,
+    rgba(210, 235, 255, 0.55) 100%);
+  border-color: rgba(255, 255, 255, 0.80);
+  box-shadow:
+    0 1px 4px rgba(80, 160, 235, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95);
+  color: var(--text-dark);
+}
+
+/* 5b. Window Controls ---------------------------- */
+.window-controls {
+  display: flex;
+  gap: 4px;
+  margin-left: 4px;
+}
+
+.wc-btn {
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 0, 0, 0.22);
+  font-size: 7px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font);
+  font-weight: 700;
+  transition: filter 0.12s, transform 0.08s;
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.65);
+  overflow: hidden;
+  position: relative;
+}
+.wc-btn::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 10%; width: 80%; height: 50%;
+  background: linear-gradient(180deg, rgba(255,255,255,0.65) 0%, rgba(255,255,255,0.05) 100%);
+  border-radius: 50% 50% 40% 40%;
+  pointer-events: none;
+}
+.wc-btn:hover  { filter: brightness(1.15); }
+.wc-btn:active { transform: scale(0.90);   }
+
+.wc-close {
+  background: radial-gradient(circle at 40% 38%, #ff7070, #c01515);
+  color: rgba(255, 255, 255, 0.92);
+  border-color: rgba(140, 10, 10, 0.40);
+}
+.wc-minimize {
+  background: radial-gradient(circle at 40% 38%, #ffe070, #c09000);
+  color: rgba(90, 60, 0, 0.85);
+  border-color: rgba(140, 90, 0, 0.35);
+}
+.wc-maximize {
+  background: radial-gradient(circle at 40% 38%, #70ea70, #15a815);
+  color: rgba(0, 60, 0, 0.80);
+  border-color: rgba(0, 110, 0, 0.35);
+}
+
+/* ── 6. Scrollable Content Area ─────────────────── */
+.panel-content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 6px 0 0;
+}
+
+.panel-content::-webkit-scrollbar       { width: 5px; }
+.panel-content::-webkit-scrollbar-track { background: rgba(190, 225, 250, 0.18); border-radius: 3px; }
+.panel-content::-webkit-scrollbar-thumb {
+  background: rgba(100, 165, 225, 0.42);
+  border-radius: 3px;
+}
+.panel-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(75, 140, 210, 0.65);
+}
+
+.panel-bottom-spacer { height: 14px; }
+
+/* ── 7. Section Headers (AI PARAMETERS, etc.) ──── */
+.section-header {
+  margin: 10px 10px 3px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: rgba(35, 80, 145, 0.78);
+  padding-left: 1px;
+}
+
+/* Labels above sections (not inside a card) */
+.section-label {
+  margin: 8px 10px 2px;
+  font-size: 10.5px;
+  color: var(--text-mid);
+  font-weight: 500;
+}
+
+/* ── 8. Glass Section Cards ─────────────────────── */
+.section {
+  margin: 0 8px 6px;
+  padding: 8px 9px;
+  background: rgba(235, 248, 255, 0.36);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.80),
+    0 1px 5px rgba(80, 155, 215, 0.10);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+.section-select { padding: 5px 7px; }
+.section-shortcuts { padding: 6px 9px; }
+.section-toggles   { padding: 4px 9px; }
+
+/* ── 9. Field Labels (inside cards) ─────────────── */
+.field-label {
+  display: block;
+  font-size: 10.5px;
+  color: var(--text-mid);
+  margin-bottom: 4px;
+}
+
+/* ── 10. Jelly Radio Buttons (Theme) ────────────── */
+.theme-buttons {
+  display: flex;
+  gap: 4px;
+}
+
+.jelly-radio {
+  position: relative;
+  padding: 4px 13px;
+  border-radius: var(--radius-pill);
+  border: 1px solid rgba(155, 205, 242, 0.58);
+  background: linear-gradient(180deg,
+    rgba(255, 255, 255, 0.75) 0%,
+    rgba(200, 228, 252, 0.48) 44%,
+    rgba(165, 210, 248, 0.60) 56%,
+    rgba(210, 238, 255, 0.68) 100%);
+  box-shadow:
+    0 2px 6px rgba(80, 155, 235, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.92),
+    inset 0 -1px 0 rgba(110, 185, 250, 0.28);
+  font-size: 11px;
+  font-weight: 600;
+  font-family: var(--font);
+  color: var(--text-dark);
+  cursor: pointer;
+  overflow: hidden;
+  transition: background 0.14s, box-shadow 0.14s, border-color 0.14s;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+  flex: 1;
+  justify-content: center;
+}
+
+/* Specular top-half sheen */
+.jelly-radio::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 8%; width: 84%; height: 48%;
+  background: linear-gradient(180deg,
+    rgba(255, 255, 255, 0.78) 0%,
+    rgba(255, 255, 255, 0.06) 100%);
+  border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+  pointer-events: none;
+}
+
+.jelly-radio:hover {
+  background: linear-gradient(180deg,
+    rgba(255, 255, 255, 0.85) 0%,
+    rgba(210, 235, 255, 0.58) 44%,
+    rgba(180, 218, 252, 0.70) 56%,
+    rgba(220, 242, 255, 0.78) 100%);
+  border-color: rgba(140, 195, 240, 0.72);
+}
+
+.jelly-radio.active {
+  background: linear-gradient(180deg,
+    rgba(155, 210, 255, 0.82) 0%,
+    rgba(85,  165, 245, 0.68) 44%,
+    rgba(65,  145, 228, 0.80) 56%,
+    rgba(130, 195, 255, 0.78) 100%);
+  border-color: rgba(55, 130, 225, 0.78);
+  box-shadow:
+    0 0 10px rgba(55, 135, 245, 0.42),
+    0 2px 7px rgba(40, 100, 200, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.72),
+    inset 0 -1px 0 rgba(35, 95, 200, 0.38);
+  color: rgba(10, 35, 85, 1.0);
+}
+
+.jelly-radio-icon {
+  font-size: 11px;
+  line-height: 1;
+  position: relative;
+  z-index: 1;
+}
+.jelly-radio-text {
+  position: relative;
+  z-index: 1;
+}
+
+/* ── 11. Glass Select (Combobox) ─────────────────── */
+.glass-select-wrapper {
+  position: relative;
+  display: block;
+}
+
+.select-arrow {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 9px;
+  color: rgba(55, 100, 160, 0.78);
+  pointer-events: none;
+  line-height: 1;
+}
+
+.glass-select {
+  width: 100%;
+  padding: 5px 24px 5px 8px;
+  appearance: none;
+  -webkit-appearance: none;
+  background: rgba(225, 245, 255, 0.48);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.68);
+  border-radius: var(--radius-sm);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.82),
+    inset 0 -1px 0 rgba(130, 195, 240, 0.22),
+    0 1px 4px rgba(80, 155, 215, 0.12);
+  font-size: 11px;
+  font-family: var(--font);
+  font-weight: 500;
+  color: var(--text-dark);
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.glass-select:focus {
+  border-color: rgba(80, 155, 235, 0.75);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.82),
+    0 0 6px rgba(80, 155, 240, 0.28),
+    0 1px 4px rgba(80, 155, 215, 0.18);
+}
+
+/* ── 12. Glass Textareas ─────────────────────────── */
+.glass-textarea {
+  width: 100%;
+  background: rgba(240, 250, 255, 0.42);
+  border: 1px solid rgba(175, 218, 248, 0.58);
+  border-radius: var(--radius-sm);
+  padding: 5px 8px;
+  font-size: 11px;
+  font-family: var(--font);
+  color: var(--text-dark);
+  box-shadow:
+    inset 0 2px 5px rgba(100, 160, 220, 0.10),
+    inset 0 1px 0 rgba(255, 255, 255, 0.62);
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  line-height: 1.4;
+}
+.glass-textarea:focus {
+  border-color: rgba(75, 150, 235, 0.78);
+  box-shadow:
+    inset 0 2px 5px rgba(80, 140, 220, 0.14),
+    0 0 7px rgba(75, 150, 240, 0.26);
+}
+.glass-textarea::placeholder {
+  color: rgba(100, 140, 185, 0.65);
+  font-style: italic;
+}
+
+.glass-textarea.single-line {
+  resize: none;
+  height: 26px;
+  overflow: hidden;
+  white-space: nowrap;
+}
+.glass-textarea.multi-line {
+  resize: vertical;
+  min-height: 62px;
+}
+
+/* ── 13. Params Footer ───────────────────────────── */
+.params-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 7px;
+}
+
+.params-size {
+  font-size: 10.5px;
+  color: var(--text-light);
+}
+
+.params-link {
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--accent-blue);
+  text-decoration: none;
+  letter-spacing: 0.02em;
+  transition: color 0.12s, text-shadow 0.12s;
+}
+.params-link:hover {
+  color: rgba(35, 100, 215, 1.0);
+  text-shadow: 0 0 8px rgba(60, 130, 240, 0.35);
+  text-decoration: underline;
+}
+
+/* ── 14. Keyboard Shortcuts ──────────────────────── */
+.shortcuts-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.shortcut-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.shortcut-key-combo {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+  min-width: 105px;
+}
+
+.jelly-key {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 6px;
+  min-width: 22px;
+  border-radius: 4px;
+  border: 1px solid rgba(125, 175, 225, 0.58);
+  border-bottom-width: 2px;
+  background: linear-gradient(180deg,
+    rgba(255, 255, 255, 0.85) 0%,
+    rgba(210, 232, 252, 0.62) 50%,
+    rgba(185, 218, 248, 0.72) 100%);
+  box-shadow:
+    0 2px 0 rgba(85, 140, 200, 0.32),
+    0 1px 3px rgba(65, 115, 180, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.92);
+  font-size: 9.5px;
+  font-weight: 700;
+  font-family: var(--font);
+  letter-spacing: 0.03em;
+  color: rgba(30, 70, 130, 0.92);
+  white-space: nowrap;
+  user-select: none;
+  line-height: 1.2;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Top specular on keys */
+.jelly-key::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 8%; width: 84%; height: 45%;
+  background: linear-gradient(180deg,
+    rgba(255, 255, 255, 0.72) 0%,
+    rgba(255, 255, 255, 0.04) 100%);
+  border-radius: 3px 3px 50% 50%;
+  pointer-events: none;
+}
+
+.key-plus {
+  font-size: 9px;
+  font-weight: 700;
+  color: rgba(70, 115, 175, 0.75);
+  line-height: 1;
+  padding: 0 1px;
+}
+
+.shortcut-desc {
+  font-size: 10.5px;
+  color: var(--text-dark);
+  line-height: 1.3;
+}
+
+/* ── 15. Toggles (AI Chat) ───────────────────────── */
+.toggles-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 5px 0;
+  border-bottom: 1px solid rgba(180, 220, 248, 0.22);
+}
+.toggle-row:last-child { border-bottom: none; }
+
+.toggle-label {
+  font-size: 10.5px;
+  color: var(--text-dark);
+  line-height: 1.3;
+  flex: 1;
+}
+
+/* The toggle switch track (outer container = <label>) */
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 36px;
+  height: 18px;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+  position: absolute;
+}
+
+/* Track */
+.toggle-track {
+  position: absolute;
+  inset: 0;
+  border-radius: 9px;
+  background: rgba(175, 200, 222, 0.55);
+  border: 1px solid rgba(145, 180, 215, 0.50);
+  box-shadow:
+    inset 0 1px 3px rgba(0, 0, 0, 0.16),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.22);
+  transition: background 0.22s, box-shadow 0.22s, border-color 0.22s;
+}
+
+/* Knob */
+.toggle-knob {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 38% 34%,
+    rgba(255, 255, 255, 0.96) 0%,
+    rgba(215, 228, 242, 0.88) 100%);
+  border: 1px solid rgba(145, 180, 215, 0.58);
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.92);
+  transition: left 0.22s ease;
+  overflow: hidden;
+  position: absolute;
+}
+
+/* Knob top sheen */
+.toggle-knob::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 10%; width: 80%; height: 48%;
+  background: linear-gradient(180deg, rgba(255,255,255,0.75) 0%, rgba(255,255,255,0.04) 100%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+/* ON state */
+.toggle-switch input:checked + .toggle-track {
+  background: linear-gradient(180deg,
+    rgba(75, 155, 238, 0.80) 0%,
+    rgba(50, 130, 225, 0.90) 100%);
+  border-color: rgba(45, 115, 210, 0.75);
+  box-shadow:
+    inset 0 1px 3px rgba(25, 75, 180, 0.28),
+    0 0 8px rgba(60, 140, 238, 0.42);
+}
+.toggle-switch input:checked ~ .toggle-knob {
+  left: 20px;
+}
+
+/* ── 16. Models List ────────────────────────────── */
+.section-models { padding: 6px 9px; }
+
+.models-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.model-row {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 5px 7px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: background 0.13s, border-color 0.13s;
+}
+.model-row:hover {
+  background: rgba(255, 255, 255, 0.38);
+  border-color: rgba(180, 218, 248, 0.55);
+}
+.model-row.active {
+  background: linear-gradient(180deg,
+    rgba(155, 210, 255, 0.55) 0%,
+    rgba(85, 165, 245, 0.38) 100%);
+  border-color: rgba(55, 130, 225, 0.55);
+  box-shadow:
+    0 0 8px rgba(55, 135, 245, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.70);
+}
+
+.model-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(100, 155, 215, 0.55);
+  background: rgba(200, 228, 252, 0.60);
+  flex-shrink: 0;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.75);
+  transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
+}
+.model-row.active .model-dot {
+  background: radial-gradient(circle at 38% 34%, #6ec6ff, #2275d8);
+  border-color: rgba(30, 100, 210, 0.65);
+  box-shadow:
+    0 0 5px rgba(55, 135, 245, 0.55),
+    inset 0 1px 0 rgba(255,255,255,0.55);
+}
+
+.model-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-dark);
+}
+.model-row.active .model-label {
+  color: rgba(10, 40, 95, 1.0);
+}
+
+/* ── 17. Animations ──────────────────────────────── */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0);   }
+}
+
+.aero-panel {
+  animation: fadeIn 0.25s ease-out;
+}
+
+/* ── 17. Utility ──────────────────────────────────── */
+button { font-family: var(--font); }

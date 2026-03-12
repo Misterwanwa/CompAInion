@@ -1,0 +1,60 @@
+{
+  "manifest_version": 3,
+  "name": "Gemini Chat Overlay",
+  "version": "1.0",
+  "description": "Chat mit Gemini auf jeder Website",
+  "permissions": [
+    "activeTab",
+    "scripting",
+    "storage",
+    "contextMenus",
+    "tabs"
+  ],
+  "host_permissions": [
+    "http://localhost/*",
+    "*://*.reddit.com/*",
+    "https://gemini.google.com/*",
+    "https://claude.ai/*",
+    "https://chatgpt.com/*",
+    "https://chat.deepseek.com/*",
+    "https://grok.com/*",
+    "https://www.perplexity.ai/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": true
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js", "local_llm_helpers.js"],
+      "css": ["styles.css"]
+    },
+    {
+      "matches": ["https://gemini.google.com/*"],
+      "js": ["gemini-injector.js"]
+    },
+    {
+      "matches": ["*://*.reddit.com/*"],
+      "js": ["reddit.js"]
+    },
+    {
+      "matches": [
+        "*://*.claude.ai/*",
+        "*://*.chat.openai.com/*",
+        "*://*.chatgpt.com/*",
+        "*://*.gemini.google.com/*",
+        "*://*.chat.mistral.ai/*",
+        "*://*.copilot.microsoft.com/*",
+        "*://*.poe.com/*"
+      ],
+      "js": ["timeline.js", "prompt-enhancer.js"]
+    }
+  ]
+}

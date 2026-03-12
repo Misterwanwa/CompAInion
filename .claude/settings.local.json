@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(sed \"s/''\"\"//g\")",
+      "Bash(grep -v \"//\")",
+      "Bash(node --check \"c:\\\\Users\\\\kevin\\\\Documents\\\\VSCode\\\\Gemini-Addon\\\\content.js\")"
+    ]
+  }
+}

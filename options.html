@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Options</title>
+  <link rel="stylesheet" href="options.css">
+</head>
+<body>
+  <div class="aero-panel">
+
+    <!-- TITLEBAR -->
+    <div class="titlebar" id="titlebar">
+      <div class="titlebar-icon" id="titlebar-icon">✨</div>
+      <div class="titlebar-tabs" id="titlebar-tabs">
+        <!-- Populated by JS -->
+      </div>
+      <div class="window-controls" id="window-controls">
+        <button class="wc-btn wc-minimize" title="Minimize"></button>
+        <button class="wc-btn wc-maximize" title="Maximize"></button>
+        <button class="wc-btn wc-close"    title="Close" id="wc-close-btn"></button>
+      </div>
+    </div>
+
+    <!-- SCROLLABLE CONTENT -->
+    <div class="panel-content" id="panel-content">
+
+      <!-- ── TAB: AI ─────────────────────────────── -->
+      <div class="tab-page" id="tab-ai">
+
+        <!-- Section: App Theme -->
+        <div class="section-label" id="theme-section-label"></div>
+        <div class="section">
+          <div class="theme-buttons" id="theme-buttons">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+
+        <!-- Section: UI Language -->
+        <div class="section-label" id="ui-lang-section-label"></div>
+        <div class="section section-select">
+          <div class="glass-select-wrapper">
+            <select class="glass-select" id="ui-language"></select>
+            <span class="select-arrow">&#9660;</span>
+          </div>
+        </div>
+
+        <!-- Section: AI Response Language -->
+        <div class="section-label" id="ai-lang-section-label"></div>
+        <div class="section section-select">
+          <div class="glass-select-wrapper">
+            <select class="glass-select" id="ai-language"></select>
+            <span class="select-arrow">&#9660;</span>
+          </div>
+        </div>
+
+        <!-- Section: AI Parameters -->
+        <div class="section-header" id="ai-params-header"></div>
+        <div class="section">
+          <label class="field-label" id="user-facts-label"></label>
+          <textarea class="glass-textarea single-line" id="user-facts" rows="1"></textarea>
+          <label class="field-label" id="tone-mimic-label" style="margin-top:8px;"></label>
+          <textarea class="glass-textarea multi-line" id="tone-mimic" rows="4"></textarea>
+          <div class="params-footer">
+            <span class="params-size" id="global-params-size"></span>
+            <a href="#" class="params-link" id="open-global-params"></a>
+          </div>
+        </div>
+
+        <!-- Section: Shortcuts -->
+        <div class="section-header" id="shortcuts-header"></div>
+        <div class="section section-shortcuts">
+          <div class="shortcuts-list" id="shortcuts-list">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+
+        <!-- Section: AI Chat Toggles -->
+        <div class="section-header" id="ai-chat-header"></div>
+        <div class="section section-toggles">
+          <div class="toggles-list" id="toggles-list">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+
+      </div><!-- /tab-ai -->
+
+      <!-- ── TAB: MODELS ────────────────────────── -->
+      <div class="tab-page" id="tab-models" style="display:none;">
+        <div class="section-header" id="models-header"></div>
+        <div class="section section-models">
+          <div class="models-list" id="models-list">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+
+        <div class="section-header">LOKALES LLM / BENUTZERDEFINIERT</div>
+        <div class="section">
+          <label class="field-label">Backend-Auswahl</label>
+          <div class="glass-select-wrapper">
+            <select class="glass-select" id="local-llm-backend">
+              <option value="ollama">Lokales LLM (Ollama)</option>
+              <option value="lmstudio">Lokales LLM (LM Studio)</option>
+              <option value="custom">Benutzerdefiniert</option>
+            </select>
+            <span class="select-arrow">&#9660;</span>
+          </div>
+
+          <label class="field-label" style="margin-top:8px;">API-Endpunkt</label>
+          <input class="glass-input" type="text" id="local-llm-endpoint" placeholder="http://localhost:11434/api/chat">
+
+          <label class="field-label" style="margin-top:8px;">Modellname</label>
+          <input class="glass-input" type="text" id="local-llm-model" placeholder="z.B. llama3, mistral">
+
+          <label class="field-label" style="margin-top:8px;">API-Key (optional)</label>
+          <input class="glass-input" type="password" id="local-llm-apikey" placeholder="Optionaler API-Key">
+
+          <button id="test-local-llm" class="glass-button" style="margin-top: 15px;">Verbindung testen</button>
+          <div id="test-result" style="margin-top: 8px;"></div>
+
+          <div class="notice">
+            <strong>Hinweis für lokale LLMs:</strong> Stelle sicher, dass dein lokaler Server (z.B. Ollama, LM Studio) läuft und CORS-Anfragen von dieser Extension-ID zulässt.
+          </div>
+        </div>
+      </div><!-- /tab-models -->
+
+      <!-- ── TAB: SETTINGS ──────────────────────── -->
+      <div class="tab-page" id="tab-settings" style="display:none;">
+      </div><!-- /tab-settings -->
+
+      <div class="panel-bottom-spacer"></div>
+    </div>
+
+  </div>
+  <script src="options.js"></script>
+</body>
+</html>
