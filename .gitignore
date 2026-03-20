@@ -1,0 +1,20 @@
+# Node modules
+node_modules/
+
+# Chrome Extension Packaging
+*.zip
+*.crx
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Temp files
+*.tmp

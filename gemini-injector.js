@@ -84,6 +84,7 @@ chrome.storage.local.get(['pendingImageAction'], (result) => {
 
     case 'imageAnalyze':
     case 'imageTryOn':
+    case 'imageStyle':
       // Prompt + Bild-URL kombiniert senden
       injectTextAndSend(prompt, null);
       break;

@@ -65,6 +65,12 @@ function createContextMenus() {
       title:    'Kleidung anprobieren',
       contexts: ['image'],
     });
+    chrome.contextMenus.create({
+      id:       'ai-image-style',
+      parentId: 'ai-image-parent',
+      title:    '🎨 Stil des Bilds',
+      contexts: ['image'],
+    });
 
     // ── Text-Auswahl-Kontextmenü ──
     chrome.contextMenus.create({
@@ -104,8 +110,59 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         chrome.storage.local.set({ pendingPrompt: prompt }, () => {
             chrome.tabs.create({ url: url });
         });
+    } else if (request.action === 'captureScreenshot') {
+        // Screenshot der aktiven Tab erstellen
+        chrome.tabs.captureVisibleTab(null, { format: 'png', quality: 90 }, (dataUrl) => {
+            if (chrome.runtime.lastError) {
+                sendResponse({ success: false, error: chrome.runtime.lastError.message });
+                return;
+            }
+            
+            // Bereich zuschneiden
+            const { area } = request;
+            cropScreenshot(dataUrl, area).then(croppedUrl => {
+                sendResponse({ success: true, dataUrl: croppedUrl });
+            }).catch(err => {
+                sendResponse({ success: false, error: err.message });
+            });
+        });
+        return true; // Async response
     }
 });
+
+// Hilfsfunktion: Screenshot zuschneiden
+async function cropScreenshot(dataUrl, area) {
+    return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            
+            canvas.width = area.width;
+            canvas.height = area.height;
+            
+            // Skalierungsfaktor berechnen (für High-DPI Displays)
+            const scaleX = img.width / window.innerWidth;
+            const scaleY = img.height / window.innerHeight;
+            
+            ctx.drawImage(
+                img,
+                area.left * scaleX,
+                area.top * scaleY,
+                area.width * scaleX,
+                area.height * scaleY,
+                0,
+                0,
+                area.width,
+                area.height
+            );
+            
+            resolve(canvas.toDataURL('image/png'));
+        };
+        img.onerror = () => reject(new Error('Bild konnte nicht geladen werden'));
+        img.src = dataUrl;
+    });
+}
 
 // Klick-Handler
 chrome.contextMenus.onClicked.addListener((info, tab) => {
@@ -201,6 +258,29 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
           `Sobald du ein Foto hochgeladen hast, generiere direkt ein Bild, das zeigt, ` +
           `wie dieses Kleidungsstück an dir aussieht – möglichst realistisch, ` +
           `in natürlicher Haltung, mit passendem Hintergrund.`;
+        break;
+
+      case 'ai-image-style':
+        action = 'imageStyle';
+        prompt =
+          `Analysiere ausschließlich den visuellen STIL dieses Bildes:\n${imageUrl}\n\n` +
+          `WICHTIG: Beschreibe NUR die künstlerischen und stilistischen Merkmale, NICHT den Inhalt oder die abgebildeten Objekte/Personen/Tiere.\n\n` +
+          `Fokussiere dich auf:\n` +
+          `• Kunststil (z.B. Kubismus, Impressionismus, Surrealismus, Pixel-Art, Fotorealismus, minimalistisch, etc.)\n` +
+          `• Farbschema (z.B. monochrome Schwarz-Weiß, warme Erdtöne, Neon-Farben, pastellfarben, komplementäre Kontraste, etc.)\n` +
+          `• Beleuchtung (z.B. hartes Seitenlicht, weiches Diffuslicht, Gegenlicht, Studio-Beleuchtung, etc.)\n` +
+          `• Textur und Oberflächenbeschaffenheit (z.B. grobe Pinselstriche, glatt digital, körnig filmisch, etc.)\n` +
+          `• Komposition (z.B. symmetrisch, dynamisch, zentriert, Golden Ratio, etc.)\n` +
+          `• Perspektive und Blickwinkel\n` +
+          `• Ära/Zeitstil (z.B. 1920er Art Déco, 1980er Synthwave, mittelalterlich, futuristisch, etc.)\n` +
+          `• Stimmung/Atmosphäre des Bildes\n\n` +
+          `Am Ende erstelle einen prägnanten, englischen Bild-Generierungs-Prompt (für DALL-E, Midjourney, Imagen oder ähnliche Tools), ` +
+          `der ausschließlich diesen STIL beschreibt, aber KEINEN spezifischen Inhalt enthält. ` +
+          `Der Prompt soll so formuliert sein, dass man ihn mit einem beliebigen neuen Motiv kombinieren kann, ` +
+          `während der Stil des Originalbildes erhalten bleibt.\n\n` +
+          `Beispiel für das Format:\n` +
+          `"[Stilbeschreibung], [Farbschema], [Beleuchtung], [Textur], [Komposition], [Stimmung] --ar 16:9"\n\n` +
+          `Antworte auf Deutsch mit einer strukturierten Analyse und dem finalen Prompt am Ende.`;
         break;
 
       default:
