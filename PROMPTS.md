@@ -1,6 +1,6 @@
 # CompAInion - Alle Prompts im Überblick
 
-**Stand:** 20.03.2026  
+**Stand:** 22.03.2026  
 **Gesamtzahl:** 87 Prompts + 17 Submenu-Optionen (ALLE implementiert, keine Placeholder mehr)
 
 ---
@@ -26,16 +26,13 @@
 **Key:** `ahaMoments`  
 Generiert 3 prägnante Prompts für überraschende Erkenntnisse über die Website.
 
-### TL;DR
-**Key:** `tldr`  
-Erstellt eine extrem kurze Zusammenfassung (1 Satz + 3 Punkte).
-
 ### Zusammenfassen (mit Untermenü)
 **Key:** `summary`  
 **Optionen:**
-- 📋 Normale Zusammenfassung
-- 📖 Kapitel Zusammenfassung
-- ⚡ Super kurze Zusammenfassung
+- 🌐 **Zusammenfassen (URL crawlen)** - Crawlt eine URL, extrahiert alle Fakten als Emoji-Aufzählungspunkte mit 3-sätziger Zusammenfassung
+- 📚 **Kapitel Zusammenfassung** - Study Pack mit Chain of Thought + Guardian Token (Arguments, Evidence, Summary, Glossary, Flashcards)
+- 📝 **Normale Zusammenfassung** - 3 Erkenntnisse, Statistiken, Zitat, Warum wichtig (<100 Wörter)
+- ⚡ **Super kurze Zusammenfassung** - Extrem komprimiert: max 3 Sätze, max 20 Wörter
 
 ### Zitate extrahieren
 **Key:** `extractQuotes`  
@@ -415,4 +412,4 @@ Einfache Erklärung mit Analogien.
 
 ---
 
-*Aktualisiert am 20.03.2026*
+*Aktualisiert am 22.03.2026*

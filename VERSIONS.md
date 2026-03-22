@@ -10,6 +10,7 @@ Jede Version wird als **Git Tag** gespeichert. Das bedeutet: Der gesamte Code-St
 
 | Tag | Datum | Highlights |
 |-----|-------|------------|
+| `v2.3` | 2026-03-22 | TL;DR in Zusammenfassen-Submenü integriert, 4 neue Zusammenfassungs-Optionen |
 | `v2.2` | 2025-03-20 | Snipping Tool, FINANCE Menü, Dark Mode, 80+ Prompts |
 
 ## 📥 Zugriff auf alte Prompt-Versionen
@@ -62,7 +63,19 @@ git push origin vX.Y
 
 ## 📋 Changelog
 
-### v2.2 (aktuell)
+### v2.3 (aktuell)
+- **Neue Features:**
+  - TL;DR Funktion in "Zusammenfassen"-Submenü integriert
+  - 4 neue Zusammenfassungs-Optionen:
+    - 🌐 Zusammenfassen (URL crawlen) - Emoji-Fakten-Extraktion
+    - 📚 Kapitel Zusammenfassung - Study Pack mit CoT + Guardian Tokens
+    - 📝 Normale Zusammenfassung - 3 Erkenntnisse unter 100 Wörter
+    - ⚡ Super kurze Zusammenfassung - Max 3 Sätze, 20 Wörter
+
+- **Prompts gesamt:** 87
+- **Implementiert:** ~30 | **Geplant:** ~55
+
+### v2.2
 - **Neue Features:**
   - Snipping Tool für "Ansicht erfassen"
   - FINANCE Menü (Einfluss auf Märkte, Finanznews)

@@ -168,21 +168,21 @@ const ACTION_LIST = [
   { label: 'Alternative hierzu', key: 'alternative', implemented: false },
   { label: 'Antwort schreiben', key: 'writeReply', implemented: false },
   { label: 'Ansicht erfassen', key: 'captureView', implemented: true },
-  { label: '🚧 Barrierefreiheit pruefen', key: 'accessibility', implemented: false },
-  { label: '🚧 Benoetige ich das wirklich?', key: 'doINeedThis', implemented: true },
-  { label: '🚧 Checkliste', key: 'checklist', implemented: false },
+  { label: 'Barrierefreiheit prüfen', key: 'accessibility', implemented: true },
+  { label: 'Benötige ich das wirklich?', key: 'doINeedThis', implemented: true },
+  { label: 'Checkliste', key: 'checklist', implemented: true },
   { label: '🚧 Deep Research', key: 'deepResearch', implemented: true },
-  { label: '🚧 Diagramm erstellen', key: 'createDiagram', implemented: false },
-  { label: '🚧 E-Mail Entwurf', key: 'emailDraft', implemented: false },
+  { label: 'Diagramm erstellen', key: 'createDiagram', implemented: true },
+  { label: 'E-Mail Entwurf', key: 'emailDraft', implemented: true },
   { label: '🚧 FAQ Erstellen', key: 'createFAQ', implemented: false },
-  { label: '🚧 Faktencheck', key: 'factCheck', implemented: true },
-  { label: '🚧 Genderkorrekte Sprache pruefen', key: 'genderLanguage', implemented: false },
-  { label: '🚧 Grammatik pruefen', key: 'grammarCheck', implemented: true },
+  { label: 'Faktencheck', key: 'factCheck', implemented: true },
+  { label: 'Genderkorrekte Sprache pruefen', key: 'genderLanguage', implemented: true },
+  { label: 'Grammatik pruefen', key: 'grammarCheck', implemented: true },
   { label: '🚧 Im Internet suchen', key: 'webSearch', implemented: false },
   { label: '🚧 Lernhilfe', key: 'learningHelp', implemented: false },
-  { label: '🚧 Motivation', key: 'motivation', implemented: true },
+  { label: 'Motivation', key: 'motivation', implemented: true },
   { label: '🚧 Plagiatscheck', key: 'plagiarism', implemented: true },
-  { label: '🚧 Präsentation erstellen', key: 'createPresentation', implemented: true },
+  { label: 'Präsentation erstellen', key: 'createPresentation', implemented: true },
   { label: '🚧 Preisvergleich', key: 'priceCompare', implemented: false },
   { label: '🚧 Produkt Vor- und Nachteile', key: 'productProsCons', implemented: false },
   { label: '🚧 Quiz erstellen', key: 'createQuiz', implemented: false },
@@ -191,16 +191,15 @@ const ACTION_LIST = [
   { label: '🚧 Shopping-Assistent', key: 'shoppingAssistant', implemented: true },
   { label: 'Sokrates-Fragekette', key: 'socraticChain', implemented: true },
   { label: '🚧 Story erstellen', key: 'createStory', hasSubmenu: true, implemented: true },
-  { label: '🚧 TL;DR', key: 'tldr', implemented: true },
   { label: '🚧 Text vervollständigen', key: 'completeText', implemented: false },
   { label: '🚧 Uebersetzen', key: 'translate', implemented: true },
   { label: '🚧 Umschreiben', key: 'rewrite', implemented: true },
   { label: '🚧 Urlaubsplanung', key: 'vacationPlan', implemented: false },
   { label: '🚧 Website analysieren', key: 'pageSherlock', implemented: false },
-  { label: '🚧 Wie ist die Rechtslage?', key: 'legalCheck', implemented: true },
+  { label: 'Wie ist die Rechtslage?', key: 'legalCheck', implemented: true },
   { label: '🚧 Witz erzählen', key: 'tellJoke', implemented: true },
   { label: '🚧 Zitate extrahieren', key: 'extractQuotes', implemented: false },
-  { label: '🚧 Zusammenfassen', key: 'summary', implemented: true },
+  { label: 'Zusammenfassen', key: 'summary', hasSubmenu: true, implemented: true },
   // Gruppen am Ende (ausklappbar)
   { label: '▼ CODE Tools', key: 'CODE_MENU', isMenu: true, isCollapsible: true },
   { label: '▼ SEO Tools', key: 'SEO_MENU', isMenu: true, isCollapsible: true },
@@ -253,6 +252,12 @@ const SUBMENUS = {
     { label: '🚧 Für Küchengerät umwandeln...', key: 'recipeDevice', implemented: true },
     { label: '🚧 Wie hübsch anrichten', key: 'recipePlating', implemented: true },
     { label: '🚧 Kalorien & Nährwerte', key: 'recipeNutrition', implemented: true }
+  ],
+  SUMMARY_MENU: [
+    { label: 'TL;DR', key: 'summaryWithCrawl', implemented: true },
+    { label: 'Kapitel Zusammenfassung', key: 'summaryChapter', implemented: true },
+    { label: 'Normale Zusammenfassung', key: 'summaryNormal', implemented: true },
+    { label: 'Super kurze Zusammenfassung', key: 'summarySuperShort', implemented: true }
   ]
 };
 
@@ -585,20 +590,35 @@ function showSummarySubmenu(menuItem) {
   const submenu = document.createElement('div');
   submenu.id = 'gemini-submenu';
   submenu.innerHTML = `
-    <div class="submenu-item" data-type="normal">📋 Normale Zusammenfassung</div>
-    <div class="submenu-item" data-type="chapter">📖 Kapitel Zusammenfassung</div>
-    <div class="submenu-item" data-type="short">⚡ Super kurz</div>
+    <div class="submenu-item" data-action="summaryWithCrawl"><span class="submenu-label">TL;DR</span><span class="submenu-copy" data-copy-action="summaryWithCrawl" title="Prompt kopieren">📋</span></div>
+    <div class="submenu-item" data-action="summaryChapter"><span class="submenu-label">Kapitel Zusammenfassung</span><span class="submenu-copy" data-copy-action="summaryChapter" title="Prompt kopieren">📋</span></div>
+    <div class="submenu-item" data-action="summaryNormal"><span class="submenu-label">Normale Zusammenfassung</span><span class="submenu-copy" data-copy-action="summaryNormal" title="Prompt kopieren">📋</span></div>
+    <div class="submenu-item" data-action="summarySuperShort"><span class="submenu-label">Super kurze Zusammenfassung</span><span class="submenu-copy" data-copy-action="summarySuperShort" title="Prompt kopieren">📋</span></div>
   `;
   const itemRect = menuItem.getBoundingClientRect();
   submenu.style.left = (itemRect.right + 5) + 'px';
   submenu.style.top = itemRect.top + 'px';
   document.body.appendChild(submenu);
+  
+  // Hauptaktion (Text klicken)
   submenu.querySelectorAll('.submenu-item').forEach(item => {
     item.addEventListener('click', (e) => {
-      handleGeminiAction('summary', e.currentTarget.dataset.type);
+      if (e.target.classList.contains('submenu-copy')) return;
+      const action = e.currentTarget.dataset.action;
+      handleGeminiAction(action);
       document.getElementById('gemini-context-menu')?.remove();
       submenu.remove();
       document.removeEventListener('click', closeMenu);
+    });
+  });
+  
+  // Kopieren-Button
+  submenu.querySelectorAll('.submenu-copy').forEach(copyBtn => {
+    copyBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const action = e.target.dataset.copyAction;
+      handleGeminiAction(action, 'normal', 'nested', true);
+      showToast('Prompt kopiert!');
     });
   });
 }
@@ -734,7 +754,16 @@ function showDeepResearchPopup() {
 function showMotivationPopup() {
   const task = prompt('Was moechtest du tun?');
   if (!task) return;
-  const promptText = `Ich fuehle mich unmotiviert: ${task}\n\nGib mir Motivation!`;
+  const promptText = `Erstelle einen Motivations-Booster im Stil eines TED-Talks zum Thema: "${task}". Verwende rhetorische Fragen, kurze Sätze, Wiederholungen. Thema aus der Website nehmen und in einen "Du schaffst das"-Kontext packen. Emojis erlaubt, aber sparsam.
+
+Struktur:
+1. **Hook** (rhetorische Frage, die Neugier weckt)
+2. **Das Problem** (kurz, prägnant)
+3. **Die Wende** (Mindset-Shift)
+4. **Der Call** (konkrete Aufforderung)
+5. **Abschluss** (powervolle letzte Zeile)
+
+Länge: max. 150 Wörter. Ton: inspirierend, energiegeladen.`;
   getAiConfig((config) => {
     if (config.type === 'local') sendToLocalLlm(config, promptText);
     else {
@@ -755,19 +784,130 @@ function showAskSelectionPopup(selectedText) {
   });
 }
 
+function showLegalCheckPopup(context) {
+  const styles = ['Gutachtenstil', 'Urteilsstil', 'Feststellungsstil'];
+  const styleInput = prompt(`In welchem Stil soll die Rechtslage beurteilt werden?\n\n1. Gutachtenstil (Standard)\n2. Urteilsstil\n3. Feststellungsstil\n\nGib die Nummer oder den Namen ein:`, 'Gutachtenstil');
+  if (!styleInput) return;
+  
+  let selectedStyle = 'Gutachtenstil';
+  if (styleInput === '1' || styleInput.toLowerCase().includes('gutachten')) {
+    selectedStyle = 'Gutachtenstil';
+  } else if (styleInput === '2' || styleInput.toLowerCase().includes('urteil')) {
+    selectedStyle = 'Urteilsstil';
+  } else if (styleInput === '3' || styleInput.toLowerCase().includes('feststellung')) {
+    selectedStyle = 'Feststellungsstil';
+  }
+  
+  const promptText = `Analysiere die Rechtslage zu diesem Thema nach deutschem Recht im Stil einer juristischen Abschlussprüfung.
+
+URL: ${context.url}
+
+Inhalt:
+"""
+${context.text.substring(0, 6000)}
+"""
+
+WICHTIG: Verzichte auf Emojis. Verwende keine Erklärungen für juristische Fachbegriffe.
+
+STRUKTUR:
+
+1. RECHTSGEBIETE (Liste)
+
+Rechtsgebiet 1: [Name des Rechtsgebiets, z.B. Vertragsrecht]
+- Relevante Gesetze: [§ X Abs. Y Satz Z BGB, etc.]
+- Anwendbarkeit: [Warum ist dieses Rechtsgebiet relevant?]
+
+---
+
+Rechtsgebiet 2: [Name des Rechtsgebiets]
+- Relevante Gesetze: [§ X Abs. Y Satz Z, etc.]
+- Anwendbarkeit: [Warum ist dieses Rechtsgebiet relevant?]
+
+---
+
+[weitere Rechtsgebiete mit gleicher Struktur...]
+
+2. RECHTSQUELLEN (Liste)
+
+Gesetze:
+- [Gesetzesname mit konkreter Fundstelle: § X Abs. Y Satz Z]
+- [weitere Gesetze...]
+
+Verordnungen:
+- [Verordnungsname mit Fundstelle]
+- [...]
+
+Gewohnheitsrecht:
+- [Relevantes Gewohnheitsrecht mit Quelle]
+
+Rechtsordnungen / Allgemeine Maßstäbe:
+- [z.B. Treu und Glauben § 242 BGB]
+- [...]
+
+Satzungen:
+- [Relevante Satzungen]
+
+Verwaltungsvorschriften:
+- [Relevante Vorschriften]
+
+Präzedenzfälle / Entscheidungen oberster Gerichtshöfe:
+- [BGH, BVerfG, BVerwG, BFH, BSG - mit Az. und Fundstelle]
+
+3. RECHTLICHE BEWERTUNG
+Präzise juristische Analyse der vorliegenden Sachverhalte.
+
+4. MOEGLICHE RISIKEN / OFFENE PUNKTE
+
+4.1 Unklare Rechtslagen
+- [...]
+
+4.2 Rechtskollisionen
+- [Welche Rechtskollisionen könnten auftreten?]
+- [...]
+
+4.3 Streitige Fragen
+- [...]
+
+5. BEURTEILUNG RECHTSLAGE (${selectedStyle})
+[Hier erfolgt die Beurteilung im gewählten Stil: ${selectedStyle}]`;
+
+  getAiConfig((config) => {
+    if (config.type === 'local') sendToLocalLlm(config, promptText, 'silent').then(response => showResponseModal(response));
+    else {
+      chrome.storage.local.set({ pendingPrompt: promptText }, () => window.open(config.url, '_blank'));
+    }
+  });
+}
+
 function handleGeminiAction(action, summaryType = 'normal', ytSummaryType = 'nested', clipboardOnly = false) {
   if (action === 'deepResearch') { showDeepResearchPopup(); return; }
   if (action === 'motivation') { showMotivationPopup(); return; }
+  if (action === 'legalCheck') { showLegalCheckPopup(getPageContext()); return; }
 
   const context = getPageContext();
-  let prompt = '';
+  let promptText = '';
 
   switch (action) {
     case 'createPresentation':
-      prompt = `Erstelle eine Praesentation aus: ${context.url}\n\n${context.text.substring(0, 3000)}\n\n6-10 Folien mit Titel, Bullet Points, Speaker Notes.`;
+      promptText = `Erstelle eine Executive-Summary-Präsentation für C-Level. Max. 6 Folien, je max. 5 Wörter pro Bullet. Fokus auf: Business Impact, ROI, Zeitersparnis, Risiken. Jede Folie hat eine klare "So what?"-Message.
+
+Basierend auf: ${context.url}
+
+Inhalt:
+"""
+${context.text.substring(0, 4000)}
+"""
+
+Format pro Folie:
+**Folie X: [Titel]**
+- [Bullet 1, max 5 Wörter]
+- [Bullet 2, max 5 Wörter]
+- [Bullet 3, max 5 Wörter]
+Speaker Notes: [Was soll gesagt werden?]
+So What?: [Kernbotschaft dieser Folie]`;
       break;
     case 'ahaMoments':
-      prompt = `Generiere 3 weiterführende Prompts zum Thema dieser Website.
+      promptText = `Generiere 3 weiterführende Prompts zum Thema dieser Website.
 
 Website: ${context.url}
 
@@ -788,7 +928,7 @@ Format:
 3. [Dritter Prompt]`;
       break;
     case 'socraticChain':
-      prompt = `Anwenden der sokratischen Methode (Maiutik) auf diese Website.
+      promptText = `Anwenden der sokratischen Methode (Maiutik) auf diese Website.
 
 URL: ${context.url}
 
@@ -828,22 +968,166 @@ Frage 4 (Definition): [Was müssen wir definieren, um weiterzukommen?]
 Ergebnis: [Offengelegter Widerspruch oder vertieftes Verständnis]`;
       break;
     case 'grammarCheck':
-      prompt = `Pruefe Grammatik und Rechtschreibung:\n\n${context.text}`;
+      promptText = `Führe eine professionelle Grammatik- und Rechtschreibprüfung durch.
+
+Zu prüfender Text:
+"""
+${context.text.substring(0, 5000)}
+"""
+
+STRUKTUR DER AUSGABE:
+
+1. LISTE DER FEHLER
+
+Fehler 1:
+- Zitat mit Fehler: [Originaltext mit Fehler]
+- Art des Fehlers: [Grammatik/Rechtschreibung/Zeichensetzung/Stil]
+- Korrektur: [Korrigierte Version]
+
+---
+
+Fehler 2:
+- Zitat mit Fehler: [Originaltext mit Fehler]
+- Art des Fehlers: [Grammatik/Rechtschreibung/Zeichensetzung/Stil]
+- Korrektur: [Korrigierte Version]
+
+---
+
+Fehler 3:
+- Zitat mit Fehler: [Originaltext mit Fehler]
+- Art des Fehlers: [Grammatik/Rechtschreibung/Zeichensetzung/Stil]
+- Korrektur: [Korrigierte Version]
+
+---
+
+[weitere Fehler mit gleicher Struktur...]
+
+2. STATISTIK
+- Fehler pro 100 Wörter: [Zahl]
+- Gesamteindruck: [professionell/mittel/schwach]
+
+========================================
+
+3. KORRIGIERTER GESAMTTEXT
+[Hier folgt der vollständige Text mit allen Korrekturen, ohne Fettdruck oder besondere Formatierungen]`;
+      break;
+    case 'summaryWithCrawl': {
+      const crawlUrl = prompt('Bitte gib die URL ein, die gecrawlt und zusammengefasst werden soll:');
+      if (!crawlUrl) return;
+      promptText = `Eine URL crawlen, alle Fakten als Emoji-Aufzählungspunkte extrahieren und den gegebenen Text zusammenfassen. [enter URL to crawl and summarize]
+
+URL: ${crawlUrl}
+
+Seiteninhalt zur Referenz:
+"""
+${context.text.substring(0, 3000)}
+"""`;
+      break;
+    }
+    case 'summaryChapter':
+      promptText = `{ "token_bundle": { "bundle_name": "Study Pack: CoT + Guardian", "shortcut": "🌿", "version": "1.0.0", "portability_check": "✅", "tokens": [ { "token_type": "Method Token", "token_name": "chain.of.thought.method", "token_id": "cot-101", "description": "Stepwise study workflow that extracts arguments, evidence, and takeaways before summarizing.", "instructions": [ "1) Read the chapter. List 3–5 core arguments as bullets.", "2) For each argument, add 1–2 concrete pieces of evidence or examples from the text.", "3) Distill a concise study summary (150–250 words). No filler. No metaphors. Keep author's intent.", "4) Output a glossary of key terms (definitions in 1 line each).", "5) Create 5 flashcards: (Q) and (A) pairs covering the highest-yield points.", "Formatting: Use clear headings: Arguments, Evidence, Summary, Glossary, Flashcards." ], "constraints": { "no_filler": true, "quote_marking": "If quoting, use short quotes with page/section when available.", "audience": "grad student", "style": "precise, neutral, test-ready" }, "status": "active" }, { "token_type": "Guardian Token v2", "token_name": "guardian.token.v2", "token_id": "gtv2-101", "description": "Prevents drift into fluff, enforces structure and checks for contradictions.", "guardian_hooks": [ "schema_validation", "contradiction_scan", "tone_clarity_check", "portability_check" ], "schema": { "sections_required": ["Arguments", "Evidence", "Summary", "Glossary", "Flashcards"], "summary_word_limit": {"min": 150, "max": 250}, "flashcards_count": 5 }, "status": "active" } ] } }
+
+URL: ${context.url}
+
+Text:
+"""
+${context.text.substring(0, 6000)}
+"""`;
+      break;
+    case 'summaryNormal':
+      promptText = `Lies diese Seite und gib Folgendes an:
+– 3 wichtigste Erkenntnisse in Stichpunkten
+– Wichtige Statistiken oder Daten
+– Wichtigstes Zitat oder wichtigste Erkenntnis
+– Warum dies wichtig ist (in einem Satz)
+Halte dich insgesamt auf unter 100 Wörter.
+
+URL: ${context.url}
+
+Inhalt:
+"""
+${context.text.substring(0, 5000)}
+"""`;
+      break;
+    case 'summarySuperShort':
+      promptText = `Erstelle eine extrem kurze Zusammenfassung:
+
+URL: ${context.url}
+
+Inhalt:
+"""
+${context.text.substring(0, 4000)}
+"""
+
+STRENGE ANFORDERUNGEN:
+- WICHTIG: Weniger als 3 Sätze (also 1-2 Sätze)
+- WICHTIG: Weniger als 20 Wörter insgesamt (zähle nach!)
+- Absolute Kürze ist oberste Priorität
+- Keine Füllwörter wie "Der", "Die", "Das", "Ein", "Eine" wenn möglich
+- Nur die reine Kernbotschaft
+
+Beispiel für korrekte Ausgabe:
+"KI erobert Arbeitsmarkt. 40% Jobs gefährdet bis 2030." (9 Wörter, 2 Sätze)`;
       break;
     case 'summary':
-      prompt = `Fasse zusammen (${summaryType}):\n\n${context.text.substring(0, 5000)}`;
-      break;
-    case 'tldr':
-      prompt = `TL;DR in 3 Saetzen:\n\n${context.text.substring(0, 4000)}`;
+      promptText = `Fasse zusammen (${summaryType}):\n\n${context.text.substring(0, 5000)}`;
       break;
     case 'factCheck':
-      prompt = `Faktencheck fuer: ${context.url}\n\n${context.text.substring(0, 5000)}\n\nMarkiere unklare oder falsche Behauptungen.`;
+      promptText = `Erstelle einen detaillierten Faktencheck. Prüfe auf interne Konsistenz (Widersprüche im Text).
+
+URL: ${context.url}
+
+Inhalt:
+"""
+${context.text.substring(0, 5000)}
+"""
+
+Struktur:
+
+1. KONSISTENZPRÜFUNG
+[Widersprüche im Text?]
+
+---
+
+2. QUELLENPRÜFUNG KRITISCHER FAKTEN
+
+Fakt 1:
+- Originalbehauptung: [Text aus der Website]
+- Verifizierungsstatus: [bestätigt / nicht verifizierbar / falsch]
+- Prüfung anhand verifizierter Quellen:
+  - Quelle 1: [Zitat + Link]
+  - Quelle 2: [Zitat + Link] (falls vorhanden)
+  - [...]
+- Bewertung: [Stimmt das Fakt? Gibt es keine verifizierbare Studienlage? Oder ist es falsch/ausgedacht?]
+
+---
+
+Fakt 2:
+- Originalbehauptung: [Text aus der Website]
+- Verifizierungsstatus: [bestätigt / nicht verifizierbar / falsch]
+- Prüfung anhand verifizierter Quellen:
+  - Quelle 1: [Zitat + Link]
+  - Quelle 2: [Zitat + Link] (falls vorhanden)
+  - [...]
+- Bewertung: [Stimmt das Fakt? Gibt es keine verifizierbare Studienlage? Oder ist es falsch/ausgedacht?]
+
+---
+
+Fakt 3:
+[... gleiche Struktur ...]
+
+---
+
+[weitere Fakten mit gleicher Struktur...]
+
+3. KRITISCHE BEWERTUNG
+[Welche Behauptungen sollten mit Vorsicht genossen werden? Zusammenfassung aller problematischen Fakten]`;
       break;
     case 'plagiarism':
-      prompt = `Pruefe auf Plagiate: ${context.url}\n\n${context.text.substring(0, 4000)}`;
+      promptText = `Pruefe auf Plagiate: ${context.url}\n\n${context.text.substring(0, 4000)}`;
       break;
     case 'rewrite':
-      prompt = `Schreibe um (gleiche Infos, neue Formulierung):\n\n${context.text.substring(0, 4000)}`;
+      promptText = `Schreibe um (gleiche Infos, neue Formulierung):\n\n${context.text.substring(0, 4000)}`;
       break;
     case 'translate': {
       const textToTranslate = context.text.substring(0, 8000);
@@ -855,7 +1139,7 @@ Ergebnis: [Offengelegter Widerspruch oder vertieftes Verständnis]`;
         return;
       }
       // Fallback: Nutze KI fuer laengere Texte
-      prompt = `Uebersetze den folgenden Text ins Deutsche (falls der Text bereits Deutsch ist, uebersetze ins Englische).
+      promptText = `Uebersetze den folgenden Text ins Deutsche (falls der Text bereits Deutsch ist, uebersetze ins Englische).
 
 URL: ${context.url}
 
@@ -874,21 +1158,21 @@ Gib nur die Uebersetzung aus, ohne den Originaltext wiederzugeben.`;
       break;
     }
     case 'completeText':
-      prompt = `Vervollstaendige den Text sinnvoll:\n\n${context.text.substring(0, 4000)}`;
+      promptText = `Vervollstaendige den Text sinnvoll:\n\n${context.text.substring(0, 4000)}`;
       break;
     case 'codeReview':
-      prompt = `Code Review fuer: ${context.url}\n\n${context.text.substring(0, 5000)}\n\nAnalysiere Qualitaet, Sicherheit, Performance.`;
+      promptText = `Code Review fuer: ${context.url}\n\n${context.text.substring(0, 5000)}\n\nAnalysiere Qualitaet, Sicherheit, Performance.`;
       break;
     case 'copyCode':
-      prompt = `Extrahiere Code von: ${context.url}\n\n${context.text.substring(0, 5000)}`;
+      promptText = `Extrahiere Code von: ${context.url}\n\n${context.text.substring(0, 5000)}`;
       break;
     case 'deepResearch':
-      prompt = `Tiefenanalyse fuer: ${context.url}\n\n${context.text.substring(0, 4000)}\n\nHintergruende, offene Fragen, Quellen.`;
+      promptText = `Tiefenanalyse fuer: ${context.url}\n\n${context.text.substring(0, 4000)}\n\nHintergruende, offene Fragen, Quellen.`;
       break;
     case 'askPage': {
       const userQuestion = prompt('Welche Frage hast du zu dieser Website?');
       if (!userQuestion) return;
-      prompt = `Ich habe eine Frage zu dieser Seite. Gebe als Antwort ausschliesslich die Antwort auf die Frage aus. Keine zusätzlichen Prompts. Keine weiteren Nachrichten.
+      promptText = `Ich habe eine Frage zu dieser Seite. Gebe als Antwort ausschliesslich die Antwort auf die Frage aus. Keine zusätzlichen Prompts. Keine weiteren Nachrichten.
 
 URL: ${context.url}
 
@@ -905,10 +1189,10 @@ Meine Frage: ${userQuestion}`;
       break;
     }
     case 'pageSherlock':
-      prompt = `Detektiv-Analyse: ${context.url}\n\n${context.text.substring(0, 5000)}\n\nVertrauenswuerdigkeit, Red Flags, Geschaeftsmodell.`;
+      promptText = `Detektiv-Analyse: ${context.url}\n\n${context.text.substring(0, 5000)}\n\nVertrauenswuerdigkeit, Red Flags, Geschaeftsmodell.`;
       break;
     case 'writeReply':
-      prompt = `Erstelle 3 Antwortmöglichkeiten auf diese Nachricht/E-Mail/Kommentar.
+      promptText = `Erstelle 3 Antwortmöglichkeiten auf diese Nachricht/E-Mail/Kommentar.
 
 URL/Kontext: ${context.url}
 
@@ -931,13 +1215,66 @@ Format:
 Keine Einleitung. Keine Rückfragen. Kein Fazit. Nur die 3 Antworten.`;
       break;
     case 'emailDraft':
-      prompt = `E-Mail Entwurf zu: ${context.url}\n\n${context.text.substring(0, 4000)}`;
+      promptText = `Schreibe 3 E-Mail-Entwürfe zu diesem Thema: (1) formell/geschäftlich, (2) freundlich/kollegial, (3) kurz/bündig. Betreffzeile soll Catchy aber professionell sein. Jede E-Mail max. 150 Wörter. Abschluss mit passender Grußformel.
+
+Thema aus: ${context.url}
+
+Inhalt zur Grundlage:
+"""
+${context.text.substring(0, 3000)}
+"""
+
+Format:
+**1. Formell/Geschäftlich**
+Betreff: [Catchy aber professionell]
+[Text]
+
+**2. Freundlich/Kollegial**
+Betreff: [Catchy aber professionell]
+[Text]
+
+**3. Kurz/Bündig**
+Betreff: [Catchy aber professionell]
+[Text]`;
       break;
     case 'checklist':
-      prompt = `Erstelle Checkliste aus: ${context.url}\n\n${context.text.substring(0, 4000)}`;
+      promptText = `Erstelle eine universelle Checkliste basierend auf dem Inhalt dieser Website.
+
+URL: ${context.url}
+
+Inhalt:
+"""
+${context.text.substring(0, 5000)}
+"""
+
+Analysiere den Inhalt und erstelle eine praktische Checkliste. Da der Kontext variiert (Tutorial, Produkt, Dienstleistung, Artikel, Rezept, etc.), identifiziere eigenständig das Thema und was sinnvollerweise geprüft werden sollte.
+
+Mögliche Checklisten-Typen (wähle passenden oder eigenen):
+- **Vorbereitung/Sammeln** – Was braucht man vorher?
+- **Schritt-für-Schritt** – Ablauf in korrekter Reihenfolge
+- **Qualitätsprüfung** – Woran erkennt man Gutes vs. Schlechtes?
+- **Vergleich** – Was sollte man vergleichen/beachten?
+- **Abschluss** – Was nicht vergessen vor/nach dem Kauf/Nutzung?
+- **Fehler vermeiden** – Typische Stolperfallen
+
+Format:
+
+## 📋 [Thema der Checkliste]
+
+### □ [Kategorie 1]
+- [ ] [Konkreter Punkt]
+- [ ] [Konkreter Punkt]
+- [ ] [Konkreter Punkt]
+
+### □ [Kategorie 2]
+- [ ] [Konkreter Punkt]
+...
+
+### 💡 Pro-Tipp
+[Kurzer hilfreicher Hinweis zum Thema]`;
       break;
     case 'alternative':
-      prompt = `Analysiere dieses Produkt/Dienstleistung und finde Alternativen.
+      promptText = `Analysiere dieses Produkt/Dienstleistung und finde Alternativen.
 
 URL: ${context.url}
 
@@ -971,32 +1308,32 @@ Erstelle eine Vergleichsübersicht mit:
    - Vor- und Nachteile-Übersicht`;
       break;
     case 'priceCompare':
-      prompt = `Preisvergleich fuer: ${context.url}\n\n${context.text.substring(0, 4000)}\n\nIst der Preis fair? Alternativen?`;
+      promptText = `Preisvergleich fuer: ${context.url}\n\n${context.text.substring(0, 4000)}\n\nIst der Preis fair? Alternativen?`;
       break;
     case 'productProsCons':
-      prompt = `Vor- und Nachteile Analyse: ${context.url}\n\n${context.text.substring(0, 4000)}`;
+      promptText = `Vor- und Nachteile Analyse: ${context.url}\n\n${context.text.substring(0, 4000)}`;
       break;
     case 'createFAQ':
-      prompt = `Erstelle FAQ (8-12 Fragen) aus: ${context.url}\n\n${context.text.substring(0, 5000)}`;
+      promptText = `Erstelle FAQ (8-12 Fragen) aus: ${context.url}\n\n${context.text.substring(0, 5000)}`;
       break;
     case 'createQuiz':
-      prompt = `Erstelle Quiz (10 Fragen) aus: ${context.url}\n\n${context.text.substring(0, 5000)}`;
+      promptText = `Erstelle Quiz (10 Fragen) aus: ${context.url}\n\n${context.text.substring(0, 5000)}`;
       break;
     case 'extractQuotes':
-      prompt = `Extrahiere Zitate aus: ${context.url}\n\n${context.text.substring(0, 5000)}\n\nMarkante Aussagen, Statistiken, kontroverse Meinungen.`;
+      promptText = `Extrahiere Zitate aus: ${context.url}\n\n${context.text.substring(0, 5000)}\n\nMarkante Aussagen, Statistiken, kontroverse Meinungen.`;
       break;
     case 'webSearch':
-      prompt = `Suchstrategie fuer: ${context.url}\n\n${context.text.substring(0, 4000)}\n\nOptimierte Suchanfragen mit Operatoren.`;
+      promptText = `Suchstrategie fuer: ${context.url}\n\n${context.text.substring(0, 4000)}\n\nOptimierte Suchanfragen mit Operatoren.`;
       break;
     case 'extractData2':
-      prompt = `Extrahiere strukturierte Daten aus: ${context.url}\n\n${context.text.substring(0, 5000)}`;
+      promptText = `Extrahiere strukturierte Daten aus: ${context.url}\n\n${context.text.substring(0, 5000)}`;
       break;
     case 'captureView':
       // Starte Screenshot-Auswahl statt nur Text-Analyse
       startScreenshotSelection();
       return;  // Frühzeitiger Return, da wir async arbeiten
     case 'doINeedThis':
-      prompt = `Hilf mir zu entscheiden, ob ich dieses Produkt/Dienstleistung wirklich brauche.
+      promptText = `Hilf mir zu entscheiden, ob ich dieses Produkt/Dienstleistung wirklich brauche.
 
 URL: ${context.url}
 
@@ -1010,91 +1347,126 @@ Entscheidungshilfe:
 ## 🤔 Brauchst du das wirklich?
 
 **Stelle dir diese Fragen:**
-1. [Spezifische Frage zum Produkt - z.B. "Hast du bereits ein aehnliches Produkt, das denselben Zweck erfuellt?"]
-2. [Frage zu bestehenden Alternativen - z.B. "Koenntest du das Problem auch kostenlos oder guenstiger loesen?"]
-3. [Frage zum tatsaechlichen Nutzen - z.B. "Wie oft wirst du dieses Produkt wirklich nutzen?"]
-4. [Frage zur Haeufigkeit der Nutzung - z.B. "Ist der Nutzen langfristig oder nur kurzfristig?"]
-5. [Frage zur finanziellen Prioritaet - z.B. "Steht das im Verhaeltnis zum Preis und deinem Budget?"]
+1. [Spezifische Frage zum Produkt - z.B. "Hast du bereits ein ähnliches Produkt, das denselben Zweck erfüllt?"]
+2. [Frage zu bestehenden Alternativen - z.B. "Könntest du das Problem auch kostenlos oder günstiger lösen?"]
+3. [Frage zum tatsächlichen Nutzen - z.B. "Wie oft wirst du dieses Produkt wirklich nutzen?"]
+4. [Frage zur Häufigkeit der Nutzung - z.B. "Ist der Nutzen langfristig oder nur kurzfristig?"]
+5. [Frage zur finanziellen Priorität - z.B. "Steht das im Verhältnis zum Preis und deinem Budget?"]
 
 ## ✅ Ja, wenn...
 - [Situationen, wo es Sinn macht]
 - [Konkrete Use-Cases]
 
 ## ❌ Nein, wenn...
-- [Situationen, wo es unnoetig ist]
+- [Situationen, wo es unnötig ist]
 - [Warnsignale]
 
 ## 💡 Alternativen zum Kauf
-- [Moeglichkeiten, den Bedarf anders zu decken]
+- [Möglichkeiten, den Bedarf anders zu decken]
 - [Gratis-Optionen]
-- [DIY-Loesungen]
+- [DIY-Lösungen]
 - [Leih- oder Mietoptionen]
 
-**Ehrliche Empfehlung:** [Klare Aussage, fuer wen das sinnvoll ist und fuer wen nicht]`;
+**Ehrliche Empfehlung:** [Klare Aussage, für wen das sinnvoll ist und für wen nicht]`;
       break;
     case 'accessibility':
-      prompt = `Accessibility Check: ${context.url}\n\n${context.text.substring(0, 5000)}\n\nWCAG-Compliance, Verbesserungsvorschlaege.`;
-      break;
-    case 'genderLanguage':
-      prompt = `Gender-Sprache pruefen: ${context.url}\n\n${context.text.substring(0, 5000)}\n\nNicht-gendergerechte Formulierungen finden.`;
-      break;
-    case 'legalCheck':
-      prompt = `Gib einen ersten rechtlichen Ueberblick zum Thema dieser Website (keine Rechtsberatung!).
+      promptText = `Prüfe die Barrierefreiheit (Accessibility) dieser Website.
 
 URL: ${context.url}
 
-Thema/Kontext:
+Seiteninhalt:
 """
-${context.text.substring(0, 4000)}
+${context.text.substring(0, 5000)}
 """
 
-**Wichtiger Hinweis:** Dies ist keine Rechtsberatung, sondern eine erste Einordnung!
+Analysiere folgende technische Barrierefreiheits-Aspekte (WCAG 2.1 AA):
 
-## Themenidentifikation
-- Welches Rechtsgebiet betrifft das? (Vertrag, Datenschutz, Verbraucher, etc.)
-- Relevante Gesetze (vermutlich)
+## 1. Text & Lesbarkeit
+- **Zeilenhöhe anpassbar** – Lässt sich der Zeilenabstand verändern?
+- **Textabstände anpassbar** – Können Buchstaben- und Wortabstände vergrößert werden?
+- **Schriftgröße** – Ist Text auf 200% zoombar ohne Funktionsverlust?
 
-## Allgemeine rechtliche Grundlagen
-- [Grobe Erklaerung der relevanten Rechtslage]
-- [Typische Pflichten/Rechte]
-- [Juristische Fachbegriffe mit Erklaerung: z.B. "Obliegenheit", "Tertiaer-Nutzung", "Verhaeltnismaessigkeitsgrundsatz"]
+## 2. Semantische Struktur
+- **Sprachattribut** – Hat das HTML-Element ein gültiges lang-Attribut (z.B. lang="de")?
+- **Viewport-Meta** – Ermöglicht das Meta-Viewport-Tag eine Skalierung auf mindestens 200%?
+- **Listen-Struktur** – Sind Listen mit <ul>/<ol>/<dl> markiert, nicht nur mit CSS?
+- **Listen-Items** – Sind <li>-Elemente direkte Kinder von <ul>/<ol>?
+- **Beschreibungslisten** – Haben <dt>/<dd> ein <dl> als Elternelement?
 
-## Mögliche Risiken/Offene Punkte
-- [Was koennte problematisch sein?]
-- [Was sollte geprueft werden?]
+## 3. Links & Navigation
+- **Leere Anker-Links** – Gibt es <a>-Tags ohne href-Attribut oder Inhalt?
+- **Link-Attribute** – Haben Links gültige href-Attribute (keine # oder javascript:void)?
+- **Neue Tabs gekennzeichnet** – Öffnen sich Links in neuen Tabs mit Icon/Text für Screenreader?
+- **Button-Beschriftungen** – Haben Buttons sichtbare Texte oder aria-label?
 
-## Dokumentationsempfehlungen
-- Was sollte schriftlich festgehalten werden?
-- Welche Nachweise sind wichtig?
+## 4. ARIA & Landmarks
+- **Landmarks** – Hat die Seite gültige Landmark-Regionen (main, nav, aside, footer)?
+- **aria-hidden** – Sind aria-hidden="true" Attribute korrekt gesetzt (nicht auf fokussierbaren Elementen)?
 
-## ⚠️ Disclaimer
-> Diese Informationen dienen nur der ersten Orientierung. Fuer verbindliche Rechtsauskuenfte konsultieren Sie bitte einen Rechtsanwalt fuer [Fachgebiet].
+## 5. Formulare (falls vorhanden)
+- **Label-Verknüpfung** – Haben Eingabefelder zugeordnete <label> oder aria-labelledby?
+- **Pflichtfelder** – Sind required-Felder gekennzeichnet?
+- **Fehlermeldungen** – Werden Formularfehler beschrieben und verknüpft?
 
-## Naechste Schritte
-1. [Konkrete Handlungsempfehlung]
-2. [Welche Unterlagen sammeln?]
-3. [Wen kontaktieren?]`;
+## Ausgabeformat
+
+### ✅ Bestanden
+[Liste der korrekt umgesetzten Punkte]
+
+### ⚠️ Verbesserungsbedarf
+| Prüfpunkt | Problem | Lösung |
+|-----------|---------|--------|
+| [Kategorie] | [Beschreibung] | [Konkreter Fix] |
+
+### 📋 Priorisierte Empfehlungen
+1. **Kritisch:** [Muss behoben werden]
+2. **Wichtig:** [Sollte behoben werden]
+3. **Optional:** [Empfohlene Verbesserungen]`;
       break;
+    case 'genderLanguage':
+      promptText = `Analysiere den Text auf genderinklusive Sprache. Markiere nicht-inklusive Formulierungen und schlage jeweils 2 bessere Alternativen vor: Alternative 1 mit Binnen-I, Alternative 2 mit Gender-Doppelpunkt (z.B. Spieler:innen). Gendersternchen soll nicht vorgeschlagen werden. Fasse am Ende zusammen, wie gendergerecht der Text insgesamt ist (Prozentzahl).
+
+URL: ${context.url}
+
+Text:
+"""
+${context.text.substring(0, 5000)}
+"""`;
+      break;
+
     case 'vacationPlan':
-      prompt = `Urlaubsplanung fuer: ${context.url}\n\n${context.text.substring(0, 4000)}\n\nBeste Reisezeit, Unterkunft, Budget, Must-Sees.`;
+      promptText = `Urlaubsplanung fuer: ${context.url}\n\n${context.text.substring(0, 4000)}\n\nBeste Reisezeit, Unterkunft, Budget, Must-Sees.`;
       break;
     case 'contextCollector':
-      prompt = `Sammle Kontext von: ${context.url}\n\n${context.text.substring(0, 5000)}`;
+      promptText = `Sammle Kontext von: ${context.url}\n\n${context.text.substring(0, 5000)}`;
       break;
     case 'learningHelp':
-      prompt = `Lernmaterial zu: ${context.url}\n\n${context.text.substring(0, 5000)}\n\nErklaerungen, Mnemonics, Quizfragen.`;
+      promptText = `Lernmaterial zu: ${context.url}\n\n${context.text.substring(0, 5000)}\n\nErklaerungen, Mnemonics, Quizfragen.`;
       break;
     case 'createDiagram':
-      prompt = `Diagramm-Vorschlaege fuer: ${context.url}\n\n${context.text.substring(0, 5000)}\n\nMermaid-Code fuer passende Diagramme.`;
+      promptText = `Extrahiere alle quantitativen Daten aus dieser Seite und erstelle einen Visualisierungsplan: Welche Daten eignen sich für Balkendiagramm, Tortendiagramm, Liniengrafik oder Tabelle? Erstelle dann ein Mermaid-Diagramm für die wichtigste Datenaussage.
+
+URL: ${context.url}
+
+Inhalt:
+"""
+${context.text.substring(0, 5000)}
+"""
+
+Anforderungen:
+1. Identifiziere alle Zahlen, Prozente, Statistiken im Text
+2. Entscheide: Welcher Diagrammtyp passt am besten?
+3. Erstelle Mermaid-Code für die wichtigste Aussage
+4. Gib NUR den Mermaid-Code aus, keine Erklärungen`;
       break;
     case 'reusePage':
-      prompt = `Content-Reuse fuer: ${context.url}\n\n${context.text.substring(0, 4000)}\n\nSocial Media, Blog, Newsletter Ideen.`;
+      promptText = `Content-Reuse fuer: ${context.url}\n\n${context.text.substring(0, 4000)}\n\nSocial Media, Blog, Newsletter Ideen.`;
       break;
     case 'shoppingAssistant':
-      prompt = `Shopping-Analyse: ${context.url}\n\n${context.text.substring(0, 2000)}\n\nPreischeck, Alternativen, Gutscheine.`;
+      promptText = `Shopping-Analyse: ${context.url}\n\n${context.text.substring(0, 2000)}\n\nPreischeck, Alternativen, Gutscheine.`;
       break;
     case 'tellJoke':
-      prompt = `Analysiere diese Website und erstelle passende Witze zum Thema.
+      promptText = `Analysiere diese Website und erstelle passende Witze zum Thema.
 
 Website: ${context.url}
 
@@ -1128,10 +1500,10 @@ Pointe: [Aufloesung]
 Optional: Bewertung der Witzqualitaet (1-10) und kurze Erklaerung, falls der Witz ein spezifisches Referenz braucht.`;
       break;
     case 'createStory':
-      prompt = `Erstelle Story (${summaryType}) zu: ${context.url}\n\n${context.text.substring(0, 3000)}`;
+      promptText = `Erstelle Story (${summaryType}) zu: ${context.url}\n\n${context.text.substring(0, 3000)}`;
       break;
     case 'aiDetection':
-      prompt = `Analysiere den folgenden Website-Text auf typische Merkmale einer KI-Generierung (ChatGPT, Claude, Gemini, etc.).
+      promptText = `Analysiere den folgenden Website-Text auf typische Merkmale einer KI-Generierung (ChatGPT, Claude, Gemini, etc.).
 
 URL: ${context.url}
 
@@ -1212,67 +1584,67 @@ Untersuche das Dokument auf folgende KI-typische Merkmale und bewerte jedes Krit
 [2-3 Saetze mit der Gesamteinschaetzung und den staerksten Indikatoren]`;
       break;
     case 'seoAudit':
-      prompt = `SEO Audit: ${context.url}\n\n${context.text.substring(0, 5000)}\n\nOn-Page, Content, Technisches SEO, Quick Wins.`;
+      promptText = `SEO Audit: ${context.url}\n\n${context.text.substring(0, 5000)}\n\nOn-Page, Content, Technisches SEO, Quick Wins.`;
       break;
     case 'seoKeywords':
-      prompt = `Keyword Analyse: ${context.url}\n\n${context.text.substring(0, 5000)}\n\nPrimaer, Sekundaer, Long-Tail Keywords.`;
+      promptText = `Keyword Analyse: ${context.url}\n\n${context.text.substring(0, 5000)}\n\nPrimaer, Sekundaer, Long-Tail Keywords.`;
       break;
     case 'seoContentAnalyzer':
-      prompt = `Content SEO Analyse: ${context.url}\n\n${context.text.substring(0, 5000)}\n\nRelevanz, Struktur, Keyword-Optimierung.`;
+      promptText = `Content SEO Analyse: ${context.url}\n\n${context.text.substring(0, 5000)}\n\nRelevanz, Struktur, Keyword-Optimierung.`;
       break;
     case 'seoStrategy':
-      prompt = `SEO Strategie: ${context.url}\n\n${context.text.substring(0, 4000)}\n\nKeyword-Strategie, Content-Plan, Linkbuilding.`;
+      promptText = `SEO Strategie: ${context.url}\n\n${context.text.substring(0, 4000)}\n\nKeyword-Strategie, Content-Plan, Linkbuilding.`;
       break;
     case 'seoTopicIdeas':
-      prompt = `Content Ideen fuer: ${context.url}\n\n${context.text.substring(0, 4000)}\n\nPillar Content, Cluster, Evergreen, Trending.`;
+      promptText = `Content Ideen fuer: ${context.url}\n\n${context.text.substring(0, 4000)}\n\nPillar Content, Cluster, Evergreen, Trending.`;
       break;
     case 'seoWebsiteToArticle':
-      prompt = `Wandle in Artikel um: ${context.url}\n\n${context.text.substring(0, 5000)}\n\nSEO-optimierte Struktur mit Keywords.`;
+      promptText = `Wandle in Artikel um: ${context.url}\n\n${context.text.substring(0, 5000)}\n\nSEO-optimierte Struktur mit Keywords.`;
       break;
     case 'seoKeywordCluster':
-      prompt = `Keyword Cluster fuer: ${context.url}\n\n${context.text.substring(0, 4000)}\n\nThematische Cluster mit Pillar und Cluster Content.`;
+      promptText = `Keyword Cluster fuer: ${context.url}\n\n${context.text.substring(0, 4000)}\n\nThematische Cluster mit Pillar und Cluster Content.`;
       break;
     case 'seoHeroImages':
-      prompt = `Hero Image Ideen: ${context.url}\n\n${context.text.substring(0, 4000)}\n\nKonzepte, KI-Prompts, technische Spezifikationen.`;
+      promptText = `Hero Image Ideen: ${context.url}\n\n${context.text.substring(0, 4000)}\n\nKonzepte, KI-Prompts, technische Spezifikationen.`;
       break;
     case 'socialPost':
-      prompt = `Social Media Posts fuer: ${context.url}\n\n${context.text.substring(0, 4000)}\n\nLinkedIn, Twitter, Instagram, Facebook.`;
+      promptText = `Social Media Posts fuer: ${context.url}\n\n${context.text.substring(0, 4000)}\n\nLinkedIn, Twitter, Instagram, Facebook.`;
       break;
     case 'socialGeneral':
-      prompt = `Social Media Strategie: ${context.url}\n\n${context.text.substring(0, 4000)}\n\nContent-Pillars, Posting-Frequenz, Content-Mix.`;
+      promptText = `Social Media Strategie: ${context.url}\n\n${context.text.substring(0, 4000)}\n\nContent-Pillars, Posting-Frequenz, Content-Mix.`;
       break;
     case 'socialBio':
-      prompt = `Social Media Bios fuer: ${context.url}\n\n${context.text.substring(0, 3000)}\n\nInstagram, LinkedIn, Twitter, TikTok.`;
+      promptText = `Social Media Bios fuer: ${context.url}\n\n${context.text.substring(0, 3000)}\n\nInstagram, LinkedIn, Twitter, TikTok.`;
       break;
     case 'socialHashtags':
-      prompt = `Hashtag Strategie fuer: ${context.url}\n\n${context.text.substring(0, 3000)}`;
+      promptText = `Hashtag Strategie fuer: ${context.url}\n\n${context.text.substring(0, 3000)}`;
       break;
     case 'socialInstagram':
-      prompt = `Instagram Content Ideen: ${context.url}\n\n${context.text.substring(0, 4000)}\n\nFeed, Stories, Reels, Captions.`;
+      promptText = `Instagram Content Ideen: ${context.url}\n\n${context.text.substring(0, 4000)}\n\nFeed, Stories, Reels, Captions.`;
       break;
     case 'socialTwitter':
-      prompt = `Twitter/X Content: ${context.url}\n\n${context.text.substring(0, 4000)}\n\nTweets, Threads, Templates.`;
+      promptText = `Twitter/X Content: ${context.url}\n\n${context.text.substring(0, 4000)}\n\nTweets, Threads, Templates.`;
       break;
     case 'socialFacebook':
-      prompt = `Facebook Content: ${context.url}\n\n${context.text.substring(0, 4000)}\n\nPosts, Videos, Gruppen-Strategie.`;
+      promptText = `Facebook Content: ${context.url}\n\n${context.text.substring(0, 4000)}\n\nPosts, Videos, Gruppen-Strategie.`;
       break;
     case 'socialTikTok':
-      prompt = `TikTok Content: ${context.url}\n\n${context.text.substring(0, 4000)}\n\nVideo-Ideen, Trends, Hooks.`;
+      promptText = `TikTok Content: ${context.url}\n\n${context.text.substring(0, 4000)}\n\nVideo-Ideen, Trends, Hooks.`;
       break;
     case 'socialYouTube':
-      prompt = `YouTube Content: ${context.url}\n\n${context.text.substring(0, 4000)}\n\nVideo-Ideen, Thumbnails, SEO.`;
+      promptText = `YouTube Content: ${context.url}\n\n${context.text.substring(0, 4000)}\n\nVideo-Ideen, Thumbnails, SEO.`;
       break;
     case 'socialYouTubeDesc':
-      prompt = `YouTube Beschreibung: ${context.url}\n\n${context.text.substring(0, 4000)}\n\nMit Timestamps, Links, Tags.`;
+      promptText = `YouTube Beschreibung: ${context.url}\n\n${context.text.substring(0, 4000)}\n\nMit Timestamps, Links, Tags.`;
       break;
     case 'socialClickbait':
-      prompt = `Clickbait Headlines: ${context.url}\n\n${context.text.substring(0, 4000)}\n\n5 Headlines mit Curiosity Gap.`;
+      promptText = `Clickbait Headlines: ${context.url}\n\n${context.text.substring(0, 4000)}\n\n5 Headlines mit Curiosity Gap.`;
       break;
     case 'socialProsCons':
-      prompt = `Pro/Contra Social Post: ${context.url}\n\n${context.text.substring(0, 4000)}`;
+      promptText = `Pro/Contra Social Post: ${context.url}\n\n${context.text.substring(0, 4000)}`;
       break;
     case 'financeMarket':
-      prompt = `Analysiere den potenziellen Einfluss dieses Themas auf die Finanzmärkte.
+      promptText = `Analysiere den potenziellen Einfluss dieses Themas auf die Finanzmärkte.
 
 Thema/Website: ${context.url}
 
@@ -1283,15 +1655,39 @@ ${context.text.substring(0, 3000)}
 
 Marktanalyse:
 1. **Betroffene Sektoren** – Welche Branchen sind direkt/indirekt betroffen?
-2. **Aktientrends** – Wahrscheinliche Gewinner und Verlierer
-3. **Anlageklassen** – Aktien, Bonds, Rohstoffe, Krypto
-4. **Zeithorizont** – Kurzfristig vs. langfristige Auswirkungen
+2. **Aktientrends** – Wahrscheinliche Gewinner und Verlierer. Nenne hier konkrete Werte mit ISIN und Bezeichnung
+3. **Anlageklassen** – Greife auf die untenstehende Liste an Anlageklassen zurück und ordne das Thema den relevanten Klassen zu
+4. **Zeithorizont** – Kurzfristig vs. langfristige Auswirkungen. Nenne den voraussichtlichen Horizont konkret in Zeit (z.B. "3-6 Monate", "1-2 Jahre")
 5. **Risiken** – Was könnte schiefgehen?
+
+Liste der Anlageklassen:
+Aktien, Anleihen, Geldmarktanlagen, Fonds, börsengehandelte Fonds (ETF, ETC, ETN), Zertifikate, Optionen, Futures, Swaps, strukturierte Produkte, Versicherungsanlageprodukte, Immobilienanlagen, Rohstoffe, Devisen, alternative Anlagen, Beteiligungen, Kredite, Kryptowährungen und Token, Sachwerte und Sammlerstücke.
+
+Detaillierte Unterteilung:
+Aktienarten: Stammaktie, Vorzugsaktie, Namensaktie, Inhaberaktie, vinkulierte Namensaktie, Genussaktie, Belegschaftsaktie, Depotaktie, Penny Stock, Blue Chip, Growth-Aktie, Value-Aktie, Dividendenaktie, Zykliker, defensiver Wert, Small Cap, Mid Cap, Large Cap, REIT-Aktie.
+
+Anleihen: Unternehmensanleihe, Staatsanleihe, Bundesanleihe, Länderanleihe, Kommunalanleihe, Pfandbrief, Covered Bond, Nachranganleihe, Hybridanleihe, Wandelanleihe, Pflichtwandelanleihe, Optionsanleihe, Nullkuponanleihe, Hochzinsanleihe, Inflationsindexierte Anleihe, Floating-Rate-Note, Schuldscheindarlehen, Green Bond, Social Bond, Sustainable Bond, High-Yield-Bond, Investment-Grade-Bond.
+
+Fonds: Offener Aktienfonds, offener Rentenfonds, offener Mischfonds, Geldmarktfonds, Dachfonds, Branchenfonds, Themenfonds, Länderfonds, Regionenfonds, Faktor-Fonds, Absolute-Return-Fonds, Long-Only-Fonds, Long-Short-Fonds, Wertsicherungsfonds, nachhaltiger Fonds, Ethikfonds, Impact-Fonds, geschlossener Fonds, geschlossener Immobilienfonds, Infrastrukturfonds, Private-Equity-Fonds, Private-Debt-Fonds, Erneuerbare-Energien-Fonds.
+
+ETF/ETC/ETN: Indexfonds, physisch replizierender ETF, synthetischer ETF, Aktien-ETF, Renten-ETF, Rohstoff-ETF, Immobilien-ETF, Sektor-ETF, Faktor-ETF, Smart-Beta-ETF, ESG-ETF, Themen-ETF, Hebel-ETF, inverse ETF, ETC, Gold-ETC, Silber-ETC, ETN.
+
+Zertifikate: Indexzertifikat, Bonuszertifikat, Discountzertifikat, Expresszertifikat, Garantie-Zertifikat, Airbag-Zertifikat, Outperformance-Zertifikat, Sprint-Zertifikat, Kapitalschutz-Zertifikat, Reverse-Zertifikat, Quanto-Zertifikat, Twin-Win-Zertifikat, Barrier-Zertifikat, Knock-out-Zertifikat, Turbo-Zertifikat.
+
+Derivate: Option, Call-Option, Put-Option, amerikanische Option, europäische Option, Future, Index-Future, Zinsfuture, Rohstoff-Future, Währungs-Future, Swap, Zinsswap, Währungsswap, Equity-Swap, Total-Return-Swap, Credit-Default-Swap.
+
+Rohstoffe: Physisches Gold, Goldbarren, Goldmünze, Silber, Platin, Palladium, Industriemetall, Öl, Agrarrohstoff, Rohstoff-Future, Gold-ETF, Minenaktie.
+
+Immobilien: Wohnimmobilie, Gewerbeimmobilie, Büroimmobilie, Hotelimmobilie, Pflegeimmobilie, REIT, Immobilienfonds, Immobilien-ETF, Immobilien-Crowdinvesting.
+
+Kryptowährungen: Bitcoin, Ethereum, Stablecoin, Altcoin, Layer-1-Token, Layer-2-Token, Governance-Token, Utility-Token, Security-Token, tokenisierte Aktie, tokenisierte Anleihe, Krypto-Derivat, Perpetual-Future.
+
+Alternative Anlagen: Private Equity, Venture Capital, Hedgefonds, Sachwert, Kunst, Oldtimer, Luxusuhren, NFT, Musikrechtebeteiligung, P2P-Kredit, Crowdinvesting.
 
 Hinweis: Dies ist keine Anlageberatung, sondern eine Einschätzung basierend auf öffentlich verfügbaren Informationen.`;
       break;
     case 'financeNews':
-      prompt = `Finde aktuelle Finanznachrichten zu diesem Thema.
+      promptText = `Finde aktuelle Finanznachrichten zu diesem Thema.
 
 Thema/Website: ${context.url}
 
@@ -1309,7 +1705,7 @@ Recherchiere (simuliert) und berichte über:
 Falls keine spezifischen aktuellen News erkennbar: Schlage vor, wo man aktuelle Informationen findet (Ticker, News-Portale).`;
       break;
     case 'recipeSimpleBake':
-      prompt = `Wandle das Rezept von dieser Website in das "Einfach Backen" Format um.
+      promptText = `Wandle das Rezept von dieser Website in das "Einfach Backen" Format um.
 
 URL: ${context.url}
 
@@ -1336,7 +1732,7 @@ usw.
 Behalte den Originaltext bei, aber strukturiere ihn in dieses Format.`;
       break;
     case 'recipeIngredients':
-      prompt = `Extrahiere alle Zutaten aus diesem Rezept als Einkaufsliste.
+      promptText = `Extrahiere alle Zutaten aus diesem Rezept als Einkaufsliste.
 
 URL: ${context.url}
 
@@ -1350,7 +1746,7 @@ Erstelle eine alphabetisch sortierte Zutatenliste mit Mengenangaben.`;
     case 'recipeReplace': {
       const missingIngredient = prompt('Welche Zutat fehlt dir?');
       if (!missingIngredient) return;
-      prompt = `Ich habe folgende Zutat nicht: "${missingIngredient}".
+      promptText = `Ich habe folgende Zutat nicht: "${missingIngredient}".
 
 Rezept von: ${context.url}
 
@@ -1363,7 +1759,7 @@ Womit kann ich "${missingIngredient}" ersetzen? Gib 2-3 Alternativen an mit Meng
       break;
     }
     case 'recipeAlternative':
-      prompt = `Erstelle ein alternatives Rezept zu diesem.
+      promptText = `Erstelle ein alternatives Rezept zu diesem.
 
 URL: ${context.url}
 
@@ -1382,7 +1778,7 @@ Varianten (bitte alle erstellen):
       const devices = ['Heissluftfritteuse', 'Backofen', 'Waffeleisen', 'Dampfgarer', 'Slow Cooker', 'Instant Pot', 'Mikrowelle', 'Grill', 'Doehrrautomat', 'Sous-Vide', 'Brotbackautomat', 'Eismaschine', 'Thermomix'];
       const device = prompt(`Fuer welches Küchengerät umwandeln?\n${devices.join(', ')}`);
       if (!device) return;
-      prompt = `Wandle dieses Rezept fuer ein(e/n) ${device} um.
+      promptText = `Wandle dieses Rezept fuer ein(e/n) ${device} um.
 
 URL: ${context.url}
 
@@ -1399,7 +1795,7 @@ Wichtig:
       break;
     }
     case 'recipePlating':
-      prompt = `Beschreibe, wie dieses Gericht auf Michelin-Sterne Niveau angerichtet werden könnte.
+      promptText = `Beschreibe, wie dieses Gericht auf Michelin-Sterne Niveau angerichtet werden könnte.
 
 Rezept von: ${context.url}
 
@@ -1416,7 +1812,7 @@ Erstelle:
    "Professional food photography, Michelin star plating of [Gericht], elegant ceramic plate, artistic sauce drizzle, microgreens garnish, dramatic lighting, shallow depth of field, 8k, photorealistic"`;
       break;
     case 'recipeNutrition':
-      prompt = `Analysiere die Nährwerte dieses Rezepts pro Portion.
+      promptText = `Analysiere die Nährwerte dieses Rezepts pro Portion.
 
 URL: ${context.url}
 
@@ -1446,17 +1842,17 @@ Zusätzlich:
     default:
       const labelObj = ACTION_LIST.find(a => a.key === action);
       const labelText = labelObj ? labelObj.label : action;
-      prompt = `Aktion '${labelText}' auf: ${context.url}`;
+      promptText = `Aktion '${labelText}' auf: ${context.url}`;
   }
 
-  if (prompt) {
+  if (promptText) {
     if (clipboardOnly) {
-      navigator.clipboard.writeText(prompt).then(() => showToast('Prompt kopiert!'));
+      navigator.clipboard.writeText(promptText).then(() => showToast('Prompt kopiert!'));
       return;
     }
     chrome.storage.sync.get(['toneMimic'], (result) => {
       const toneMimic = result.toneMimic || '';
-      const fullPrompt = toneMimic.trim() ? `${prompt}\n\nTon: ${toneMimic.trim()}` : prompt;
+      const fullPrompt = toneMimic.trim() ? `${promptText}\n\nTon: ${toneMimic.trim()}` : promptText;
       getAiConfig((config) => {
         if (config.type === 'local') {
           sendToLocalLlm(config, fullPrompt, 'silent').then(response => {
