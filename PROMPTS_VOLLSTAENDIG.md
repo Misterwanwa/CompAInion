@@ -1,7 +1,7 @@
 # CompAInion - Vollständige Prompts
 
 **Stand:** 20.03.2026  
-**Gesamtzahl:** 87 Prompts (ALLE vollständig implementiert)
+**Gesamtzahl:** 90 Prompts (ALLE vollständig implementiert)
 
 Diese Datei enthält ALLE vollständigen Prompts des CompAInion-Extensions.
 
@@ -533,29 +533,22 @@ Gib konkrete Verbesserungsvorschläge.
 ### SEO Audit (`seoAudit`)
 
 ```
-Führe ein technisches SEO-Audit für diese Website durch.
+Du bist ein SEO-Experte. Führe ein umfassendes On-Page- und technisches SEO-Audit für diese Seite durch:
 
 URL: ${context.url}
-
-Seiteninhalt:
+Inhalt:
 """
-${context.text.substring(0, 3000)}
+${context.text.substring(0, 5000)}
 """
 
-Prüfe folgende SEO-Faktoren:
-• Title-Tag (Länge, Keywords, Einzigartigkeit)
-• Meta-Description (vorhanden, Call-to-Action?)
-• Überschriften-Hierarchie (H1, H2, H3... logisch?)
-• URL-Struktur (lesbar, Keywords?)
-• Interne Verlinkung (gute Anker-Texte?)
-• Bild-Optimierung (Alt-Texte, Dateinamen)
-• Schema.org Markup (Rich Snippets möglich?)
-• Ladezeit-Faktoren (erkennbar?)
-
-Bewertung pro Punkt:
-🟢 Gut / 🟡 Verbesserungswürdig / 🔴 Kritisch
-
-Priorisierte To-Do-Liste für Quick Wins.
+Analysiere folgende Bereiche und gib konkrete Optimierungsvorschläge:
+1. **Meta-Tags & Title**: Ist der Titel optimal (Länge, Keyword-Platzierung)? Ist eine Meta-Description vorhanden und ansprechend formuliert?
+2. **Überschriften-Struktur**: Ist die H1-H6 Hierarchie logisch aufgebaut? Gibt es mehrere H1?
+3. **Content-Tiefe & Keyword-Fokus**: Ist der Inhalt ausreichend detailliert für Suchmaschinen? Welches Haupt-Keyword wird anvisiert und ist die Keyword-Dichte natürlich?
+4. **Interne & Externe Verlinkung**: Sind sinnvolle Links und sprechende Ankertexte vorhanden?
+5. **Bilder-SEO**: Haben die Bilder (falls im Text beschrieben) sinnvolle Alt-Tags und Dateinamen?
+6. **Core Web Vitals & Mobile Friendliness (theoretische Einschätzung)**: Gibt es Anzeichen für Performance-Probleme oder schlechte mobile Lesbarkeit?
+7. **SEO Quick Wins**: Nenne die 3 am schnellsten umsetzbaten Maßnahmen mit dem größten Hebel.
 ```
 
 ---
@@ -563,27 +556,21 @@ Priorisierte To-Do-Liste für Quick Wins.
 ### SEO Content Analyzer (`seoContentAnalyzer`)
 
 ```
-Analysiere den Content dieser Seite aus SEO-Perspektive.
+Analysiere den Inhalt dieser Seite als SEO Content Specialist. 
 
 URL: ${context.url}
-
-Seiteninhalt:
+Inhalt:
 """
-${context.text.substring(0, 3500)}
+${context.text.substring(0, 5000)}
 """
 
-Content-Analyse:
-1. **Keyword-Dichte** – Welche Begriffe dominieren?
-2. **Content-Lücke** – Fehlende Themen im Vergleich zu Wettbewerbern?
-3. **Lesbarkeit** – Satzlänge, Absatzstruktur, Fachbegriffe
-4. **Intent-Match** – Erfüllt der Content die Suchabsicht?
-5. **Content-Tiefe** – Oberflächlich oder umfassend?
-6. **Unique Value** – Was macht diesen Content besonders?
-
-Vorschläge:
-• Fehlende Keywords/Themen
-• Struktur-Verbesserungen
-• Erweiterungsmöglichkeiten
+Prüfe den Text auf folgende Kriterien:
+1. **Lesbarkeitsindex (Flesch-Reading-Ease)**: Wie verständlich ist der Text für die Zielgruppe?
+2. **Suchintention (Search Intent)**: Welcher Intent wird bedient (Informational, Transactional, Navigational, Commercial)? Passt der Content dazu?
+3. **Semantische Dichte (WDF*IDF)**: Welche verwandten Begriffe und LSI-Keywords fehlen, um das Thema holistisch abzudecken?
+4. **Strukturelle Lesbarkeit**: Sind Absätze kurz genug? Werden Bullet Points, Tabellen und fettgedruckte Schlüsselwörter sinnvoll eingesetzt?
+5. **Call-To-Action (CTA)**: Gibt es eine klare Handlungsaufforderung? Ist sie psychologisch gut platziert?
+6. **Konkrete Text-Optimierung**: Schlage 3 konkrete Textänderungen vor, um das Google-Ranking zu verbessern.
 ```
 
 ---
@@ -591,24 +578,20 @@ Vorschläge:
 ### SEO Hero Image Ideen (`seoHeroImages`)
 
 ```
-Entwickle Hero-Image-Ideen für diese Website/ diesen Content.
+Entwickle 5 creative Konzepte für das Hauptbild (Hero Image) dieser Webseite, um die CTR und das User-Engagement zu steigern.
 
-Thema: ${context.url}
-
-Kontext:
+URL: ${context.url}
+Inhalt:
 """
-${context.text.substring(0, 2500)}
+${context.text.substring(0, 4000)}
 """
 
-Erstelle 5 Hero-Image-Konzepte:
-Für jedes Konzept:
-1. **Titel** – Kurzer Name
-2. **Beschreibung** – Was ist zu sehen?
-3. **Stil** – Fotorealistisch, Illustration, 3D, etc.
-4. **Farbpalette** – Hauptfarben
-5. **Prompt** – KI-Bildgenerierungs-Prompt (Englisch)
-
-Ziel: Visueller Stop-Effekt, Markenwiedererkennung, emotionale Ansprache.
+Erstelle für jedes der 5 Konzepte:
+1. **Konzept-Name**: Ein prägnanter Titel.
+2. **Visuelle Idee & Psychologische Wirkung**: Was ist zu sehen und welche Emotion soll es beim Besucher auslösen?
+3. **Passender Stil**: (z. B. Minimalistischer 3D-Renders, authentische Business-Fotografie, Flat Illustration).
+4. **Prompt für KI-Generatoren**: Ein detaillierter, englischer Prompt (für Midjourney, DALL-E 3 oder Stable Diffusion), um dieses Bild zu generieren.
+5. **Technische Details**: Empfohlene Farbpalette (passend zum Thema) und Kontrasthinweise für Text-Overlays.
 ```
 
 ---
@@ -616,28 +599,23 @@ Ziel: Visueller Stop-Effekt, Markenwiedererkennung, emotionale Ansprache.
 ### SEO Keyword Cluster (`seoKeywordCluster`)
 
 ```
-Erstelle Keyword-Cluster für dieses Thema.
+Erstelle ein strategisches Keyword-Clustering basierend auf dem Thema dieser Website:
 
-Ausgangs-URL: ${context.url}
-
-Themenkontext:
+URL: ${context.url}
+Inhalt:
 """
-${context.text.substring(0, 2500)}
+${context.text.substring(0, 4000)}
 """
 
-Keyword-Clustering:
-Erstelle 3-5 thematische Cluster. Pro Cluster:
-• **Haupt-Keyword** (hohes Volumen, allgemein)
-• **Secondary Keywords** (spezifischer)
-• **Long-Tail Keywords** (fragende/nutzbasiert)
-• **Content-Typ** – Welche Seitenform passt?
-
-Beispiel-Struktur:
-Cluster 1: [Thema]
-- Main: "..."
-- Secondary: "...", "..."
-- Long-Tail: "...", "..."
-- Content: Blogpost / Produktseite / FAQ
+Erstelle eine Struktur aus Pillar- und Cluster-Seiten:
+1. **Pillar Page (Hauptthema)**: Welches allumfassende Haupt-Keyword sollte die zentrale Säule sein?
+2. **Keyword Cluster (3-5 Cluster)**:
+   Unterteile das Thema in logische Sub-Cluster. Für jedes Cluster:
+   - **Sub-Thema (Cluster Page)**
+   - **Fokus-Keyword**
+   - **Supporting Keywords (Long-Tail & W-Fragen)**
+   - **Suchintention**
+3. **Interne Verlinkungs-Strategie**: Wie sollten die Cluster-Seiten mit der Pillar-Seite verlinkt werden (Ankertexte, Linkfluss).
 ```
 
 ---
@@ -645,27 +623,20 @@ Cluster 1: [Thema]
 ### SEO Keywords (`seoKeywords`)
 
 ```
-Recherchiere Keywords für diese Website/Seite.
+Führe eine Keyword-Recherche und -Analyse für die folgende Seite durch:
 
 URL: ${context.url}
-
-Seiteninhalt:
+Inhalt:
 """
-${context.text.substring(0, 2500)}
+${context.text.substring(0, 5000)}
 """
 
-Keyword-Recherche:
-1. **Primäres Keyword** – Das wichtigste Ziel-Keyword
-2. **Sekundäre Keywords** – Ergänzende Begriffe (5-7)
-3. **Long-Tail Variationen** – Spezifische Suchanfragen (5-10)
-4. **LSI Keywords** – Semantisch verwandte Begriffe
-5. **W-Fragen** – Häufige Fragen zum Thema
-
-Für jedes Keyword:
-• Geschätzte Suchintention (Info, Transaktion, Navigation)
-• Content-Typ Empfehlung
-
-Zusätzlich: Wettbewerbsanalyse (welche Domains ranken wahrscheinlich?).
+Liefer folgende Keyword-Listen:
+1. **Hauptkeyword (Focus Keyword)**: Das wichtigste Keyword, auf das diese Seite optimiert sein sollte.
+2. **Sekundäre Keywords (5-8 Stück)**: Relevante Neben-Keywords, die im Text vorkommen sollten.
+3. **Long-Tail Keywords (5-10 Stück)**: Spezifische, mehrteilige Suchphrasen mit geringerem Wettbewerb.
+4. **W-Fragen (W-Questions)**: 5 konkrete Fragen, nach denen Nutzer suchen und die diese Seite beantworten sollte.
+5. **Suchvolumen & SEO-Difficulty (Schätzung)**: Eine relative Einschätzung (Hoch/Mittel/Niedrig) für jedes Keyword.
 ```
 
 ---
@@ -673,25 +644,20 @@ Zusätzlich: Wettbewerbsanalyse (welche Domains ranken wahrscheinlich?).
 ### SEO Strategie (`seoStrategy`)
 
 ```
-Entwickle eine SEO-Strategie für diese Website.
+Entwirf eine langfristige, strategische SEO-Roadmap (6-12 Monate) für diese Website:
 
-Website: ${context.url}
-
-Aktueller Stand:
+URL: ${context.url}
+Inhalt:
 """
-${context.text.substring(0, 3000)}
+${context.text.substring(0, 4000)}
 """
 
-Strategie-Plan:
-1. **Status Quo Analyse** – Was ist erkennbar? (Stärken/Schwächen)
-2. **Zieldefinition** – Realistische SEO-Ziele (Traffic, Rankings)
-3. **Quick Wins** – Maßnahmen mit sofortiger Wirkung
-4. **Mid-Term** – 3-6 Monate (Content-Ausbau, Optimierung)
-5. **Long-Term** – 6-12 Monate (Authority-Aufbau, Linkbuilding)
-6. **Content-Priorisierung** – Welche Themen zuerst?
-7. **KPIs** – Erfolgsmessung
-
-Berücksichtige: Budget, Wettbewerb, Ressourcen (realistisch).
+Struktur der SEO-Strategie:
+1. **Wettbewerber-Identifikation**: Welche Arten von Websites sind die direkten organischen Konkurrenten für dieses Thema?
+2. **Content-Lücken (Content Gap Analysis)**: Welche Aspekte des Themas fehlen auf der aktuellen Seite noch komplett?
+3. **Technische SEO-Prioritäten**: Welche technischen Fundamente müssen gelegt werden (z. B. Schema.org Markup, Ladezeit)?
+4. **Backlink- & Outreach-Strategie**: Welche Partner-Websites oder Branchenportale eignen sich für Linkaufbau? Welche Content-Assets könnten als "Linkmagneten" dienen?
+5. **Monatlicher Meilenstein-Plan**: Konkrete To-Dos für Monat 1-3 (Quick Wins), Monat 4-6 (Content-Ausbau) und Monat 7-12 (Autoritätsaufbau).
 ```
 
 ---
@@ -699,55 +665,49 @@ Berücksichtige: Budget, Wettbewerb, Ressourcen (realistisch).
 ### SEO Themenideen (`seoTopicIdeas`)
 
 ```
-Generiere Content-Ideen/Topideen für dieses Thema.
+Generiere 15 hochrelevante, SEO-optimierte Content- und Themenideen, die perfekt zum Portfolio dieser Website passen:
 
-Thema/URL: ${context.url}
-
-Kontext:
-"""
-${context.text.substring(0, 2500)}
-"""
-
-Content-Ideen:
-Erstelle 15 Content-Ideen in verschiedenen Formaten:
-• **Leitfäden** (How-To, Schritt-für-Schritt)
-• **Listen** (Top 10, Best-Of)
-• **Vergleiche** (vs., Unterschiede)
-• **Fallstudien** (Beispiele, Erfolgsgeschichten)
-• **Meinungen** (Trends, Prognosen)
-• **Tools** (Checklisten, Templates)
-
-Pro Idee:
-• Titel-Vorschlag
-• Ziel-Keyword (geschätzt)
-• Format (Blogpost, Video, Infografik)
-• Unique Angle (was macht diesen Content besonders?)
-```
-
----
-
-### SEO Wandle Website in Artikel um (`seoWebsiteToArticle`)
-
-```
-Wandle den Inhalt dieser Website in einen Artikel um.
-
-Quelle: ${context.url}
-
-Rohinhalt:
+URL: ${context.url}
+Inhalt:
 """
 ${context.text.substring(0, 4000)}
 """
 
-Umwandlung:
-1. **Headline** – Aufmerksamkeitsstarker Titel
-2. **Lead** – Einleitung mit Kernbotschaft
-3. **Struktur** – Logischer Fluss mit Zwischenüberschriften
-4. **Zitate** – Markante Aussagen markieren
-5. **Fakten-Boxen** – Zahlen/Daten hervorheben
-6. **Call-to-Action** – Was soll der Leser tun?
+Strukturiere die Ideen in folgende Kategorien (je 3-5 Ideen):
+1. **Evergreen Content**: Zeitlose Ratgeber und Anleitungen.
+2. **Trendthemen / News-Jack**: Aktuelle Themen mit schnellem Traffic-Potenzial.
+3. **Vergleichs- & Testberichte**: Entscheidungshelfer für kaufbereite Nutzer.
+4. **Interaktiver Content / Tools**: Ideen für Rechner, Checklisten oder Infografiken.
 
-Stil: Journalistisch, faktenbasiert, unterhaltsam.
-Länge: 800-1200 Wörter (je nach Ausgangsmaterial anpassbar).
+Für jedes Idee angeben:
+- Arbeitstitel (Catchy & SEO-freundlich)
+- Ziel-Keyword (Fokus)
+- Suchintention
+- Kurze Inhaltsgliederung (3 Sätze)
+```
+
+---
+
+### SEO Website zu Artikel (`seoWebsiteToArticle`)
+
+```
+Schreibe den vorliegenden Werbe- oder Website-Text in einen SEO-optimierten, redaktionellen Fachartikel um:
+
+URL: ${context.url}
+Inhalt:
+"""
+${context.text.substring(0, 5000)}
+"""
+
+Vorgaben für den Artikel:
+- **Tonalität**: Fachlich fundiert, objektiv, informativ (nicht werblich!).
+- **Struktur**:
+  - Aufmerksamkeitsstarke Überschrift (H1) mit dem Hauptkeyword.
+  - Einleitung (Teaser), die das Problem beschreibt und die Leselust weckt.
+  - Hauptteil gegliedert in logische Zwischenüberschriften (H2, H3).
+  - Fazit mit zusammenfassendem Schlusssatz.
+- **SEO-Optimierung**: Integriere das Hauptthema organisch in den Text. Nutze Listen und Hervorhebungen für eine gute Scanbarkeit.
+- **Umfang**: Mindestens 600 Wörter, detailreich und flüssig zu lesen.
 ```
 
 ---
@@ -757,92 +717,64 @@ Länge: 800-1200 Wörter (je nach Ausgangsmaterial anpassbar).
 ### SOCIAL Bio erstellen (`socialBio`)
 
 ```
-Erstelle Social Media Bios basierend auf diesem Kontext.
+Erstelle professionelle und optimierte Biografien (Bios) für verschiedene Social-Media-Kanäle basierend auf dieser Website:
 
-Website/Kontext: ${context.url}
-
-Informationen:
+URL: ${context.url}
+Inhalt:
 """
-${context.text.substring(0, 2000)}
+${context.text.substring(0, 3000)}
 """
 
-Bio-Varianten:
-1. **Twitter/X** (160 Zeichen) – Knapp, prägnant
-2. **Instagram** (150 Zeichen) – Persönlich, mit Emoji
-3. **LinkedIn** – Professionell, value-focused
-4. **TikTok** – Jugendlich, authentisch
-5. **YouTube** – Kanalbeschreibung
-
-Für jede Plattform:
-• Haupt-Bio
-• Optionale Call-to-Action
-• Link-in-Bio Text (falls relevant)
-
-Frage mich nach: Zielgruppe und gewünschter Ton (seriös vs. locker).
+Erstelle jeweils 2 Varianten (seriös/professionell & kreativ/locker) für folgende Plattformen:
+1. **LinkedIn Profil-Slogan & Info-Text**: Fokus auf Value Proposition, Expertise und B2B-Klarheit.
+2. **Twitter/X (Max. 160 Zeichen)**: Prägnanter Pitch mit einem relevanten Hashtag.
+3. **Instagram (Max. 150 Zeichen)**: Strukturiert mit Zeilenumbrüchen, passenden Emojis und einem Call-To-Action (CTA) zum Link.
+4. **TikTok (Max. 80 Zeichen)**: Extrem komprimierter, aufmerksamkeitsstarker Hook.
 ```
 
 ---
 
-### SOCIAL Clickbaitartikel (`socialClickbait`)
+### SOCIAL Clickbait-Artikel (`socialClickbait`)
 
 ```
-Erstelle Clickbait-Artikel-Ideen zu diesem Thema.
+Generiere 10 ethische, aber klickstarke Headline-Ideen (Clickbait) basierend auf diesem Webseiteninhalt:
 
-Thema: ${context.url}
-
-Kontext:
+URL: ${context.url}
+Inhalt:
 """
-${context.text.substring(0, 2500)}
+${context.text.substring(0, 4000)}
 """
 
-Clickbait-Strategie (ethisch, nicht täuschend):
-5 Headline-Varianten:
-• **Neugier-Lücke** ("Das passiert, wenn...")
-• **Zahlen** ("7 Dinge, die...")
-• **Überraschung** ("Niemand erwartet, dass...")
-• **Wie-Fragen** ("Wie ich in 30 Tagen...")
-• **Kontrovers** ("Die unbequeme Wahrheit über...")
+Nutze bewährte psychologische Trigger für die Headlines:
+1. **Die Neugier-Lücke (Curiosity Gap)**: Verrate fast alles, aber behalte das wichtigste Detail vor.
+2. **Die Zahlen-Formel**: Nutze ungerade Zahlen ("Warum 7 von 10...")
+3. **Der überraschende Fakt**: Stelle eine gängige Meinung in Frage.
+4. **Die Angst, etwas zu verpassen (FOMO)**: Betone die Dringlichkeit oder Exklusivität.
+5. **Der persönliche Benefit**: Direktes Versprechen an den Leser.
 
-Dazu:
-• Meta-Description (155 Zeichen)
-• Eröffnungsparagraf (Hook)
-• Vorschlag für Featured Image
-
-Ziel: Hohe CTR, aber Content liefert was versprochen wird.
+Gib für jede Headline an, für welches Social Network (Facebook, LinkedIn, Twitter, Pinterest) sie sich am besten eignet.
 ```
 
 ---
 
-### SOCIAL Facebook Ideen (`socialFacebook`)
+### SOCIAL Facebook Post (`socialFacebook`)
 
 ```
-Entwickle Facebook-Content-Ideen für dieses Thema.
+Schreibe einen ansprechenden Facebook-Post basierend auf dem Inhalt dieser Website:
 
-Thema: ${context.url}
-
-Kontext:
+URL: ${context.url}
+Inhalt:
 """
-${context.text.substring(0, 2500)}
+${context.text.substring(0, 4000)}
 """
 
-Facebook-Content:
-1. **Post-Ideen** (5 Varianten)
-   - Frage-Post (Engagement)
-   - Link-Post mit Teaser
-   - Bild/Zitat-Post
-   - Umfrage/Poll
-   - Storytelling-Post
-
-2. **Gruppen-Strategie** – In welchen Gruppen könnte man teilen?
-
-3. **Werbung-Vorschlag** – Zielgruppen-Targeting
-
-4. **Beste Posting-Zeit** – B2B vs. B2C
-
-Jeder Post mit:
-• Text (max. 2 Absätze)
-• Call-to-Action
-• Hashtag-Vorschläge (3-5)
+Anforderungen an den Post:
+- **Einleitung (Hook)**: Ein packender erster Satz (z.B. eine Frage oder ein überraschender Fakt), der den Nutzer beim Scrollen stoppt.
+- **Hauptteil (Body)**: 3-4 leicht verdauliche, strukturierte Absätze mit den Kernvorteilen oder Kernaussagen. Nutze Emojis, um den Text visuell aufzulockern.
+- **Call-to-Action (CTA)**: Eine klare Aufforderung am Ende (z.B. "Besuche die Website für alle Details:", "Teile deine Meinung in den Kommentaren!").
+- **Link-Platzhalter**: Füge den Link ${context.url} am Ende ein.
+- **Hashtags**: 3-5 relevante Hashtags am Ende des Posts.
+- **Tonalität**: Nahbar, freundlich, informativ und community-orientiert.
 ```
 
 ---
@@ -850,36 +782,25 @@ Jeder Post mit:
 ### SOCIAL Hashtags (`socialHashtags`)
 
 ```
-Generiere Hashtag-Sets für diesen Content.
+Entwirf eine maßgeschneiderte Hashtag-Strategie für Social-Media-Posts zu diesem Thema:
 
 URL: ${context.url}
-
 Inhalt:
 """
-${context.text.substring(0, 2000)}
+${context.text.substring(0, 3000)}
 """
 
-Hashtag-Strategie:
-Für jede Plattform:
+Strukturiere die Hashtags in folgende Kategorien:
+1. **Breite Nischen-Hashtags (Sehr populär)**: Große Reichweite, hoher Wettbewerb.
+2. **Spezifische Themen-Hashtags (Mittlere Größe)**: Hohe Relevanz für die Zielgruppe.
+3. **Long-Tail & Trend-Hashtags (Klein)**: Geringer Wettbewerb, hohe Conversion.
+4. **Brand-Hashtags (Vorschläge)**: Eigene Hashtags für die Marke/Website.
 
-**Instagram** (25-30 Hashtags)
-• 5 breite (1M+ Posts)
-• 10 mittlere (100K-1M)
-• 10 nischen (10K-100K)
-• 5 spezifische (unter 10K)
-
-**TikTok** (3-5 Hashtags)
-• Trending + Nische kombiniert
-
-**LinkedIn** (3-5 Hashtags)
-• Professionell, branchenspezifisch
-
-**Twitter/X** (1-2 Hashtags)
-• Konversationsfördernd
-
-Zusätzlich:
-• Branded Hashtag-Vorschlag
-• Community-Hashtags im Trend
+Erstelle fertige Kopier-Sets für:
+- Instagram (ca. 10-15 Hashtags)
+- LinkedIn (3-5 Hashtags)
+- Twitter/X (1-2 Hashtags)
+- TikTok (4-6 Hashtags)
 ```
 
 ---
@@ -887,35 +808,19 @@ Zusätzlich:
 ### SOCIAL Instagram Ideen (`socialInstagram`)
 
 ```
-Erstelle Instagram-Content-Ideen für dieses Thema.
+Erstelle 5 kreative Konzepte für Instagram-Posts basierend auf dem Inhalt dieser Website:
 
-Thema: ${context.url}
-
-Kontext:
+URL: ${context.url}
+Inhalt:
 """
-${context.text.substring(0, 2500)}
+${context.text.substring(0, 4000)}
 """
 
-Instagram-Content-Plan:
-1. **Feed-Posts** (3 Ideen)
-   - Bild + Caption + Call-to-Action
-
-2. **Stories** (3 Ideen)
-   - Interaktive Elemente (Poll, Frage, Quiz)
-
-3. **Reels** (3 Ideen)
-   - Hook (erste 3 Sekunden)
-   - Content-Beschreibung
-   - Audio-Vorschlag
-
-4. **Carousels** (2 Ideen)
-   - Slide-für-Slide-Aufbau
-
-Captions-Struktur:
-• Hook (erste Zeile)
-• Hauptteil (mit Zeilenumbrüchen)
-• Call-to-Action
-• Hashtags
+Die Konzepte sollen verschiedene Formate abdecken:
+1. **Karussell-Post (Infografik)**: Gliederung von Folie 1 bis 10 mit Textvorschlägen für die Slides.
+2. **Reel-Konzept (Kurzvideo)**: Visuelle Szene, Text auf dem Screen, Audio-Vorschlag und Sprecher-Skript.
+3. **Story-Sequenz (3 Stories)**: Interaktive Sticker-Ideen (Umfragen, Quiz, Regler) zur Aktivierung der Follower.
+4. **Statischer Post**: Bildbeschreibung und vollständige Bildunterschrift (Caption) mit starkem Hook und CTA.
 ```
 
 ---
@@ -923,28 +828,19 @@ Captions-Struktur:
 ### SOCIAL Post generieren (`socialPost`)
 
 ```
-Erstelle Social Media Posts für diesen Content.
+Generiere gebrauchsfertige Social-Media-Posts zu dieser Website für verschiedene Plattformen:
 
 URL: ${context.url}
-
 Inhalt:
 """
-${context.text.substring(0, 2500)}
+${context.text.substring(0, 4000)}
 """
 
-Multi-Plattform Posts:
-Erstelle für jede Plattform einen angepassten Post:
-
-1. **Twitter/X** (280 Zeichen) – Kurz, knackig, Thread-Option
-2. **LinkedIn** – Professionell, mit Einblick/Meinung
-3. **Instagram** – Visuell fokussiert, mit Emoji
-4. **Facebook** – Gesprächig, Community-orientiert
-
-Jeder Post enthält:
-• Haupttext
-• Call-to-Action
-• Passende Hashtags
-• Beste Posting-Uhrzeit (Empfehlung)
+Erstelle jeweils einen Post optimiert für:
+1. **LinkedIn**: Professioneller Ton, Fokus auf Learnings, strukturiert mit Bullet Points, Einladung zur Diskussion, 3 relevante Hashtags.
+2. **Twitter/X**: Maximal 280 Zeichen, starker Hook, kurze Kernaussage, Link-Platzhalter, 2 Hashtags.
+3. **Instagram (Caption)**: Emotionaler oder inspirierender Einstieg, Emojis, klarer CTA zur Bio, Hashtag-Block.
+4. **Facebook**: Längerer, erzählender Text (Storytelling), der Community-Interaktion fördert.
 ```
 
 ---
@@ -952,27 +848,20 @@ Jeder Post enthält:
 ### SOCIAL Social Media Ideen generell (`socialGeneral`)
 
 ```
-Entwickle eine Social Media Strategie/Ideen für dieses Thema.
+Entwirf eine ganzheitliche Social-Media-Content-Strategie für diese Website:
 
-Thema: ${context.url}
-
-Kontext:
+URL: ${context.url}
+Inhalt:
 """
-${context.text.substring(0, 2500)}
+${context.text.substring(0, 4000)}
 """
 
-Social Media Masterplan:
-1. **Plattform-Auswahl** – Welche Kanäle passen?
-2. **Content-Pillars** – 4-5 Hauptthemen (80/20 Regel)
-3. **Posting-Frequenz** – Realistischer Rhythmus
-4. **Content-Mix** – 50% Value, 30% Engagement, 20% Promo
-5. **Tone of Voice** – Wie spricht die Marke?
-6. **30-Tage-Ideen** – Content-Kalender-Vorschlag
-
-Zusätzlich:
-• Influencer-Collab Ideen
-• User-Generated Content Strategie
-• Krisenkommunikation (falls nötig)
+Die Strategie soll folgende Punkte abdecken:
+1. **3 Content-Säulen (Content Pillars)**: Welche Hauptthemen sollten dauerhaft bespielt werden?
+2. **Zielgruppen-Persona**: Für welchen fiktiven Nutzertyp ist dieser Content auf Social Media am relevantesten?
+3. **Content-Mix-Verhältnis**: Verteilung von Information, Unterhaltung, Promotion und Interaktion.
+4. **Kanal-Empfehlung**: Auf welchen Plattformen (LinkedIn, TikTok, Insta etc.) lohnt sich der Fokus am meisten und warum?
+5. **Redaktionsplan (Vorschlag)**: Ein beispielhafter Wochenplan (Montag bis Sonntag) mit Posting-Ideen.
 ```
 
 ---
@@ -980,34 +869,20 @@ Zusätzlich:
 ### SOCIAL TikTok Ideen (`socialTikTok`)
 
 ```
-Erstelle TikTok-Content-Ideen für dieses Thema.
+Entwickle 3 virale TikTok-Videokonzepte basierend auf diesem Inhalt:
 
-Thema: ${context.url}
-
-Kontext:
+URL: ${context.url}
+Inhalt:
 """
-${context.text.substring(0, 2500)}
+${context.text.substring(0, 4000)}
 """
 
-TikTok-Content:
-1. **Video-Ideen** (5 Stück)
-   - Hook (Text-Overlay erste Sekunden)
-   - Konzept (was passiert im Video?)
-   - Dauer (15s / 30s / 60s)
-   - Trend-Audio-Vorschlag
-   - Call-to-Action
-
-2. **Hashtag-Strategie** – FYP + Nische + Branded
-
-3. **Posting-Zeit** – Optimale Uhrzeiten
-
-4. **Engagement-Taktiken** – Kommentar-Bait, Duet-Starter
-
-Beispiel-Formate:
-• "POV: Du..."
-• "3 Dinge, die..."
-• "Erkläre es wie ich 5 wäre"
-• "Day in the life"
+Jedes Konzept muss folgende Struktur haben:
+1. **Der Hook (Erste 3 Sekunden)**: Visueller und verbaler Hook, der das Weiterscrollen verhindert.
+2. **Das Videoskript**: Genaue Beschreibung der Szenen und gesprochener Text (Voiceover).
+3. **Trend- & Audio-Empfehlung**: Welcher Musikstil oder Sound-Effekt passt dazu?
+4. **Text-Overlay-Ideen**: Kurze Texteinblendungen für das Video.
+5. **Caption & Hashtags**: Optimierter Begleittext für den TikTok-Algorithmus.
 ```
 
 ---
@@ -1015,62 +890,56 @@ Beispiel-Formate:
 ### SOCIAL Twitter Ideen (`socialTwitter`)
 
 ```
-Erstelle Twitter/X-Content für dieses Thema.
+Erstelle Content für Twitter/X basierend auf dieser Seite:
 
-Thema: ${context.url}
-
-Kontext:
+URL: ${context.url}
+Inhalt:
 """
-${context.text.substring(0, 2500)}
+${context.text.substring(0, 4000)}
 """
 
-Twitter-Content:
-1. **Einzel-Tweets** (5 Stück)
-   - Kurze Insights, Hot Takes, Fragen
-   - Mit optimaler Länge (unter 280 Zeichen)
-
-2. **Thread-Idee** – 5-7 Tweets Tiefe
-   - Erster Tweet: Hook
-   - Aufbau: Logische Kette
-   - Letzter Tweet: CTA + Follow-Bitte
-
-3. **Engagement-Taktik** – Wie Interaktionen generieren?
-
-4. **Hashtag/Community** – Relevante Tags und Spaces
-
-Stil: Snappy, wertvoll, authentisch.
+Liefere:
+1. **3 Einzel-Tweets**: Verschiedene Einstiegspunkte (Zahlen/Fakten, Zitat, kontroverse Frage). Jeweils unter 280 Zeichen inklusive Link-Platzhalter.
+2. **1 Twitter-Thread (5-8 Tweets)**:
+   - Tweet 1: Extrem starker Hook, der zum Klicken auf den Thread anregt.
+   - Tweets 2-6: Stückweise Aufbereitung der Kernpunkte der Website (je ein Learning/Fakt pro Tweet).
+   - Letzter Tweet: Zusammenfassung, Call-To-Action (Link zur Seite) und Frage an die Leser.
 ```
 
 ---
 
-### SOCIAL Vor- und Nachteile erfassen (`socialProsCons`)
+### SOCIAL Vor- und Nachteile Post (`socialProsCons`)
 
 ```
-Erstelle einen Social-Media-Post mit Vor- und Nachteilen.
+Erstelle Vor- und Nachteile-Posts zum Thema dieser Website für LinkedIn, Instagram und das YouTube Community Tab:
 
-Thema: ${context.url}
-
+URL: ${context.url}
 Inhalt:
 """
-${context.text.substring(0, 2500)}
+${context.text.substring(0, 4000)}
 """
 
-Post-Struktur:
-1. **Hook** – Warum ist das Thema relevant?
-2. **Kurze Einleitung** – Kontext in 1-2 Sätzen
+Generiere folgende Varianten:
 
-3. **Vorteile** (3-4 Punkte)
-   - Als knackige Bullet Points
-   - Mit Emoji
+1. **LinkedIn-Variante**:
+   - Professionell-sachlicher Ton.
+   - Kurze Einleitung zum Thema.
+   - Gegenüberstellung mit Emojis (👍 Vorteile / 👎 Nachteile), maximal 3 prägnante Punkte je Seite.
+   - Einbindung der Community durch eine offene Abschlussfrage.
+   - 3 relevante Hashtags.
 
-4. **Nachteile** (3-4 Punkte)
-   - Ehrlich, aber fair
-   - Mit Emoji
+2. **Instagram-Variante (Karussell- & Caption-Konzept)**:
+   - **Bildbeschreibung für Karussell-Folien**:
+     * Folie 1 (Titel): Aufmerksamkeitsstarke Überschrift ("Die nackte Wahrheit über...")
+     * Folie 2-3 (Vorteile): Visuelle Beschreibung + je 1-2 Key-Vorteile.
+     * Folie 4-5 (Nachteile): Visuelle Beschreibung + je 1-2 Key-Nachteile.
+     * Folie 6 (Fazit/CTA): "Schreib deine Meinung in die Kommentare!"
+   - **Caption (Bildunterschrift)**: Kurzer Hook, Zusammenfassung der Pro/Contra-Punkte, Emojis, CTA zur Bio, Hashtag-Block.
 
-5. **Fazit/Meinung** – Persönliche Einschätzung
-6. **Call-to-Action** – Frage an die Community
-
-Optimiere für: Instagram Carousel oder Twitter Thread.
+3. **YouTube Community Tab-Variante**:
+   - Kurzer, direkt ansprechender Post für Abonnenten.
+   - Fokussierte Pro/Contra-Gegenüberstellung (sehr kompakt).
+   - Umfrage-Vorschlag (Poll), die unter dem Post erstellt werden kann (z.B. "Wie steht ihr zu diesem Thema? Option A: ..., Option B: ..., Option C: ...").
 ```
 
 ---
@@ -1078,27 +947,20 @@ Optimiere für: Instagram Carousel oder Twitter Thread.
 ### SOCIAL YouTube Beschreibung (`socialYouTubeDesc`)
 
 ```
-Erstelle eine YouTube-Videobeschreibung für diesen Content.
+Schreibe eine SEO-optimierte YouTube-Videobeschreibung für ein Video über das Thema dieser Website:
 
-Thema: ${context.url}
-
-Kontext:
+URL: ${context.url}
+Inhalt:
 """
-${context.text.substring(0, 2500)}
+${context.text.substring(0, 4000)}
 """
 
-YouTube-Beschreibung:
-1. **Erste 2 Zeilen** – Hook (wird in Suche/Feed angezeigt)
-2. **Hauptbeschreibung** – Was das Video bietet (3-5 Sätze)
-3. **Timestamps** – Kapitelmarken vorschlagen
-4. **Links** – Website, Social Media, verwendete Tools
-5. **Hashtags** – 3-5 relevante Tags
-6. **Disclaimer** – Falls nötig (Werbung, Affiliate)
-
-Zusätzlich:
-• Title-Vorschläge (3 Varianten)
-• Thumbnail-Idee (Text + Visual)
-• Tag-Vorschläge (SEO)
+Die Videobeschreibung soll folgende Abschnitte enthalten:
+1. **Die ersten 2 Zeilen (wichtig für die Suche)**: Einladender Text mit den Haupt-Keywords, der die Kernaussage des Videos zusammenfasst.
+2. **Ausführliche Zusammenfassung**: Detaillierter Text über den Videoinhalt (ca. 100-150 Wörter).
+3. **Kapitelmarker (Timestamps - geschätzt)**: Video in Abschnitte strukturieren (z. B. 00:00 Intro, 02:30 Hauptteil...).
+4. **Call-To-Actions & Links**: Verweis auf diese Website und Social Channels.
+5. **Hashtags & Such-Tags**: 3 relevante Hashtags und eine Liste von 10 passenden Video-Tags (Keywords).
 ```
 
 ---
@@ -1106,32 +968,20 @@ Zusätzlich:
 ### SOCIAL YouTube Ideen (`socialYouTube`)
 
 ```
-Entwickle YouTube-Video-Ideen für dieses Thema.
+Entwickle 3 YouTube-Video-Konzepte basierend auf diesem Webseiteninhalt:
 
-Thema: ${context.url}
-
-Kontext:
+URL: ${context.url}
+Inhalt:
 """
-${context.text.substring(0, 2500)}
+${context.text.substring(0, 4000)}
 """
 
-YouTube-Content:
-1. **Video-Ideen** (5 Stück)
-   - Titel (Clickbait, aber ehrlich)
-   - Format (Tutorial, Vlog, Review, etc.)
-   - Geschätzte Länge
-   - 3-Satz-Konzept
-
-2. **Thumbnail-Konzepte** – Visual + Text-Overlay
-
-3. **SEO-Strategie** – Hauptkeyword + Longtail
-
-4. **Community-Tab** – Posting-Ideen zwischen Videos
-
-Formate-Mix:
-• Long-Form (10-20 Min)
-• Shorts (unter 60 Sek)
-• Livestream-Themen
+Jedes Konzept muss enthalten:
+1. **Video-Titel**: 3 Varianten (SEO-optimiert, Neugier-erweckend, Kurz & Prägnant).
+2. **Thumbnail-Konzept**: Beschreibung des Bildes, Text auf dem Thumbnail, Farbschema.
+3. **Hook (Erste 30 Sekunden)**: Wie wird der Zuschauer sofort gefesselt, um die Watchtime zu maximieren?
+4. **Grob-Gliederung**: Gliederung der Video-Sektionen (Intro, Hauptteil 1-3, Outro).
+5. **Idee für YouTube Shorts**: Ein Ableger-Konzept für ein 60-sekündiges Hochkantvideo.
 ```
 
 ---
@@ -1598,26 +1448,20 @@ Formatiere als Copy-Paste-Block, der in Notion, Obsidian oder ähnliche Tools ei
 ### Kurs Page Sherlock (`pageSherlock`)
 
 ```
-Führe eine detaillierte Website-Analyse durch (Page Sherlock Modus).
+Du bist ein investigativer Journalist und Forensiker ("Sherlock"). Analysiere diese Website auf Herz und Nieren:
 
 URL: ${context.url}
-Titel: ${context.title}
-
 Inhalt:
 """
-${context.text.substring(0, 4000)}
+${context.text.substring(0, 5000)}
 """
 
-Untersuche:
-1. **Zweck der Seite** – Was will der Betreiber erreichen?
-2. **Zielgruppe** – Für wen ist die Seite gedacht?
-3. **Trust-Signale** – Was spricht für/ gegen Seriosität?
-4. **Verkaufsstrategie** – Welche psychologischen Tricks werden genutzt?
-5. **Technische Qualität** – Professionell oder billig?
-6. **Transparenz** – Preise, Impressum, Datenschutz?
-7. **Rote Flaggen** – Auffällige Warnsignale (falls vorhanden)
-
-Antworte wie ein Detektiv: Sachlich, kritisch, mit konkreten Belegen.
+Führe eine gründliche Detektiv-Analyse in folgenden Abschnitten durch:
+1. **Seriosität & Trust-Faktoren**: Wirkt die Seite seriös? Gibt es rechtliche Hinweise (Impressumspflicht, Datenschutzerklärung)? Wer steckt dahinter (Unternehmen, Privatperson, Organisation)?
+2. **Red Flags & Alarmzeichen**: Findest du Widersprüche, übertriebene Versprechungen, künstliche Verknappung ("Nur noch heute!"), manipulatives Wording (Dark Patterns) oder verdächtige Behauptungen?
+3. **Geschäftsmodell & Monetarisierung**: Wie verdient diese Seite Geld? (z.B. Affiliate-Links, Werbung, Abos, Direktverkauf, Datensammlung, Spenden).
+4. **Zielgruppe & Manipulationstechniken**: Wer soll hier angesprochen werden? Welche psychologischen Trigger (Social Proof, Authority, Scarcity) werden genutzt, um den Besucher zu beeinflussen?
+5. **Detektivisches Fazit & Urteil**: Eine klare Einschätzung auf einer Skala von 1-10 (1 = hochgradig dubios/Scam, 10 = absolut vertrauenswürdig).
 ```
 
 ---
@@ -1816,10 +1660,34 @@ ${context.text.substring(0, 3000)}
 
 Marktanalyse:
 1. **Betroffene Sektoren** – Welche Branchen sind direkt/indirekt betroffen?
-2. **Aktientrends** – Wahrscheinliche Gewinner und Verlierer
-3. **Anlageklassen** – Aktien, Bonds, Rohstoffe, Krypto
-4. **Zeithorizont** – Kurzfristig vs. langfristige Auswirkungen
+2. **Aktientrends** – Wahrscheinliche Gewinner und Verlierer. Nenne hier konkrete Werte mit ISIN und Bezeichnung
+3. **Anlageklassen** – Greife auf die untenstehende Liste an Anlageklassen zurück und ordne das Thema den relevanten Klassen zu
+4. **Zeithorizont** – Kurzfristig vs. langfristige Auswirkungen. Nenne den voraussichtlichen Horizont konkret in Zeit (z.B. "3-6 Monate", "1-2 Jahre")
 5. **Risiken** – Was könnte schiefgehen?
+
+Liste der Anlageklassen:
+Aktien, Anleihen, Geldmarktanlagen, Fonds, börsengehandelte Fonds (ETF, ETC, ETN), Zertifikate, Optionen, Futures, Swaps, strukturierte Produkte, Versicherungsanlageprodukte, Immobilienanlagen, Rohstoffe, Devisen, alternative Anlagen, Beteiligungen, Kredite, Kryptowährungen und Token, Sachwerte und Sammlerstücke.
+
+Detaillierte Unterteilung:
+Aktienarten: Stammaktie, Vorzugsaktie, Namensaktie, Inhaberaktie, vinkulierte Namensaktie, Genussaktie, Belegschaftsaktie, Depotaktie, Penny Stock, Blue Chip, Growth-Aktie, Value-Aktie, Dividendenaktie, Zykliker, defensiver Wert, Small Cap, Mid Cap, Large Cap, REIT-Aktie.
+
+Anleihen: Unternehmensanleihe, Staatsanleihe, Bundesanleihe, Länderanleihe, Kommunalanleihe, Pfandbrief, Covered Bond, Nachranganleihe, Hybridanleihe, Wandelanleihe, Pflichtwandelanleihe, Optionsanleihe, Nullkuponanleihe, Hochzinsanleihe, Inflationsindexierte Anleihe, Floating-Rate-Note, Schuldscheindarlehen, Green Bond, Social Bond, Sustainable Bond, High-Yield-Bond, Investment-Grade-Bond.
+
+Fonds: Offener Aktienfonds, offener Rentenfonds, offener Mischfonds, Geldmarktfonds, Dachfonds, Branchenfonds, Themenfonds, Länderfonds, Regionenfonds, Faktor-Fonds, Absolute-Return-Fonds, Long-Only-Fonds, Long-Short-Fonds, Wertsicherungsfonds, nachhaltiger Fonds, Ethikfonds, Impact-Fonds, geschlossener Fonds, geschlossener Immobilienfonds, Infrastrukturfonds, Private-Equity-Fonds, Private-Debt-Fonds, Erneuerbare-Energien-Fonds.
+
+ETF/ETC/ETN: Indexfonds, physisch replizierender ETF, synthetischer ETF, Aktien-ETF, Renten-ETF, Rohstoff-ETF, Immobilien-ETF, Sektor-ETF, Faktor-ETF, Smart-Beta-ETF, ESG-ETF, Themen-ETF, Hebel-ETF, inverse ETF, ETC, Gold-ETC, Silber-ETC, ETN.
+
+Zertifikate: Indexzertifikat, Bonuszertifikat, Discountzertifikat, Expresszertifikat, Garantie-Zertifikat, Airbag-Zertifikat, Outperformance-Zertifikat, Sprint-Zertifikat, Kapitalschutz-Zertifikat, Reverse-Zertifikat, Quanto-Zertifikat, Twin-Win-Zertifikat, Barrier-Zertifikat, Knock-out-Zertifikat, Turbo-Zertifikat.
+
+Derivate: Option, Call-Option, Put-Option, amerikanische Option, europäische Option, Future, Index-Future, Zinsfuture, Rohstoff-Future, Währungs-Future, Swap, Zinsswap, Währungsswap, Equity-Swap, Total-Return-Swap, Credit-Default-Swap.
+
+Rohstoffe: Physisches Gold, Goldbarren, Goldmünze, Silber, Platin, Palladium, Industriemetall, Öl, Agrarrohstoff, Rohstoff-Future, Gold-ETF, Minenaktie.
+
+Immobilien: Wohnimmobilie, Gewerbeimmobilie, Büroimmobilie, Hotelimmobilie, Pflegeimmobilie, REIT, Immobilienfonds, Immobilien-ETF, Immobilien-Crowdinvesting.
+
+Kryptowährungen: Bitcoin, Ethereum, Stablecoin, Altcoin, Layer-1-Token, Layer-2-Token, Governance-Token, Utility-Token, Security-Token, tokenisierte Aktie, tokenisierte Anleihe, Krypto-Derivat, Perpetual-Future.
+
+Alternative Anlagen: Private Equity, Venture Capital, Hedgefonds, Sachwert, Kunst, Oldtimer, Luxusuhren, NFT, Musikrechtebeteiligung, P2P-Kredit, Crowdinvesting.
 
 Hinweis: Dies ist keine Anlageberatung, sondern eine Einschätzung basierend auf öffentlich verfügbaren Informationen.
 ```
@@ -1845,6 +1713,100 @@ Recherchiere (simuliert) und berichte über:
 4. **Zusammenhänge** – Welche anderen Faktoren spielen eine Rolle?
 
 Falls keine spezifischen aktuellen News erkennbar: Schlage vor, wo man aktuelle Informationen findet (Ticker, News-Portale).
+```
+
+---
+
+### FINANCE Aktien Analyse (`financeStockAnalysis`)
+
+```
+Du bist ein renommierter Finanzanalyst und Chartered Financial Analyst (CFA). Führe eine tiefgehende, professionelle Aktien- und Unternehmensanalyse durch, basierend auf dem Inhalt dieser Website:
+
+URL: ${context.url}
+Inhalt:
+"""
+${context.text.substring(0, 5000)}
+"""
+
+Strukturiere deine Analyse in folgende detaillierte Abschnitte:
+
+1. **Unternehmensprofil & Geschäftsmodell**:
+   - Was ist das Kerngeschäft? Welche Produkte/Dienstleistungen generieren den meisten Umsatz?
+   - In welchen geographischen Märkten ist das Unternehmen active?
+   - Identifikation von Ticker, WKN/ISIN (falls aus dem Kontext ersichtlich).
+
+2. **Fundamentalanalyse & Kennzahlen (soweit im Text vorhanden oder schätzbar)**:
+   - Umsatz- und Gewinnentwicklung, Margen (Brutto-, EBITDA-, Netto-Marge).
+   - Verschuldungsgrad, Cashflow-Generierung (Free Cashflow) und Dividendenpolitik.
+   - Wichtige Wachstumtreiber.
+
+3. **Wettbewerbsanalyse & Marktposition (Moat/Burggraben)**:
+   - Wer sind die Hauptkonkurrenten?
+   - Besitzt das Unternehmen einen nachhaltigen Wettbewerbsvorteil (z.B. starke Marke, hohe Wechselkosten, Netzwerkeffekte, Kostenvorteile)?
+   - Porter's Five Forces (Branchenstrukturanalyse im Schnelldurchlauf).
+
+4. **Chancen (Bull-Case) & Risiken (Bear-Case)**:
+   - **Chancen**: Neue Märkte, technologische Trends, Synergien, Übernahmen.
+   - **Risiken**: Regulatorische Hürden, makroökonomische Risiken (Zinsen, Inflation), Reputationsrisiken, technologische Disruption.
+
+5. **Zukunftsausblick & Bewertung**:
+   - Wo steht das Unternehmen in 3–5 Jahren?
+   - Relative Bewertung (z.B. KGV, KBV, EV/EBITDA im Branchenvergleich - falls Schätzungen möglich).
+
+6. **Analysten-Fazit & Investment-Thesis**:
+   - Klares Urteil: **Kauf (Buy) / Halten (Hold) / Verkauf (Sell)**.
+   - Ausführliche Begründung deines Urteils mit Kernargumenten.
+   - Risikohinweis (Disclaimer).
+```
+
+---
+
+### FINANCE Investitionsrechner (`financeInvestment`)
+
+```
+Erstelle ein umfassendes und flexibles Berechnungsmodell für ein Investitionsvorhaben basierend auf den Daten dieser Website:
+
+URL: ${context.url}
+Inhalt:
+"""
+${context.text.substring(0, 5000)}
+"""
+
+Liefere das Modell in drei verschiedenen interaktiven Formaten (wähle die passendsten aus):
+
+1. **Tabellenkalkulation (Excel/Google Sheets)**:
+   - Strukturierung von Eingabeparametern (Anschaffungskosten, jährliche Einnahmen/Ausgaben, Nutzungsdauer, Diskontsatz).
+   - Formel-Vorschläge (z. B. `=IKV()`, `=KAPITALWERT()`, `=AMORTISATION`).
+
+2. **Python-Skript (für Datenanalysten)**:
+   - Ein sauberes, ausführbares Python-Skript (unter Verwendung von Standardbibliotheken oder `numpy`/`pandas`), das die Cashflows berechnet, den Kapitalwert (NPV), die interne Rendite (IRR) und die Amortisationszeit ermittelt und die Ergebnisse in der Konsole formatiert ausgibt.
+
+3. **Interaktives HTML/JavaScript-Widget**:
+   - Ein vollständiger, kopierbarer HTML/CSS/JS-Codeblock, der als lokales Mini-Tool oder Widget im Browser geöffnet werden kann. Dieses Widget soll Schieberegler (Slider) oder Eingabefelder für die wichtigsten Investitionsparameter enthalten und die Rentabilitätskennzahlen live im Browser berechnen.
+
+4. **Szenarioanalyse (Best/Real/Worst Case)**:
+   - Eine mathematische Übersicht der Auswirkungen von Zinsänderungen oder Abweichungen im Cashflow auf die Rentabilität.
+```
+
+---
+
+### FINANCE Portfolio Bewertung (`financePortfolio`)
+
+```
+Analysiere, wie sich das Thema oder die Anlageklasse dieser Website in ein bestehendes Anlageportfolio integrieren lässt:
+
+URL: ${context.url}
+Inhalt:
+"""
+${context.text.substring(0, 5000)}
+"""
+
+Führe eine Portfolio-Bewertung durch:
+1. **Asset-Allokation**: Zu welcher Anlageklasse gehört dieses Thema? (Nutze die offizielle Klassifizierung: Aktien, Immobilien, Rohstoffe, Krypto etc.)
+2. **Korrelation**: Wie korreliert diese Anlageklasse typischerweise mit dem breiten Aktienmarkt (Gering, Mittel, Hoch)? Bietet sie Diversifikationsvorteile?
+3. **Risiko-Rendite-Profil**: Wie hoch ist das geschätzte Risiko (Volatilität) im Vergleich zur erwarteten Rendite?
+4. **Gewichtungsempfehlung**: Welcher Prozentsatz eines Gesamtportfolios (z. B. konservativ, ausgewogen, offensiv) sollte maximal in diese Anlageklasse investiert werden?
+5. **Eignung**: Für welchen Anlegertyp (langfristig, kurzfristig, risikoavers, risikofreudig) ist dieses Investment geeignet?
 ```
 
 ---

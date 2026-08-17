@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Gemini Chat Overlay",
-  "version": "2.4.0",
+  "version": "2.7.0",
   "description": "Chat mit Gemini auf jeder Website",
   "permissions": [
     "activeTab",
@@ -18,7 +18,14 @@
     "https://chatgpt.com/*",
     "https://chat.deepseek.com/*",
     "https://grok.com/*",
-    "https://www.perplexity.ai/*"
+    "https://www.perplexity.ai/*",
+    "https://generativelanguage.googleapis.com/*"
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["clippy_placeholder.svg", "clippy.png"],
+      "matches": ["<all_urls>"]
+    }
   ],
   "background": {
     "service_worker": "background.js"
@@ -33,8 +40,9 @@
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
-      "js": ["content.js", "local_llm_helpers.js"],
-      "css": ["styles.css"]
+      "js": ["marked.min.js", "local_llm_helpers.js", "content.js"],
+      "css": ["styles.css"],
+      "run_at": "document_start"
     },
     {
       "matches": ["https://gemini.google.com/*"],

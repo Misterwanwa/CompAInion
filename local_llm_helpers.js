@@ -94,14 +94,22 @@ async function sendToLocalLlm(config, prompt, type = 'modal') {
       showToast(responseText, 'success');
     } else {
       // modal
-      showModal(responseText);
+      if (typeof showResponseModal === 'function') {
+        showResponseModal(responseText);
+      } else {
+        showModal(responseText);
+      }
     }
     
     return responseText;
   } catch (error) {
     console.error('Local LLM Error:', error);
     if (type !== 'silent') {
-      showToast(`Local LLM Fehler: ${error.message}`, 'error');
+      if (typeof showResponseModal === 'function') {
+        showResponseModal(`Local LLM Fehler: ${error.message}`);
+      } else {
+        showToast(`Local LLM Fehler: ${error.message}`, 'error');
+      }
     }
     return null;
   }

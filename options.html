@@ -94,6 +94,84 @@
           </div>
         </div>
 
+        <div class="section-header">GEMINI API KEY & CLIPPY ASSISTENT</div>
+        <div class="section">
+          <label class="field-label">Gemini API-Key</label>
+          <input class="glass-input" type="password" id="gemini-api-key" placeholder="AIzaSy...">
+          <div style="font-size: 11px; opacity: 0.7; margin-top: 4px; margin-bottom: 8px;">
+            Wird für den Clippy-Assistenten und direkte API-Abfragen verwendet. Kostenlosen Key auf <a href="https://aistudio.google.com/" target="_blank" style="color: #64B5F6;">aistudio.google.com</a> erstellen.
+          </div>
+
+          <label class="field-label" style="margin-top:8px;">Zusätzlicher Authentifizierungs-Token / Bearer-Key (optional)</label>
+          <input class="glass-input" type="password" id="gemini-auth-token" placeholder="Optionaler Bearer-Token / OAuth Key">
+          <div style="font-size: 11px; opacity: 0.7; margin-top: 4px; margin-bottom: 8px;">
+            Für benutzerdefinierte API-Endpunkte, Proxies oder Bearer-Header-Authentifizierung.
+          </div>
+
+          <label class="field-label" style="margin-top:8px;">API Modell (Modelle ab 3.1)</label>
+          <div class="glass-select-wrapper">
+            <select class="glass-select" id="gemini-api-model">
+              <option value="gemini-3.5-flash">Gemini 3.5 Flash (Empfohlen - superschnell & günstig)</option>
+              <option value="gemini-3.6-flash">Gemini 3.6 Flash (Neuestes Flash-Modell)</option>
+              <option value="gemini-3.5-flash-lite">Gemini 3.5 Flash-Lite (Super tokensparend)</option>
+            </select>
+            <span class="select-arrow">&#9660;</span>
+          </div>
+
+          <button id="test-gemini-api" class="glass-button" style="margin-top: 12px;">Gemini API-Key testen</button>
+          <div id="test-gemini-result" style="margin-top: 8px; font-weight: 500;"></div>
+
+          <div style="margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px;">
+            <div class="toggle-row">
+              <span class="toggle-label" style="font-weight: 600;">📎 Clippy-Assistent aktivieren</span>
+              <label class="toggle-switch" for="toggle-enable-clippy">
+                <input type="checkbox" id="toggle-enable-clippy" checked>
+                <span class="toggle-track"></span>
+                <span class="toggle-knob"></span>
+              </label>
+            </div>
+            <div style="font-size: 11px; opacity: 0.7; margin-top: 4px; margin-bottom: 12px;">
+              Schlägt nach Verweilen auf einer Website passende Erweiterungs-Funktionen in einer Sprechblase vor.
+            </div>
+
+            <div style="display: flex; gap: 12px; margin-top: 10px;">
+              <div style="flex: 1;">
+                <label class="field-label">Wartezeit auf Website</label>
+                <div class="glass-select-wrapper">
+                  <select class="glass-select" id="clippy-dwell-time">
+                    <option value="60">1 Minute (Standard)</option>
+                    <option value="30">30 Sekunden</option>
+                    <option value="120">2 Minuten</option>
+                  </select>
+                  <span class="select-arrow">&#9660;</span>
+                </div>
+              </div>
+              <div style="flex: 1;">
+                <label class="field-label">Erscheinungs-Chance</label>
+                <div class="glass-select-wrapper">
+                  <select class="glass-select" id="clippy-chance">
+                    <option value="0.2">20% (Standard)</option>
+                    <option value="0.5">50%</option>
+                    <option value="1.0">100% (Immer - Testmodus)</option>
+                  </select>
+                  <span class="select-arrow">&#9660;</span>
+                </div>
+              </div>
+            </div>
+
+            <div style="margin-top: 10px;">
+              <label class="field-label">Clippy-Darstellungsmodus</label>
+              <div class="glass-select-wrapper">
+                <select class="glass-select" id="clippy-mode">
+                  <option value="animation">Animationen (Blinken, Umschauen, Schweben)</option>
+                  <option value="static">Nur statisches Bild</option>
+                </select>
+                <span class="select-arrow">&#9660;</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div class="section-header">LOKALES LLM / BENUTZERDEFINIERT</div>
         <div class="section">
           <label class="field-label">Backend-Auswahl</label>
@@ -117,10 +195,6 @@
 
           <button id="test-local-llm" class="glass-button" style="margin-top: 15px;">Verbindung testen</button>
           <div id="test-result" style="margin-top: 8px;"></div>
-
-          <div class="notice">
-            <strong>Hinweis für lokale LLMs:</strong> Stelle sicher, dass dein lokaler Server (z.B. Ollama, LM Studio) läuft und CORS-Anfragen von dieser Extension-ID zulässt.
-          </div>
         </div>
       </div><!-- /tab-models -->
 

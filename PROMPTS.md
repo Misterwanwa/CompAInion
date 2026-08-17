@@ -1,7 +1,7 @@
 # CompAInion - Alle Prompts im Überblick
 
 **Stand:** 22.03.2026  
-**Gesamtzahl:** 87 Prompts + 17 Submenu-Optionen (ALLE implementiert, keine Placeholder mehr)
+**Gesamtzahl:** 90 Prompts + 17 Submenu-Optionen (ALLE implementiert, keine Placeholder mehr)
 
 ---
 
@@ -17,6 +17,7 @@
 8. [YouTube](#youtube)
 9. [Küche & Rezepte](#küche--rezepte)
 10. [Sonstige](#sonstige)
+11. [Clippy Assistent & Kontext-Matrix](#clippy-assistent--kontext-matrix)
 
 ---
 
@@ -82,9 +83,9 @@ Heuristik auf mögliche Kopien.
 **Key:** `codeReview`  
 Analyse von Bugs, Sicherheitslücken und Best Practices.
 
-### CODE Website kopieren (Code)
+### CODE Website kopieren
 **Key:** `copyCode`  
-Extrahiert HTML, CSS, JavaScript strukturiert.
+Erstellt einen Prompt, der die aktuelle Website kopiert und dabei Texte, Überschriften und Inhalte durch Platzhalter ersetzt, während die technische Struktur erhalten bleibt.
 
 ### Diagramm erstellen
 **Key:** `createDiagram`  
@@ -142,15 +143,15 @@ Bios für Twitter, Instagram, LinkedIn, TikTok, YouTube.
 **Key:** `socialClickbait`  
 5 Clickbait-Headlines (ethisch).
 
-### SOCIAL Facebook Ideen
+### SOCIAL Facebook Post
 **Key:** `socialFacebook`  
-Post-Ideen, Gruppen-Strategie, Werbung.
+Erstellt einen fertigen, ansprechenden Facebook-Post mit Hooks, Emojis und Call-to-Action.
 
 ### SOCIAL Hashtags
 **Key:** `socialHashtags`  
 Plattform-spezifische Hashtag-Sets.
 
-### SOCIAL Instragram Ideen
+### SOCIAL Instagram Ideen
 **Key:** `socialInstagram`  
 Feed, Stories, Reels, Carousels.
 
@@ -170,9 +171,9 @@ Video-Ideen mit Hooks, Trends, Sounds.
 **Key:** `socialTwitter`  
 Einzel-Tweets, Threads, Engagement-Taktiken.
 
-### SOCIAL Vor- und Nachteile erfassen
+### SOCIAL Vor- und Nachteile Post
 **Key:** `socialProsCons`  
-Social-Post mit Vor- und Nachteilen.
+Vor- und Nachteile-Post für LinkedIn, Instagram und das YouTube Community Tab.
 
 ### SOCIAL YouTube Beschreibung
 **Key:** `socialYouTubeDesc`  
@@ -301,6 +302,18 @@ Analyse der Marktauswirkungen (Sektoren, Aktien).
 **Key:** `financeNews`  
 Aktuelle Finanznachrichten zum Thema.
 
+### FINANCE Aktien Analyse
+**Key:** `financeStockAnalysis`  
+Ausführliche Fundamentalanalyse und strategische Bewertung einer Aktie/Firma.
+
+### FINANCE Investitionsrechner
+**Key:** `financeInvestment`  
+Berechnungstool-Generator (Excel-Formeln, Python-Skript oder HTML/JS-Widget).
+
+### FINANCE Portfolio Bewertung
+**Key:** `financePortfolio`  
+Bewertung der Eignung einer Anlageklasse zur Integration in das Gesamtportfolio.
+
 ---
 
 ## YouTube
@@ -328,7 +341,7 @@ Analyse der Stimmung, Themen, Kritik.
 - 📝 **Zutaten auflisten** – Einkaufsliste alphabetisch + kategorisiert
 - 🔄 **Zutat ersetzen** – Popup-Eingabe für fehlende Zutat
 - 📖 **Alternatives Rezept** – Schnellere/gesündere/billigere Varianten
-- 👨‍🍳 **Für Küchengerät umwandeln** – Dropdown mit 13 Geräten (Heißluftfritteuse, Backofen, Waffeleisen, Dampfgarer, Slow Cooker, Instant Pot, Mikrowelle, Grill, Dörrautomat, Sous-Vide, Brotbackautomat, Eismaschine, Thermomix)
+- 👨‍🍳 **Für Küchengerät umwandeln** – Dropdown-Menü mit 39 Geräten (Apfelsschneider, Austernmesser, Backofen, Baconbräter, Brotbackautomat, Caipirinhastößel, Crepe-Gerät, Dampfgarer, Dörrautomat, Eismaschine, Entsafter, Filterkaffeemaschine, Fondue, Grill, Heißluftfritteuse, Joghurtbereiter, Kenwood Cooking Chef Gourmet, Kirschkernentferner, Kugelformer, Le Creuset, Löffelwaage, Marinierspritze, Mikrowelle, Milchaufschäumer, Mokkakanne, One-Pot, Optigrill, Pancakemaker, Pastamaschine, Popcornmaschine, Raclette, Sous-Vide, Sushireis, Teigschneider, Thermomix, Toaster, Waffeleisen, Wiegemesser, Zuckerwattemaschine)
 - 🍽️ **Wie hübsch anrichten** – Michelin-Stern Anleitung + KI-Bild-Prompt
 - 📊 **Kalorien & Nährwerte** – Tabelle mit Nährwerten pro Portion
 
@@ -412,4 +425,55 @@ Einfache Erklärung mit Analogien.
 
 ---
 
-*Aktualisiert am 22.03.2026*
+## Clippy Assistent & Kontext-Matrix
+
+Der Clippy-Assistent (`triggerClippyAssistant` in `content.js`) analysiert den Webseiten-Kontext (Titel, URL, Text-Vorschau) und wählt dynamisch aus über 24+ spezialisierten Erweiterungs-Aktionen den treffendsten Vorschlag aus. Pauschale Standard-Zusammenfassungen (`summaryNormal`) werden durch strikte System-Prompt-Regeln zurückgehalten.
+
+### System-Prompt & Verhaltens-Regeln
+Clippy verwendet folgenden generativen System-Prompt zur Aktions- und Spruch-Auswahl:
+- **Tonalität**: Retro-Büroklammer-Assistent, freundlich-hilfsbereit, leicht frech/witzig, direkte Du-Form.
+- **Kontext-Priorisierung**:
+  - `mail.google.com` / E-Mail -> `writeReply`
+  - Amazon / eBay / Online-Shops -> `doINeedThis`, `priceCompare`, `productProsCons`
+  - Blogs / Content-Artikel -> `aiDetection`, `seoAudit`
+  - Social Media (LinkedIn, X, Reddit) -> `socialPost`, `socialComment`, `aiDetection`
+  - News / Politik -> `factCheck`, `legalCheck`
+  - Wissenschaft & Studium (Papers, Wikipedia) -> `plagiarism`, `createQuiz`
+  - Daten / Tabellen / Statistik -> `createDiagram`
+  - Rezepte / Kochen -> `recipeCheck`, `recipeDevice`
+  - Fremdsprachig (Englisch) -> `translate`
+  - Finanzen / Aktien -> `financeStockAnalysis`
+  - GitHub / Dev-Devtools -> `codeReview`
+
+### Auswahlliste der Clippy-Aktionen (`candidateActions`)
+1. `aiDetection` - AI-Erkennung bei Blogs & Social Media
+2. `doINeedThis` - Kaufberatung / Impulskauf-Check für Shopping-Seiten
+3. `priceCompare` - Preisvergleich & Produkt-Alternativen
+4. `productProsCons` - Neutrale Pro & Contra Gegenüberstellung
+5. `writeReply` - Professionelle Antwort-Entwürfe für E-Mails & Nachrichten
+6. `plagiarism` - Plagiats- & Quellencheck bei wissenschaftlichen Texten
+7. `createQuiz` - Interactive 10-Fragen-Lernquiz aus Texten
+8. `factCheck` - Faktencheck & Logikprüfung für News & Artikel
+9. `legalCheck` - Rechtslage, AGB- & Gesetzes-Analyse
+10. `createDiagram` - Mermaid.js Prozess- & Daten-Diagramme
+11. `deepResearch` - Tiefgehende Recherche & Hintergrundanalyse
+12. `recipeCheck` - Rezept-TÜV (Garzeiten, Skalierung, Fehler)
+13. `recipeDevice` - Rezeptanpassung für Küchengeräte (Airfryer, Thermomix etc.)
+14. `translate` - Übersetzen fremdsprachiger Seiten
+15. `seoAudit` - SEO-Audit für Blogs (Keywords, Lesbarkeit, H-Tags)
+16. `socialPost` - Posts & Hooks für Social Media generieren
+17. `socialComment` - Schlagfertige Kommentare verfassen
+18. `financeStockAnalysis` - Aktien- & Finanzkennzahlen-Analyse
+19. `codeReview` - Quelltextanalyse & Security-Check
+20. `vacationPlan` - Reise- & Urlaubsplanung
+21. `pageSherlock` - Detaillierte Website-Analyse
+22. `tellJoke` - Kontextbezogener Retro-Witz
+23. `summaryNormal` - Standard Zusammenfassung (Fallback)
+24. `summarySuperShort` - TL;DR Zusammenfassung
+
+### Offline- & Keyword-Fallbacks (`CLIPPY_FALLBACK_RULES`)
+Sollte kein API-Key hinterlegt sein oder die Netzwerkanfrage fehlschlagen, nutzt Clippy heuristische URL- & Keyword-Regeln zur automatischen Wahl von Spezial-Aktionen.
+
+---
+
+*Aktualisiert am 27.07.2026*

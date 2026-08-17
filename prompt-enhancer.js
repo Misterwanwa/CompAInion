@@ -258,33 +258,79 @@ ${originalPrompt}
     });
 }
 
-if (isEnhancerSupportedPage()) {
+let enhancerObserver = null;
+let urlObserver = null;
+
+function startEnhancer() {
+    if (!isEnhancerSupportedPage()) return;
+    
     // Initialer Versuch
     createEnhancerButton();
 
     // MutationObserver für dynamische Seiten (SPAs)
-    const observer = new MutationObserver((mutations, obs) => {
-        // Prüfe alle paar Sekunden, ob der Button noch existiert
-        if (!document.getElementById('prompt-enhancer-btn')) {
-            createEnhancerButton();
-        }
-    });
+    if (!enhancerObserver) {
+        enhancerObserver = new MutationObserver((mutations, obs) => {
+            // Prüfe alle paar Sekunden, ob der Button noch existiert
+            if (!document.getElementById('prompt-enhancer-btn')) {
+                createEnhancerButton();
+            }
+        });
 
-    observer.observe(document.body, {
-        childList: true,
-        subtree: true
-    });
+        enhancerObserver.observe(document.body, {
+            childList: true,
+            subtree: true
+        });
+    }
 
     // Prüfe auch bei URL-Änderungen (für SPAs)
-    let lastUrl = location.href;
-    new MutationObserver(() => {
-        const url = location.href;
-        if (url !== lastUrl) {
-            lastUrl = url;
-            // Entferne alten Button und erstelle neuen
-            const oldButton = document.getElementById('prompt-enhancer-btn');
-            if (oldButton) oldButton.remove();
-            setTimeout(createEnhancerButton, 1000);
+    if (!urlObserver) {
+        let lastUrl = location.href;
+        urlObserver = new MutationObserver(() => {
+            const url = location.href;
+            if (url !== lastUrl) {
+                lastUrl = url;
+                // Entferne alten Button und erstelle neuen
+                const oldButton = document.getElementById('prompt-enhancer-btn');
+                if (oldButton) oldButton.remove();
+                setTimeout(createEnhancerButton, 1000);
+            }
+        });
+        urlObserver.observe(document, { subtree: true, childList: true });
+    }
+}
+
+function stopEnhancer() {
+    const oldButton = document.getElementById('prompt-enhancer-btn');
+    if (oldButton) oldButton.remove();
+    
+    if (enhancerObserver) {
+        enhancerObserver.disconnect();
+        enhancerObserver = null;
+    }
+    if (urlObserver) {
+        urlObserver.disconnect();
+        urlObserver = null;
+    }
+}
+
+// Initialer Check beim Laden
+if (isEnhancerSupportedPage()) {
+    chrome.storage.sync.get(['enable-prompt-enhancer'], (result) => {
+        const isEnabled = result['enable-prompt-enhancer'] !== undefined ? result['enable-prompt-enhancer'] : false;
+        if (isEnabled) {
+            startEnhancer();
         }
-    }).observe(document, { subtree: true, childList: true });
+    });
+
+    // Auf Änderungen reagieren
+    chrome.storage.onChanged.addListener((changes, namespace) => {
+        if (namespace === 'sync' && 'enable-prompt-enhancer' in changes) {
+            const isEnabled = changes['enable-prompt-enhancer'].newValue;
+            if (isEnabled) {
+                startEnhancer();
+            } else {
+                stopEnhancer();
+            }
+        }
+    });
 }

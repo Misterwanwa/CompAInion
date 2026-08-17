@@ -26,7 +26,7 @@
   font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
 }
 
-.chat-header {
+#gemini-chat-overlay .chat-header {
   padding: 10px 14px;
   background: linear-gradient(180deg,
     rgba(210, 238, 255, 0.92) 0%,
@@ -55,7 +55,7 @@
 }
 #close-chat:hover { color: rgba(180, 30, 30, 0.90); }
 
-.chat-body {
+#gemini-chat-overlay .chat-body {
   flex: 1;
   padding: 12px;
   display: flex;
@@ -359,7 +359,7 @@
 }
 
 /* ── Einzelne Menüpunkte (Aero-Buttons) ────── */
-.menu-item {
+#gemini-context-menu .menu-item {
   padding: 7px 11px;
   cursor: pointer;
   font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
@@ -382,14 +382,14 @@
 }
 
 /* Spezialbeschriftung (FINANCE, SOCIAL ...) */
-.menu-item-prefix {
+#gemini-context-menu .menu-item-prefix {
   font-weight: 700;
   color: rgba(20, 50, 105, 0.78);
   margin-right: 4px;
 }
 
 /* Hover – klassischer Aero-Highlight */
-.menu-item:hover {
+#gemini-context-menu .menu-item:hover {
   background: linear-gradient(180deg,
     rgba(255, 255, 255, 0.80) 0%,
     rgba(195, 228, 255, 0.58) 48%,
@@ -403,7 +403,7 @@
 }
 
 /* Aktiv (Klick) */
-.menu-item:active {
+#gemini-context-menu .menu-item:active {
   background: linear-gradient(180deg,
     rgba(155, 210, 255, 0.75) 0%,
     rgba(85,  165, 245, 0.65) 50%,
@@ -415,7 +415,7 @@
 }
 
 /* Hoversheen-Streifen (::before) */
-.menu-item::before {
+#gemini-context-menu .menu-item::before {
   content: '';
   position: absolute;
   top: 0; left: 5%; width: 90%; height: 50%;
@@ -427,12 +427,12 @@
   opacity: 0;
   transition: opacity 0.10s;
 }
-.menu-item:hover::before { opacity: 1; }
+#gemini-context-menu .menu-item:hover::before { opacity: 1; }
 
-.menu-item.has-submenu { }
+#gemini-context-menu .menu-item.has-submenu { }
 
 /* Menü-Gruppen (CODE, SEO, SOCIAL) */
-.menu-item.is-menu-group {
+#gemini-context-menu .menu-item.is-menu-group {
   background: linear-gradient(180deg,
     rgba(220, 240, 255, 0.70) 0%,
     rgba(180, 220, 255, 0.50) 50%,
@@ -442,7 +442,7 @@
   margin-top: 4px;
   margin-bottom: 4px;
 }
-.menu-item.is-menu-group:hover {
+#gemini-context-menu .menu-item.is-menu-group:hover {
   background: linear-gradient(180deg,
     rgba(200, 235, 255, 0.85) 0%,
     rgba(160, 220, 255, 0.65) 48%,
@@ -452,11 +452,11 @@
 }
 
 /* Ausklappbare Gruppen am Ende des Menüs */
-.menu-group-section {
+#gemini-context-menu .menu-group-section {
   margin-top: 4px;
 }
 
-.menu-group-header {
+#gemini-context-menu .menu-group-header {
   background: linear-gradient(180deg,
     rgba(220, 240, 255, 0.80) 0%,
     rgba(190, 225, 255, 0.60) 50%,
@@ -466,7 +466,7 @@
   cursor: pointer;
 }
 
-.menu-group-header:hover {
+#gemini-context-menu .menu-group-header:hover {
   background: linear-gradient(180deg,
     rgba(210, 235, 255, 0.90) 0%,
     rgba(180, 220, 255, 0.70) 48%,
@@ -474,7 +474,7 @@
     rgba(200, 230, 255, 0.85) 100%);
 }
 
-.menu-group-content {
+#gemini-context-menu .menu-group-content {
   padding-left: 12px;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -485,12 +485,12 @@
   border-radius: 0 8px 8px 0;
 }
 
-.menu-group-content .menu-item {
+#gemini-context-menu .menu-group-content .menu-item {
   font-size: 11px;
   padding: 5px 8px;
 }
 
-.submenu-arrow {
+#gemini-context-menu .submenu-arrow {
   font-size: 14px;
   font-weight: 700;
   opacity: 0.55;
@@ -528,7 +528,7 @@
   animation: aeroMenuIn 0.15s cubic-bezier(0.22, 0.68, 0, 1.2) both;
 }
 
-.submenu-item {
+#gemini-submenu .submenu-item {
   padding: 7px 11px;
   cursor: pointer;
   font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
@@ -546,7 +546,7 @@
     rgba(195, 228, 252, 0.38) 100%);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.68);
 }
-.submenu-item::before {
+#gemini-submenu .submenu-item::before {
   content: '';
   position: absolute;
   top: 0; left: 5%; width: 90%; height: 50%;
@@ -558,7 +558,7 @@
   opacity: 0;
   transition: opacity 0.10s;
 }
-.submenu-item:hover {
+#gemini-submenu .submenu-item:hover {
   background: linear-gradient(180deg,
     rgba(255, 255, 255, 0.80) 0%,
     rgba(195, 228, 255, 0.58) 48%,
@@ -570,23 +570,23 @@
     inset 0 1px 0 rgba(255, 255, 255, 0.90);
   color: rgba(10, 35, 90, 1.0);
 }
-.submenu-item:hover::before { opacity: 1; }
-.submenu-item:active {
+#gemini-submenu .submenu-item:hover::before { opacity: 1; }
+#gemini-submenu .submenu-item:active {
   background: linear-gradient(180deg,
     rgba(155, 210, 255, 0.75) 0%,
     rgba(85,  165, 245, 0.65) 50%,
     rgba(130, 195, 255, 0.72) 100%);
   border-color: rgba(60, 130, 225, 0.65);
 }
-.submenu-item {
+#gemini-submenu .submenu-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
-.submenu-label {
+#gemini-submenu .submenu-label {
   flex: 1;
 }
-.submenu-copy {
+#gemini-submenu .submenu-copy {
   font-size: 12px;
   padding: 2px 5px;
   margin-left: 8px;
@@ -596,7 +596,7 @@
   opacity: 0.7;
   transition: opacity 0.15s, background 0.15s;
 }
-.submenu-copy:hover {
+#gemini-submenu .submenu-copy:hover {
   opacity: 1;
   background: rgba(255, 255, 255, 0.8);
 }
@@ -666,13 +666,13 @@
    ABSCHNITTE (Favoriten, Gruppen)
    ============================================= */
 
-.menu-section {
+#gemini-context-menu .menu-section {
   display: flex;
   flex-direction: column;
   gap: 1px;
 }
 
-.menu-section-header {
+#gemini-context-menu .menu-section-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -686,44 +686,46 @@
   user-select: none;
 }
 
-.menu-section-toggle {
+#gemini-context-menu .menu-section-toggle {
   cursor: pointer;
   border-radius: 5px;
   transition: background 0.10s;
 }
-.menu-section-toggle:hover {
+#gemini-context-menu .menu-section-toggle:hover {
   background: rgba(180, 220, 255, 0.28);
 }
 
-.menu-toggle-arrow {
+#gemini-context-menu .menu-toggle-arrow {
   font-size: 13px;
   font-weight: 700;
   color: rgba(80, 140, 210, 0.65);
   transition: transform 0.15s;
 }
 
-.menu-section-list {
+#gemini-context-menu .menu-section-list {
   display: flex;
   flex-direction: column;
   gap: 2px;
 }
 
-.menu-section-list--collapsed {
+#gemini-context-menu .menu-section-list--collapsed {
   display: none;
 }
 
-.menu-divider {
-  height: 1px;
+#gemini-context-menu .menu-divider {
+  height: 2px;
   background: linear-gradient(90deg,
     transparent 0%,
-    rgba(140, 200, 240, 0.40) 20%,
-    rgba(140, 200, 240, 0.40) 80%,
+    rgba(100, 170, 230, 0.55) 15%,
+    rgba(80, 150, 220, 0.70) 50%,
+    rgba(100, 170, 230, 0.55) 85%,
     transparent 100%);
-  margin: 3px 4px;
+  margin: 8px 6px;
   flex-shrink: 0;
+  border-radius: 1px;
 }
 
-.menu-empty-hint {
+#gemini-context-menu .menu-empty-hint {
   padding: 5px 8px;
   font-family: 'Segoe UI', Arial, sans-serif;
   font-size: 10px;
@@ -731,7 +733,7 @@
   font-style: italic;
 }
 
-.menu-no-results {
+#gemini-context-menu .menu-no-results {
   padding: 10px 8px;
   font-family: 'Segoe UI', Arial, sans-serif;
   font-size: 11px;
@@ -744,16 +746,16 @@
    FAVORITEN-STERN im Menü-Item
    ============================================= */
 
-.menu-item {
+#gemini-context-menu .menu-item {
   gap: 4px;
 }
 
-.menu-item-label {
+#gemini-context-menu .menu-item-label {
   flex: 1;
   min-width: 0;
 }
 
-.menu-item-star {
+#gemini-context-menu .menu-item-star {
   font-size: 11px;
   color: rgba(160, 190, 220, 0.60);
   cursor: pointer;
@@ -763,18 +765,18 @@
   transition: color 0.10s, transform 0.10s;
   z-index: 1;
 }
-.menu-item-star:hover {
+#gemini-context-menu .menu-item-star:hover {
   color: rgba(255, 200, 50, 0.90);
   transform: scale(1.25);
 }
-.menu-item-star.is-fav {
+#gemini-context-menu .menu-item-star.is-fav {
   color: rgba(255, 185, 20, 0.95);
 }
-.menu-item-star.is-fav:hover {
+#gemini-context-menu .menu-item-star.is-fav:hover {
   color: rgba(220, 80, 80, 0.85);
 }
 
-.menu-item-copy {
+#gemini-context-menu .menu-item-copy {
   font-size: 10px;
   cursor: pointer;
   flex-shrink: 0;
@@ -784,10 +786,10 @@
   transition: opacity 0.10s, transform 0.10s;
   z-index: 1;
 }
-.menu-item:hover .menu-item-copy {
+#gemini-context-menu .menu-item:hover .menu-item-copy {
   opacity: 0.55;
 }
-.menu-item-copy:hover {
+#gemini-context-menu .menu-item-copy:hover {
   opacity: 1 !important;
   transform: scale(1.20);
 }
@@ -1497,19 +1499,790 @@
          f o n t - s i z e :   2 4 p x ; 
  
          c u r s o r :   p o i n t e r ; 
- 
- } 
- 
- 
- 
- . m o t i v a t i o n - b o d y   t e x t a r e a   { 
- 
-         w i d t h :   1 0 0 % ; 
- 
-         h e i g h t :   1 0 0 p x ; 
- 
-         m a r g i n - b o t t o m :   1 0 p x ; 
- 
- } 
- 
- 
+         b a c k g r o u n d - c o l o r :   # 0 0 7 b f f ; 
+ 
+         c o l o r :   w h i t e ; 
+ 
+         b o r d e r :   n o n e ; 
+ 
+         p a d d i n g :   5 p x   1 0 p x ; 
+ 
+         b o r d e r - r a d i u s :   5 p x ; 
+ 
+         c u r s o r :   p o i n t e r ; 
+ 
+ } 
+ 
+ 
+ 
+ # d e e p - r e s e a r c h - o v e r l a y   { 
+ 
+         p o s i t i o n :   f i x e d ; 
+ 
+         t o p :   0 ; 
+ 
+         l e f t :   0 ; 
+ 
+         w i d t h :   1 0 0 % ; 
+ 
+         h e i g h t :   1 0 0 % ; 
+ 
+         b a c k g r o u n d - c o l o r :   r g b a ( 0 ,   0 ,   0 ,   0 . 7 ) ; 
+ 
+         d i s p l a y :   f l e x ; 
+ 
+         j u s t i f y - c o n t e n t :   c e n t e r ; 
+ 
+         a l i g n - i t e m s :   c e n t e r ; 
+ 
+         z - i n d e x :   1 0 0 0 4 ; 
+ 
+ } 
+ 
+ 
+ 
+ . d e e p - r e s e a r c h - p o p u p   { 
+ 
+         b a c k g r o u n d - c o l o r :   # f f f ; 
+ 
+         b o r d e r - r a d i u s :   8 p x ; 
+ 
+         p a d d i n g :   2 0 p x ; 
+ 
+         w i d t h :   8 0 % ; 
+ 
+         m a x - w i d t h :   5 0 0 p x ; 
+ 
+         b o x - s h a d o w :   0   4 p x   8 p x   r g b a ( 0 , 0 , 0 , 0 . 1 ) ; 
+ 
+ } 
+ 
+ 
+ 
+ . d e e p - r e s e a r c h - h e a d e r   { 
+ 
+         d i s p l a y :   f l e x ; 
+ 
+         j u s t i f y - c o n t e n t :   s p a c e - b e t w e e n ; 
+ 
+         a l i g n - i t e m s :   c e n t e r ; 
+ 
+         b o r d e r - b o t t o m :   1 p x   s o l i d   # c c c ; 
+ 
+         p a d d i n g - b o t t o m :   1 0 p x ; 
+ 
+         m a r g i n - b o t t o m :   1 0 p x ; 
+ 
+ } 
+ 
+ 
+ 
+ . d e e p - r e s e a r c h - h e a d e r   s p a n   { 
+ 
+         f o n t - s i z e :   2 0 p x ; 
+ 
+         f o n t - w e i g h t :   b o l d ; 
+ 
+ } 
+ 
+ 
+ 
+ # c l o s e - d e e p - r e s e a r c h - b t n   { 
+ 
+         b a c k g r o u n d :   n o n e ; 
+ 
+         b o r d e r :   n o n e ; 
+ 
+         f o n t - s i z e :   2 4 p x ; 
+ 
+         c u r s o r :   p o i n t e r ; 
+ 
+ } 
+ 
+ 
+ 
+ . d e e p - r e s e a r c h - b o d y   t e x t a r e a   { 
+ 
+         w i d t h :   1 0 0 % ; 
+ 
+         h e i g h t :   1 0 0 p x ; 
+ 
+         m a r g i n - b o t t o m :   1 0 p x ; 
+ 
+ } 
+ 
+ 
+ 
+ # m o t i v a t i o n - o v e r l a y   { 
+ 
+         p o s i t i o n :   f i x e d ; 
+ 
+         t o p :   0 ; 
+ 
+         l e f t :   0 ; 
+ 
+         w i d t h :   1 0 0 % ; 
+ 
+         h e i g h t :   1 0 0 % ; 
+ 
+         b a c k g r o u n d - c o l o r :   r g b a ( 0 ,   0 ,   0 ,   0 . 7 ) ; 
+ 
+         d i s p l a y :   f l e x ; 
+ 
+         j u s t i f y - c o n t e n t :   c e n t e r ; 
+ 
+         a l i g n - i t e m s :   c e n t e r ; 
+ 
+         z - i n d e x :   1 0 0 0 5 ; 
+ 
+ } 
+ 
+ 
+ 
+ . m o t i v a t i o n - p o p u p   { 
+ 
+         b a c k g r o u n d - c o l o r :   # f f f ; 
+ 
+         b o r d e r - r a d i u s :   8 p x ; 
+ 
+         p a d d i n g :   2 0 p x ; 
+ 
+         w i d t h :   8 0 % ; 
+ 
+         m a x - w i d t h :   5 0 0 p x ; 
+ 
+         b o x - s h a d o w :   0   4 p x   8 p x   r g b a ( 0 , 0 , 0 , 0 . 1 ) ; 
+ 
+ } 
+ 
+ 
+ 
+ . m o t i v a t i o n - h e a d e r   { 
+ 
+         d i s p l a y :   f l e x ; 
+ 
+         j u s t i f y - c o n t e n t :   s p a c e - b e t w e e n ; 
+ 
+         a l i g n - i t e m s :   c e n t e r ; 
+ 
+         b o r d e r - b o t t o m :   1 p x   s o l i d   # c c c ; 
+ 
+         p a d d i n g - b o t t o m :   1 0 p x ; 
+ 
+         m a r g i n - b o t t o m :   1 0 p x ; 
+ 
+ } 
+ 
+ 
+ 
+ . m o t i v a t i o n - h e a d e r   s p a n   { 
+ 
+         f o n t - s i z e :   2 0 p x ; 
+ 
+         f o n t - w e i g h t :   b o l d ; 
+ 
+ } 
+ 
+ 
+ 
+ # c l o s e - m o t i v a t i o n - b t n   { 
+ 
+         b a c k g r o u n d :   n o n e ; 
+ 
+         b o r d e r :   n o n e ; 
+ 
+         f o n t - s i z e :   2 4 p x ; 
+ 
+         c u r s o r :   p o i n t e r ; 
+ 
+ } 
+ 
+ 
+ 
+ . m o t i v a t i o n - b o d y   t e x t a r e a   { 
+ 
+         w i d t h :   1 0 0 % ; 
+ 
+         h e i g h t :   1 0 0 p x ; 
+ 
+         m a r g i n - b o t t o m :   1 0 p x ; 
+ 
+ } 
+ 
+ 
+ /* ==========================================================================
+    RETRO THEME (Windows 95 style)
+    ========================================================================== */
+ #gemini-chat-overlay.theme-retro {
+   background: #c0c0c0 !important;
+   border-radius: 0 !important;
+   border-top: 2px solid #ffffff !important;
+   border-left: 2px solid #ffffff !important;
+   border-right: 2px solid #808080 !important;
+   border-bottom: 2px solid #808080 !important;
+   box-shadow: 1px 1px 0px 0px #000000, inset -1px -1px 0px 0px #c0c0c0 !important;
+   backdrop-filter: none !important;
+   -webkit-backdrop-filter: none !important;
+   font-family: 'MS Sans Serif', Tahoma, Arial, sans-serif !important;
+ }
+ 
+ #gemini-chat-overlay.theme-retro * {
+   font-family: 'MS Sans Serif', Tahoma, Arial, sans-serif !important;
+ }
+ 
+ #gemini-chat-overlay.theme-retro .chat-header {
+   background: #000080 !important;
+   color: #ffffff !important;
+   border-bottom: none !important;
+   border-radius: 0 !important;
+   box-shadow: none !important;
+   padding: 4px 6px !important;
+ }
+ 
+ #gemini-chat-overlay.theme-retro #close-chat {
+   color: #000000 !important;
+   background: #c0c0c0 !important;
+   border-top: 1.5px solid #ffffff !important;
+   border-left: 1.5px solid #ffffff !important;
+   border-right: 1.5px solid #808080 !important;
+   border-bottom: 1.5px solid #808080 !important;
+   width: 16px;
+   height: 14px;
+   font-size: 11px !important;
+   line-height: 10px;
+   padding: 0 !important;
+   text-align: center;
+   font-weight: bold;
+ }
+ 
+ #gemini-chat-overlay.theme-retro #prompt-input {
+   background: #ffffff !important;
+   border-top: 2px solid #808080 !important;
+   border-left: 2px solid #808080 !important;
+   border-right: 2px solid #ffffff !important;
+   border-bottom: 2px solid #ffffff !important;
+   border-radius: 0 !important;
+   color: #000000 !important;
+   box-shadow: none !important;
+ }
+ 
+ #gemini-chat-overlay.theme-retro #send-btn {
+   background: #c0c0c0 !important;
+   border-top: 2px solid #ffffff !important;
+   border-left: 2px solid #ffffff !important;
+   border-right: 2px solid #808080 !important;
+   border-bottom: 2px solid #808080 !important;
+   border-radius: 0 !important;
+   color: #000000 !important;
+   box-shadow: none !important;
+   font-weight: normal !important;
+ }
+ 
+ #gemini-chat-overlay.theme-retro #send-btn::before {
+   display: none !important;
+ }
+ 
+ #gemini-chat-overlay.theme-retro #send-btn:active {
+   border-top: 2px solid #808080 !important;
+   border-left: 2px solid #808080 !important;
+   border-right: 2px solid #ffffff !important;
+   border-bottom: 2px solid #ffffff !important;
+ }
+ 
+ #gemini-logo.theme-retro {
+   background: #c0c0c0 !important;
+   border-radius: 0 !important;
+   border-top: 2px solid #ffffff !important;
+   border-left: 2px solid #ffffff !important;
+   border-right: 2px solid #808080 !important;
+   border-bottom: 2px solid #808080 !important;
+   box-shadow: 1px 1px 0px 0px #000000, inset -1px -1px 0px 0px #c0c0c0 !important;
+   width: 32px !important;
+   height: 32px !important;
+   font-size: 16px !important;
+ }
+ 
+ #gemini-logo.theme-retro::before,
+ #gemini-logo.theme-retro::after {
+   display: none !important;
+ }
+ 
+ #gemini-context-menu.theme-retro {
+   background: #c0c0c0 !important;
+   border-radius: 0 !important;
+   border-top: 2px solid #ffffff !important;
+   border-left: 2px solid #ffffff !important;
+   border-right: 2px solid #808080 !important;
+   border-bottom: 2px solid #808080 !important;
+   box-shadow: 1px 1px 0px 0px #000000 !important;
+   backdrop-filter: none !important;
+   -webkit-backdrop-filter: none !important;
+   font-family: 'MS Sans Serif', Tahoma, Arial, sans-serif !important;
+ }
+ 
+ #gemini-context-menu.theme-retro * {
+   font-family: 'MS Sans Serif', Tahoma, Arial, sans-serif !important;
+   color: #000000 !important;
+ }
+ 
+ #gemini-context-menu.theme-retro #gemini-menu-titlebar {
+   background: #000080 !important;
+   color: #ffffff !important;
+ }
+ 
+ #gemini-context-menu.theme-retro #gemini-menu-titlebar span {
+   color: #ffffff !important;
+   font-weight: bold;
+ }
+ 
+ #gemini-context-menu.theme-retro #gemini-menu-search {
+   background: #ffffff !important;
+   border-top: 2px solid #808080 !important;
+   border-left: 2px solid #808080 !important;
+   border-right: 2px solid #ffffff !important;
+   border-bottom: 2px solid #ffffff !important;
+   border-radius: 0 !important;
+   color: #000000 !important;
+ }
+ 
+ #gemini-context-menu.theme-retro .menu-item:hover {
+   background: #000080 !important;
+ }
+ 
+ #gemini-context-menu.theme-retro .menu-item:hover * {
+   color: #ffffff !important;
+ }
+ 
+ /* ==========================================================================
+    APPLE THEME (Clean macOS/iOS style)
+    ========================================================================== */
+ #gemini-chat-overlay.theme-apple {
+   background: rgba(255, 255, 255, 0.85) !important;
+   border-radius: 12px !important;
+   border: 1px solid rgba(0, 0, 0, 0.08) !important;
+   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.02) !important;
+   backdrop-filter: blur(20px) saturate(1.2) !important;
+   -webkit-backdrop-filter: blur(20px) saturate(1.2) !important;
+   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Icons", "Helvetica Neue", Helvetica, Arial, sans-serif !important;
+ }
+ 
+ #gemini-chat-overlay.theme-apple * {
+   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif !important;
+ }
+ 
+ #gemini-chat-overlay.theme-apple .chat-header {
+   background: transparent !important;
+   border-bottom: 1px solid rgba(0, 0, 0, 0.08) !important;
+   box-shadow: none !important;
+   color: #1d1d1f !important;
+ }
+ 
+ #gemini-chat-overlay.theme-apple #close-chat {
+   color: #86868b !important;
+   font-size: 22px !important;
+ }
+ 
+ #gemini-chat-overlay.theme-apple #close-chat:hover {
+   color: #ff5f56 !important;
+ }
+ 
+ #gemini-chat-overlay.theme-apple #prompt-input {
+   background: #f5f5f7 !important;
+   border: 1px solid #d2d2d7 !important;
+   border-radius: 6px !important;
+   color: #1d1d1f !important;
+   box-shadow: none !important;
+ }
+ 
+ #gemini-chat-overlay.theme-apple #prompt-input:focus {
+   border-color: #0071e3 !important;
+   box-shadow: 0 0 0 3px rgba(0, 113, 227, 0.15) !important;
+ }
+ 
+ #gemini-chat-overlay.theme-apple #send-btn {
+   background: #0071e3 !important;
+   color: #ffffff !important;
+   border-radius: 6px !important;
+   border: none !important;
+   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08) !important;
+   font-weight: 500 !important;
+ }
+ 
+ #gemini-chat-overlay.theme-apple #send-btn::before {
+   display: none !important;
+ }
+ 
+ #gemini-chat-overlay.theme-apple #send-btn:hover {
+   background: #0077ed !important;
+ }
+ 
+ #gemini-logo.theme-apple {
+   background: #ffffff !important;
+   border-radius: 50% !important;
+   border: 1px solid rgba(0, 0, 0, 0.08) !important;
+   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06) !important;
+   width: 40px !important;
+   height: 40px !important;
+ }
+ 
+ #gemini-logo.theme-apple::before,
+ #gemini-logo.theme-apple::after {
+   display: none !important;
+ }
+ 
+ #gemini-context-menu.theme-apple {
+   background: rgba(255, 255, 255, 0.85) !important;
+   border-radius: 12px !important;
+   border: 1px solid rgba(0, 0, 0, 0.08) !important;
+   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06) !important;
+   backdrop-filter: blur(20px) saturate(1.2) !important;
+   -webkit-backdrop-filter: blur(20px) saturate(1.2) !important;
+   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif !important;
+ }
+ 
+ #gemini-context-menu.theme-apple * {
+   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif !important;
+   color: #1d1d1f !important;
+ }
+ 
+ #gemini-context-menu.theme-apple #gemini-menu-titlebar {
+   background: transparent !important;
+   border-bottom: 1px solid rgba(0, 0, 0, 0.08) !important;
+ }
+ 
+ #gemini-context-menu.theme-apple #gemini-menu-search {
+   background: #f5f5f7 !important;
+   border: 1px solid #d2d2d7 !important;
+   border-radius: 6px !important;
+   color: #1d1d1f !important;
+ }
+ 
+ #gemini-context-menu.theme-apple .menu-item {
+   border-radius: 6px !important;
+   margin: 2px 4px !important;
+ }
+ 
+ #gemini-context-menu.theme-apple .menu-item:hover {
+   background: #0071e3 !important;
+   color: #ffffff !important;
+ }
+ 
+ #gemini-context-menu.theme-apple .menu-item:hover * {
+   color: #ffffff !important;
+ }
+
+/* ============================================
+   CLIPPY ASSISTENT WIDGET STYLES
+   ============================================ */
+
+#clippy-container {
+  position: fixed !important;
+  bottom: 24px !important;
+  right: 24px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-end !important;
+  z-index: 2147483647 !important;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+  animation: clippyPopIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards !important;
+  pointer-events: auto !important;
+}
+
+#clippy-container.clippy-hide {
+  animation: clippyPopOut 0.4s ease forwards !important;
+}
+
+@keyframes clippyPopIn {
+  0% {
+    opacity: 0;
+    transform: translateY(40px) scale(0.8);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes clippyPopOut {
+  0% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(30px) scale(0.7);
+  }
+}
+
+/* Speech Bubble */
+#clippy-speech-bubble {
+  position: relative !important;
+  background: rgba(255, 255, 255, 0.92) !important;
+  backdrop-filter: blur(16px) saturate(1.8) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(1.8) !important;
+  border: 1px solid rgba(255, 255, 255, 0.6) !important;
+  border-radius: 16px 16px 4px 16px !important;
+  padding: 14px 16px 12px 16px !important;
+  max-width: 280px !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18), 0 2px 8px rgba(0, 0, 0, 0.12) !important;
+  margin-bottom: 12px !important;
+  color: #1c1e21 !important;
+}
+
+/* Dark mode / Retro theme support for speech bubble */
+#clippy-container.theme-retro #clippy-speech-bubble {
+  background: #000080 !important;
+  color: #ffffff !important;
+  border: 2px solid #ffffff !important;
+  border-radius: 0 !important;
+  box-shadow: 4px 4px 0 #000000 !important;
+  font-family: "Courier New", monospace !important;
+}
+
+/* Speech Bubble text */
+#clippy-speech-text {
+  font-size: 13px !important;
+  line-height: 1.45 !important;
+  font-weight: 500 !important;
+  margin-right: 14px !important;
+}
+
+/* Action button inside bubble */
+#clippy-action-btn {
+  display: inline-block !important;
+  margin-top: 10px !important;
+  background: linear-gradient(135deg, #0071e3 0%, #005bb5 100%) !important;
+  color: #ffffff !important;
+  border: none !important;
+  border-radius: 8px !important;
+  padding: 6px 12px !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  box-shadow: 0 2px 6px rgba(0, 113, 227, 0.3) !important;
+  transition: transform 0.15s ease, box-shadow 0.15s ease !important;
+}
+
+#clippy-action-btn:hover {
+  transform: translateY(-1px) scale(1.02) !important;
+  box-shadow: 0 4px 12px rgba(0, 113, 227, 0.4) !important;
+}
+
+/* Close 'X' Button */
+#clippy-close-btn {
+  position: absolute !important;
+  top: 6px !important;
+  right: 8px !important;
+  background: none !important;
+  border: none !important;
+  font-size: 16px !important;
+  font-weight: bold !important;
+  color: #888888 !important;
+  cursor: pointer !important;
+  line-height: 1 !important;
+  padding: 2px 4px !important;
+  transition: color 0.15s ease !important;
+}
+
+#clippy-close-btn:hover {
+  color: #e53935 !important;
+}
+
+/* Avatar Wrapper & Graphic */
+#clippy-avatar-wrapper {
+  position: relative !important;
+  cursor: pointer !important;
+  transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+  display: flex !important;
+  justify-content: flex-end !important;
+}
+
+#clippy-avatar-wrapper:hover {
+  transform: scale(1.12) rotate(-4deg) !important;
+}
+
+#clippy-avatar-img {
+  width: 65px !important;
+  height: auto !important;
+  max-height: 80px !important;
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.25)) !important;
+}
+
+/* ==========================================================================
+   CLIPPY ANIMATION ENGINE & POSES (Distortion-Free SVG Animations)
+   ========================================================================== */
+
+#clippy-svg {
+  overflow: visible !important;
+}
+
+/* SVG element transform origins and box scoping */
+.clippy-body-group {
+  transform-box: fill-box;
+  transform-origin: bottom center;
+}
+
+.clippy-eye-anim {
+  transform-box: fill-box;
+  transform-origin: center center;
+  display: inline-block;
+}
+
+.clippy-pupil-group {
+  transform-box: fill-box;
+  transform-origin: center center;
+}
+
+.clippy-eyebrow-group {
+  transform-box: fill-box;
+  transform-origin: center center;
+}
+
+.clippy-mouth-group {
+  transform-box: fill-box;
+  transform-origin: center center;
+}
+
+/* --- KEYFRAMES --- */
+
+/* Natural Blinking */
+@keyframes clippyNaturalBlink {
+  0%, 88%, 94%, 100% { transform: scaleY(1); }
+  91% { transform: scaleY(0.08); }
+}
+
+/* Pupil Eye Tracking */
+@keyframes clippyEyeLook {
+  0%, 100% { transform: translate(0px, 0px); }
+  20%, 35% { transform: translate(-2.5px, 0.5px); }
+  55%, 70% { transform: translate(2.5px, 1px); }
+  80%, 90% { transform: translate(0px, -2px); }
+}
+
+/* Floating Base */
+@keyframes clippyFloatBase {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-7px) rotate(-1.5deg); }
+}
+
+/* Pose: Think (Leans wire, eyebrow up, eyes look top-right) */
+@keyframes clippyPoseThinkBody {
+  0%, 100% { transform: rotate(-6deg) translateY(-2px); }
+  50% { transform: rotate(-3deg) translateY(-6px); }
+}
+@keyframes clippyPoseThinkPupil {
+  0%, 100% { transform: translate(2.5px, -2.5px); }
+}
+@keyframes clippyPoseThinkEyebrowR {
+  0%, 100% { transform: translateY(-4px) rotate(-8deg); }
+}
+@keyframes clippyPoseThinkEyebrowL {
+  0%, 100% { transform: translateY(1px) rotate(4deg); }
+}
+
+/* Pose: Bounce (Excited double bounce) */
+@keyframes clippyPoseBounceBody {
+  0%, 100% { transform: translateY(0) scale(1); }
+  30% { transform: translateY(-12px) scaleY(1.06) scaleX(0.95); }
+  50% { transform: translateY(0) scaleY(0.95) scaleX(1.05); }
+  70% { transform: translateY(-6px) scale(1.02); }
+}
+@keyframes clippyPoseBounceEyebrows {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+/* Pose: Wink */
+@keyframes clippyPoseWinkLeftEye {
+  0%, 100% { transform: scaleY(0.08); }
+}
+@keyframes clippyPoseWinkBody {
+  0%, 100% { transform: rotate(5deg) scale(1.04); }
+  50% { transform: rotate(8deg) scale(1.06); }
+}
+
+/* Pose: Wave (Sways side to side like greeting) */
+@keyframes clippyPoseWaveBody {
+  0%, 100% { transform: rotate(-8deg); }
+  50% { transform: rotate(8deg); }
+}
+
+/* Pose: Surprised (Eye widen, wire stretch up) */
+@keyframes clippyPoseSurprisedBody {
+  0%, 100% { transform: scaleY(1.08) scaleX(0.94) translateY(-4px); }
+  50% { transform: scaleY(1.12) scaleX(0.92) translateY(-8px); }
+}
+@keyframes clippyPoseSurprisedEyebrows {
+  0%, 100% { transform: translateY(-6px); }
+}
+
+/* --- POSE CLASS MAPPINGS --- */
+
+/* Default / Float */
+#clippy-svg.pose-float {
+  animation: clippyFloatBase 4s infinite ease-in-out !important;
+}
+#clippy-svg.pose-float .clippy-eye-anim {
+  animation: clippyNaturalBlink 4.2s infinite !important;
+}
+#clippy-svg.pose-float .clippy-pupil-group {
+  animation: clippyEyeLook 8s infinite ease-in-out !important;
+}
+
+/* Pose: Think */
+#clippy-svg.pose-think {
+  animation: clippyPoseThinkBody 3.5s infinite ease-in-out !important;
+}
+#clippy-svg.pose-think .clippy-eye-anim {
+  animation: clippyNaturalBlink 4.5s infinite !important;
+}
+#clippy-svg.pose-think .clippy-pupil-group {
+  animation: clippyPoseThinkPupil 3.5s infinite ease-in-out !important;
+}
+#clippy-svg.pose-think .right-eyebrow-group {
+  animation: clippyPoseThinkEyebrowR 3.5s infinite ease-in-out !important;
+}
+#clippy-svg.pose-think .left-eyebrow-group {
+  animation: clippyPoseThinkEyebrowL 3.5s infinite ease-in-out !important;
+}
+
+/* Pose: Bounce */
+#clippy-svg.pose-bounce {
+  animation: clippyPoseBounceBody 1.2s infinite ease-in-out !important;
+}
+#clippy-svg.pose-bounce .clippy-eye-anim {
+  animation: clippyNaturalBlink 3s infinite !important;
+}
+#clippy-svg.pose-bounce .clippy-eyebrow-group {
+  animation: clippyPoseBounceEyebrows 1.2s infinite ease-in-out !important;
+}
+
+/* Pose: Wink */
+#clippy-svg.pose-wink {
+  animation: clippyPoseWinkBody 2s infinite ease-in-out !important;
+}
+#clippy-svg.pose-wink .left-eye-anim {
+  animation: clippyPoseWinkLeftEye 2s infinite ease-in-out !important;
+}
+#clippy-svg.pose-wink .right-eye-anim {
+  animation: clippyNaturalBlink 4s infinite !important;
+}
+
+/* Pose: Wave */
+#clippy-svg.pose-wave {
+  animation: clippyPoseWaveBody 1.6s infinite ease-in-out !important;
+}
+#clippy-svg.pose-wave .clippy-eye-anim {
+  animation: clippyNaturalBlink 3.8s infinite !important;
+}
+#clippy-svg.pose-wave .clippy-pupil-group {
+  animation: clippyEyeLook 6s infinite ease-in-out !important;
+}
+
+/* Pose: Surprised */
+#clippy-svg.pose-surprised {
+  animation: clippyPoseSurprisedBody 2.5s infinite ease-in-out !important;
+}
+#clippy-svg.pose-surprised .clippy-eyebrow-group {
+  animation: clippyPoseSurprisedEyebrows 2.5s infinite ease-in-out !important;
+}

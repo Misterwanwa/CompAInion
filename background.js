@@ -115,54 +115,15 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         chrome.tabs.captureVisibleTab(null, { format: 'png', quality: 90 }, (dataUrl) => {
             if (chrome.runtime.lastError) {
                 sendResponse({ success: false, error: chrome.runtime.lastError.message });
-                return;
+            } else {
+                sendResponse({ success: true, dataUrl: dataUrl });
             }
-            
-            // Bereich zuschneiden
-            const { area } = request;
-            cropScreenshot(dataUrl, area).then(croppedUrl => {
-                sendResponse({ success: true, dataUrl: croppedUrl });
-            }).catch(err => {
-                sendResponse({ success: false, error: err.message });
-            });
         });
         return true; // Async response
+    } else if (request.action === 'reloadExtension') {
+        chrome.runtime.reload();
     }
 });
-
-// Hilfsfunktion: Screenshot zuschneiden
-async function cropScreenshot(dataUrl, area) {
-    return new Promise((resolve, reject) => {
-        const img = new Image();
-        img.onload = () => {
-            const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d');
-            
-            canvas.width = area.width;
-            canvas.height = area.height;
-            
-            // Skalierungsfaktor berechnen (für High-DPI Displays)
-            const scaleX = img.width / window.innerWidth;
-            const scaleY = img.height / window.innerHeight;
-            
-            ctx.drawImage(
-                img,
-                area.left * scaleX,
-                area.top * scaleY,
-                area.width * scaleX,
-                area.height * scaleY,
-                0,
-                0,
-                area.width,
-                area.height
-            );
-            
-            resolve(canvas.toDataURL('image/png'));
-        };
-        img.onerror = () => reject(new Error('Bild konnte nicht geladen werden'));
-        img.src = dataUrl;
-    });
-}
 
 // Klick-Handler
 chrome.contextMenus.onClicked.addListener((info, tab) => {

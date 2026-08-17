@@ -701,3 +701,478 @@ body {
 
 /* ── 17. Utility ──────────────────────────────────── */
 button { font-family: var(--font); }
+
+/* ==========================================================================
+   RETRO THEME (Windows 95 style)
+   ========================================================================== */
+body.theme-retro {
+  background: #008080 !important;
+  font-family: 'MS Sans Serif', Tahoma, Arial, sans-serif !important;
+  color: #000000 !important;
+}
+
+body.theme-retro * {
+  font-family: 'MS Sans Serif', Tahoma, Arial, sans-serif !important;
+}
+
+body.theme-retro .aero-panel {
+  background: #c0c0c0 !important;
+  border-radius: 0 !important;
+  border-top: 2px solid #ffffff !important;
+  border-left: 2px solid #ffffff !important;
+  border-right: 2px solid #808080 !important;
+  border-bottom: 2px solid #808080 !important;
+  box-shadow: 1px 1px 0px 0px #000000, inset -1px -1px 0px 0px #c0c0c0 !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+body.theme-retro .titlebar {
+  background: #000080 !important;
+  color: #ffffff !important;
+  border-bottom: none !important;
+  box-shadow: none !important;
+  padding: 4px 6px !important;
+}
+
+body.theme-retro .titlebar::before {
+  display: none !important;
+}
+
+body.theme-retro .titlebar-icon {
+  filter: none !important;
+}
+
+body.theme-retro .tab-btn {
+  border-radius: 0 !important;
+  background: #c0c0c0 !important;
+  border-top: 1.5px solid #ffffff !important;
+  border-left: 1.5px solid #ffffff !important;
+  border-right: 1.5px solid #808080 !important;
+  border-bottom: 1.5px solid #808080 !important;
+  color: #000000 !important;
+  box-shadow: none !important;
+  margin-top: 2px !important;
+  font-weight: normal !important;
+}
+
+body.theme-retro .tab-btn.active {
+  border-top: 2px solid #ffffff !important;
+  border-left: 2px solid #ffffff !important;
+  border-right: 2px solid #808080 !important;
+  border-bottom: none !important;
+  background: #c0c0c0 !important;
+  box-shadow: none !important;
+  margin-top: 0 !important;
+}
+
+body.theme-retro .wc-btn {
+  border-radius: 0 !important;
+  background: #c0c0c0 !important;
+  border-top: 1.5px solid #ffffff !important;
+  border-left: 1.5px solid #ffffff !important;
+  border-right: 1.5px solid #808080 !important;
+  border-bottom: 1.5px solid #808080 !important;
+  box-shadow: none !important;
+  width: 16px !important;
+  height: 14px !important;
+}
+
+body.theme-retro .wc-btn::before {
+  display: none !important;
+}
+
+body.theme-retro .wc-close::after {
+  content: 'r';
+  font-family: 'Marlett', sans-serif !important;
+  font-size: 11px;
+  color: #000000;
+  line-height: 1;
+}
+
+body.theme-retro .wc-minimize::after {
+  content: '0';
+  font-family: 'Marlett', sans-serif !important;
+  font-size: 11px;
+  color: #000000;
+  line-height: 1;
+}
+
+body.theme-retro .wc-maximize::after {
+  content: '1';
+  font-family: 'Marlett', sans-serif !important;
+  font-size: 11px;
+  color: #000000;
+  line-height: 1;
+}
+
+/* Fallback icons inside windows controls for Win95 theme */
+body.theme-retro .wc-close { background: #c0c0c0 !important; color: #000 !important; border-color: #fff #808080 #808080 #fff !important; }
+body.theme-retro .wc-close::after { content: '×'; font-family: Arial, sans-serif !important; font-size: 12px; font-weight: bold; }
+body.theme-retro .wc-minimize { background: #c0c0c0 !important; color: #000 !important; border-color: #fff #808080 #808080 #fff !important; }
+body.theme-retro .wc-minimize::after { content: '_'; font-family: Arial, sans-serif !important; font-size: 10px; font-weight: bold; position: relative; top: -3px; }
+body.theme-retro .wc-maximize { background: #c0c0c0 !important; color: #000 !important; border-color: #fff #808080 #808080 #fff !important; }
+body.theme-retro .wc-maximize::after { content: '▢'; font-family: Arial, sans-serif !important; font-size: 10px; }
+
+body.theme-retro .section {
+  background: #c0c0c0 !important;
+  border-top: 1.5px solid #808080 !important;
+  border-left: 1.5px solid #808080 !important;
+  border-right: 1.5px solid #ffffff !important;
+  border-bottom: 1.5px solid #ffffff !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+body.theme-retro .section-header {
+  color: #000000 !important;
+  font-weight: bold !important;
+}
+
+body.theme-retro .field-label, body.theme-retro .section-label {
+  color: #000000 !important;
+}
+
+body.theme-retro .glass-textarea,
+body.theme-retro .glass-input,
+body.theme-retro .glass-select {
+  background: #ffffff !important;
+  border-top: 2px solid #808080 !important;
+  border-left: 2px solid #808080 !important;
+  border-right: 2px solid #ffffff !important;
+  border-bottom: 2px solid #ffffff !important;
+  border-radius: 0 !important;
+  color: #000000 !important;
+  box-shadow: none !important;
+}
+
+body.theme-retro .glass-button {
+  background: #c0c0c0 !important;
+  border-top: 2px solid #ffffff !important;
+  border-left: 2px solid #ffffff !important;
+  border-right: 2px solid #808080 !important;
+  border-bottom: 2px solid #808080 !important;
+  border-radius: 0 !important;
+  color: #000000 !important;
+  box-shadow: none !important;
+  font-weight: normal !important;
+}
+
+body.theme-retro .glass-button:active {
+  border-top: 2px solid #808080 !important;
+  border-left: 2px solid #808080 !important;
+  border-right: 2px solid #ffffff !important;
+  border-bottom: 2px solid #ffffff !important;
+}
+
+body.theme-retro .jelly-radio {
+  background: #c0c0c0 !important;
+  border-top: 2px solid #ffffff !important;
+  border-left: 2px solid #ffffff !important;
+  border-right: 2px solid #808080 !important;
+  border-bottom: 2px solid #808080 !important;
+  border-radius: 0 !important;
+  color: #000000 !important;
+  box-shadow: none !important;
+}
+
+body.theme-retro .jelly-radio::before {
+  display: none !important;
+}
+
+body.theme-retro .jelly-radio.active {
+  border-top: 2px solid #808080 !important;
+  border-left: 2px solid #808080 !important;
+  border-right: 2px solid #ffffff !important;
+  border-bottom: 2px solid #ffffff !important;
+}
+
+body.theme-retro .toggle-switch {
+  width: 20px !important;
+  height: 20px !important;
+}
+
+body.theme-retro .toggle-track {
+  background: #ffffff !important;
+  border-top: 2px solid #808080 !important;
+  border-left: 2px solid #808080 !important;
+  border-right: 2px solid #ffffff !important;
+  border-bottom: 2px solid #ffffff !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+body.theme-retro .toggle-knob {
+  display: none !important;
+}
+
+body.theme-retro .toggle-switch input:checked + .toggle-track::after {
+  content: '✓' !important;
+  font-size: 14px !important;
+  color: #000000 !important;
+  position: absolute !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  font-weight: bold !important;
+}
+
+body.theme-retro .model-row {
+  border-radius: 0 !important;
+  border: 1px transparent solid !important;
+}
+
+body.theme-retro .model-dot {
+  border-radius: 50% !important;
+  border-top: 2.5px solid #808080 !important;
+  border-left: 2.5px solid #808080 !important;
+  border-right: 2.5px solid #ffffff !important;
+  border-bottom: 2.5px solid #ffffff !important;
+  background: #ffffff !important;
+  box-shadow: none !important;
+}
+
+body.theme-retro .model-row.active .model-dot {
+  background: #000000 !important;
+  box-shadow: none !important;
+}
+
+body.theme-retro .model-label {
+  color: #000000 !important;
+}
+
+body.theme-retro .jelly-key {
+  border-radius: 0 !important;
+  border-top: 1.5px solid #ffffff !important;
+  border-left: 1.5px solid #ffffff !important;
+  border-right: 1.5px solid #808080 !important;
+  border-bottom: 1.5px solid #808080 !important;
+  background: #c0c0c0 !important;
+  box-shadow: none !important;
+  color: #000000 !important;
+}
+
+body.theme-retro .jelly-key::before {
+  display: none !important;
+}
+
+body.theme-retro .key-plus {
+  color: #000000 !important;
+}
+
+body.theme-retro .params-link {
+  color: #000080 !important;
+  text-decoration: underline !important;
+}
+
+
+/* ==========================================================================
+   APPLE THEME (Clean macOS/iOS style)
+   ========================================================================== */
+body.theme-apple {
+  background: linear-gradient(135deg, #f5f5f7 0%, #e8e8ed 100%) !important;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Icons", "Helvetica Neue", Helvetica, Arial, sans-serif !important;
+  color: #1d1d1f !important;
+}
+
+body.theme-apple * {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif !important;
+}
+
+body.theme-apple .aero-panel {
+  background: rgba(255, 255, 255, 0.85) !important;
+  border-radius: 12px !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.02) !important;
+  backdrop-filter: blur(20px) saturate(1.2) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(1.2) !important;
+}
+
+body.theme-apple .titlebar {
+  background: transparent !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08) !important;
+  box-shadow: none !important;
+  padding: 10px 14px !important;
+}
+
+body.theme-apple .titlebar::before {
+  display: none !important;
+}
+
+body.theme-apple .tab-btn {
+  border-radius: 6px !important;
+  border: none !important;
+  background: transparent !important;
+  color: #515154 !important;
+  font-weight: 500 !important;
+  font-size: 11px !important;
+  padding: 4px 10px !important;
+}
+
+body.theme-apple .tab-btn.active {
+  background: #ffffff !important;
+  color: #000000 !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 1px rgba(0, 0, 0, 0.02) !important;
+}
+
+body.theme-apple .wc-btn {
+  border: 1px solid rgba(0, 0, 0, 0.05) !important;
+  box-shadow: none !important;
+}
+
+body.theme-apple .wc-btn::before {
+  display: none !important;
+}
+
+body.theme-apple .wc-close {
+  background: #ff5f56 !important;
+}
+
+body.theme-apple .wc-minimize {
+  background: #ffbd2e !important;
+}
+
+body.theme-apple .wc-maximize {
+  background: #27c93f !important;
+}
+
+body.theme-apple .section {
+  background: #ffffff !important;
+  border: 1px solid rgba(0, 0, 0, 0.04) !important;
+  border-radius: 10px !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+body.theme-apple .section-header {
+  color: #86868b !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.01em !important;
+  text-transform: none !important;
+  font-size: 10px !important;
+}
+
+body.theme-apple .field-label, body.theme-apple .section-label {
+  color: #1d1d1f !important;
+  font-weight: 500 !important;
+}
+
+body.theme-apple .glass-textarea,
+body.theme-apple .glass-input,
+body.theme-apple .glass-select {
+  background: #f5f5f7 !important;
+  border: 1px solid #d2d2d7 !important;
+  border-radius: 6px !important;
+  color: #1d1d1f !important;
+  box-shadow: none !important;
+}
+
+body.theme-apple .glass-textarea:focus,
+body.theme-apple .glass-input:focus,
+body.theme-apple .glass-select:focus {
+  border-color: #0071e3 !important;
+  box-shadow: 0 0 0 3px rgba(0, 113, 227, 0.15) !important;
+}
+
+body.theme-apple .glass-button {
+  background: #0071e3 !important;
+  color: #ffffff !important;
+  border-radius: 6px !important;
+  border: none !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08) !important;
+  font-weight: 500 !important;
+}
+
+body.theme-apple .glass-button:hover {
+  background: #0077ed !important;
+}
+
+body.theme-apple .jelly-radio {
+  border-radius: 6px !important;
+  border: 1px solid #d2d2d7 !important;
+  background: #ffffff !important;
+  color: #1d1d1f !important;
+  box-shadow: none !important;
+}
+
+body.theme-apple .jelly-radio::before {
+  display: none !important;
+}
+
+body.theme-apple .jelly-radio.active {
+  background: #0071e3 !important;
+  border-color: #0071e3 !important;
+  color: #ffffff !important;
+}
+
+body.theme-apple .toggle-track {
+  background: #e9e9ea !important;
+  border: none !important;
+  border-radius: 99px !important;
+  box-shadow: none !important;
+}
+
+body.theme-apple .toggle-knob {
+  background: #ffffff !important;
+  border: none !important;
+  border-radius: 50% !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15) !important;
+}
+
+body.theme-apple .toggle-switch input:checked + .toggle-track {
+  background: #34c759 !important;
+  box-shadow: none !important;
+}
+
+body.theme-apple .toggle-switch input:checked ~ .toggle-knob {
+  left: 20px !important;
+}
+
+body.theme-apple .model-row {
+  border-radius: 6px !important;
+}
+
+body.theme-apple .model-row.active {
+  background: rgba(0, 113, 227, 0.08) !important;
+  border-color: rgba(0, 113, 227, 0.2) !important;
+  box-shadow: none !important;
+}
+
+body.theme-apple .model-dot {
+  border-color: #d2d2d7 !important;
+  background: #ffffff !important;
+  box-shadow: none !important;
+}
+
+body.theme-apple .model-row.active .model-dot {
+  background: #0071e3 !important;
+  border-color: #0071e3 !important;
+  box-shadow: none !important;
+}
+
+body.theme-apple .model-label {
+  color: #1d1d1f !important;
+}
+
+body.theme-apple .jelly-key {
+  background: #ffffff !important;
+  border: 1px solid #d2d2d7 !important;
+  border-radius: 6px !important;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05) !important;
+  color: #1d1d1f !important;
+}
+
+body.theme-apple .jelly-key::before {
+  display: none !important;
+}
+
+body.theme-apple .key-plus {
+  color: #86868b !important;
+}
+
+body.theme-apple .params-link {
+  color: #0071e3 !important;
+}

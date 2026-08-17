@@ -26,7 +26,7 @@ const CONFIG = {
     sectionLabel: 'App theme',
     buttons: [
       { value: 'aero',  label: 'Aero',  icon: '' },
-      { value: 'xp',    label: 'XP',    icon: '' },
+      { value: 'retro', label: 'Retro', icon: '' },
       { value: 'apple', label: 'Apple', icon: '' },
     ],
     default: 'aero',
@@ -127,8 +127,8 @@ const CONFIG = {
   aiChat: {
     sectionHeader: 'KI CHAT',
     toggles: [
-      { id: 'send-on-enter',          label: 'Prompts mit Enter senden',          default: true  },
       { id: 'always-show-connection', label: 'KI-Verbindung immer oben anzeigen', default: false },
+      { id: 'enable-prompt-enhancer', label: 'Prompt-Verbesserer anzeigen (🪄)',  default: false },
     ],
   },
 };
@@ -145,8 +145,10 @@ const CONFIG = {
  */
 function handleThemeChange(value) {
   console.log('[Theme]', value);
-  // TODO: save to chrome.storage.sync, apply theme class
-  // chrome.storage.sync.set({ theme: value });
+  if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.sync) {
+    chrome.storage.sync.set({ theme: value });
+  }
+  document.body.className = 'theme-' + value;
 }
 
 /**
@@ -424,6 +426,9 @@ function renderLocalLlmSettings(savedState) {
 
     if (!backendSelect) return;
 
+    // Clear existing options to prevent duplicates
+    backendSelect.innerHTML = '';
+
     // Populate backend dropdown
     cfg.backends.forEach(backend => {
         const option = document.createElement('option');
@@ -508,6 +513,130 @@ function renderLocalLlmSettings(savedState) {
 }
 
 
+function renderGeminiSettings(savedState) {
+  const apiKeyInput = document.getElementById('gemini-api-key');
+  const authTokenInput = document.getElementById('gemini-auth-token');
+  const modelSelect = document.getElementById('gemini-api-model');
+  const testBtn = document.getElementById('test-gemini-api');
+  const testResult = document.getElementById('test-gemini-result');
+  const clippyToggle = document.getElementById('toggle-enable-clippy');
+  const dwellSelect = document.getElementById('clippy-dwell-time');
+  const chanceSelect = document.getElementById('clippy-chance');
+
+  if (!apiKeyInput) return;
+
+  apiKeyInput.value = savedState.geminiApiKey || '';
+  if (authTokenInput) {
+    authTokenInput.value = savedState.geminiAuthToken || '';
+  }
+  if (savedState.geminiApiModel && modelSelect) {
+    modelSelect.value = savedState.geminiApiModel;
+  } else if (modelSelect) {
+    modelSelect.value = 'gemini-3.5-flash';
+  }
+  if (clippyToggle) {
+    clippyToggle.checked = savedState.enableClippy !== false;
+  }
+  if (dwellSelect && savedState.clippyDwellTime) {
+    dwellSelect.value = savedState.clippyDwellTime;
+  }
+  if (chanceSelect && savedState.clippyChance) {
+    chanceSelect.value = savedState.clippyChance;
+  }
+  const modeSelect = document.getElementById('clippy-mode');
+  if (modeSelect) {
+    modeSelect.value = savedState.clippyMode || 'animation';
+  }
+
+  apiKeyInput.addEventListener('input', debounce(() => {
+    chrome.storage.sync.set({ geminiApiKey: apiKeyInput.value.trim() });
+  }, 500));
+
+  if (authTokenInput) {
+    authTokenInput.addEventListener('input', debounce(() => {
+      chrome.storage.sync.set({ geminiAuthToken: authTokenInput.value.trim() });
+    }, 500));
+  }
+
+  modelSelect.addEventListener('change', () => {
+    chrome.storage.sync.set({ geminiApiModel: modelSelect.value });
+  });
+
+  if (clippyToggle) {
+    clippyToggle.addEventListener('change', () => {
+      chrome.storage.sync.set({ enableClippy: clippyToggle.checked });
+    });
+  }
+
+  if (dwellSelect) {
+    dwellSelect.addEventListener('change', () => {
+      chrome.storage.sync.set({ clippyDwellTime: parseInt(dwellSelect.value, 10) || 60 });
+    });
+  }
+
+  if (chanceSelect) {
+    chanceSelect.addEventListener('change', () => {
+      chrome.storage.sync.set({ clippyChance: parseFloat(chanceSelect.value) || 0.2 });
+    });
+  }
+
+  if (modeSelect) {
+    modeSelect.addEventListener('change', () => {
+      chrome.storage.sync.set({ clippyMode: modeSelect.value });
+    });
+  }
+
+  if (testBtn) {
+    testBtn.addEventListener('click', async () => {
+      const key = apiKeyInput.value.trim();
+      const authToken = authTokenInput ? authTokenInput.value.trim() : '';
+      const model = modelSelect.value || 'gemini-3.5-flash';
+
+      if (!key && !authToken) {
+        testResult.innerHTML = '❌ Bitte erst einen Gemini API-Key oder Authentifizierungs-Token eingeben.';
+        testResult.style.color = '#ff6b6b';
+        return;
+      }
+
+      testResult.innerHTML = '⏳ Teste API-Verbindung...';
+      testResult.style.color = '#ffffff';
+
+      try {
+        const url = key 
+          ? `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`
+          : `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
+
+        const headers = { 'Content-Type': 'application/json' };
+        if (authToken) {
+          headers['Authorization'] = `Bearer ${authToken}`;
+          headers['x-api-key'] = authToken;
+        }
+
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: headers,
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: 'Hallo, antworte nur mit: OK' }] }]
+          })
+        });
+
+        if (response.ok) {
+          testResult.innerHTML = '✅ API-Verbindung erfolgreich hergestellt!';
+          testResult.style.color = '#69f0ae';
+        } else {
+          const err = await response.json().catch(() => ({ error: { message: response.statusText } }));
+          testResult.innerHTML = `❌ Fehler (${response.status}): ${err.error?.message || response.statusText}`;
+          testResult.style.color = '#ff6b6b';
+        }
+      } catch (e) {
+        testResult.innerHTML = `❌ Verbindungsfehler: ${e.message}`;
+        testResult.style.color = '#ff6b6b';
+      }
+    });
+  }
+}
+
+
 /* ──────────────────────────────────────────────────
    UTILITY
    ────────────────────────────────────────────────── */
@@ -526,8 +655,10 @@ function debounce(fn, delay) {
    ────────────────────────────────────────────────── */
 
 function applyState(state) {
+  const theme = state.theme || CONFIG.theme.default;
+  document.body.className = 'theme-' + theme;
   renderTitlebar();
-  renderThemeButtons(state.theme);
+  renderThemeButtons(theme);
   renderSelect(CONFIG.uiLanguage, state.uiLanguage);
   renderSelect(CONFIG.aiLanguage, state.aiLanguage);
   renderAIParameters(state.userFacts, state.toneMimic);
@@ -535,6 +666,7 @@ function applyState(state) {
   renderToggles(state);
   renderModels(state[CONFIG.models.storageKey]);
   renderLocalLlmSettings(state);
+  renderGeminiSettings(state);
   // Show active tab page
   handleTabChange(CONFIG.titlebar.activeTab);
 }
@@ -543,7 +675,8 @@ function loadSavedState() {
   // Collect all storage keys we care about
   const toggleKeys = CONFIG.aiChat.toggles.map(t => t.id);
   const localLlmKeys = Object.values(CONFIG.localLlm.storageKeys);
-  const allKeys = ['theme', 'uiLanguage', 'aiLanguage', 'userFacts', 'toneMimic', CONFIG.models.storageKey, ...toggleKeys, ...localLlmKeys];
+  const geminiKeys = ['geminiApiKey', 'geminiAuthToken', 'geminiApiModel', 'enableClippy', 'clippyDwellTime', 'clippyChance', 'clippyMode'];
+  const allKeys = ['theme', 'uiLanguage', 'aiLanguage', 'userFacts', 'toneMimic', CONFIG.models.storageKey, ...toggleKeys, ...localLlmKeys, ...geminiKeys];
 
   if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.sync) {
     chrome.storage.sync.get(allKeys, state => {

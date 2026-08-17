@@ -10,6 +10,8 @@ Jede Version wird als **Git Tag** gespeichert. Das bedeutet: Der gesamte Code-St
 
 | Tag | Datum | Highlights |
 |-----|-------|------------|
+| `v2.7.0` | 2026-07-28 | Animierter Clippy-Assistent repariert & erweitert (Variationen, Distortion-Fix), Gemini 3.5 & Flash, Kontext-Matrix, Prompt Enhancer & Timeline |
+| `v2.6.8` | 2026-06-15 | Performance Optimierungen, Local LLM Support, Deep Research Overlay |
 | `v2.3` | 2026-03-22 | TL;DR in Zusammenfassen-Submenü integriert, 4 neue Zusammenfassungs-Optionen |
 | `v2.2` | 2025-03-20 | Snipping Tool, FINANCE Menü, Dark Mode, 80+ Prompts |
 
@@ -27,20 +29,20 @@ Jede Version wird als **Git Tag** gespeichert. Das bedeutet: Der gesamte Code-St
 git tag -l
 
 # Checkout einer spezifischen Version
-git checkout v2.2
+git checkout v2.7.0
 
 # Zeige PROMPTS.md einer alten Version
-git show v2.1:PROMPTS.md
+git show v2.7.0:PROMPTS.md
 
 # Vergleiche zwei Versionen
-git diff v2.1..v2.2 -- PROMPTS.md
+git diff v2.3..v2.7.0 -- PROMPTS.md
 ```
 
 ### Option C: Permalink (Direkt-Link)
 Jede Datei hat einen permanenten Link pro Version:
 ```
-https://github.com/Misterwanwa/CompAInion/blob/v2.2/PROMPTS.md
-https://github.com/Misterwanwa/CompAInion/blob/v2.1/PROMPTS.md
+https://github.com/Misterwanwa/CompAInion/blob/v2.7.0/PROMPTS.md
+https://github.com/Misterwanwa/CompAInion/blob/v2.3/PROMPTS.md
 ```
 
 ## 🔄 Workflow: Neue Version erstellen
@@ -63,14 +65,18 @@ git push origin vX.Y
 
 ## 📋 Changelog
 
-### v2.3 (aktuell)
-- **Neue Features:**
-  - TL;DR Funktion in "Zusammenfassen"-Submenü integriert
-  - 4 neue Zusammenfassungs-Optionen:
-    - 🌐 Zusammenfassen (URL crawlen) - Emoji-Fakten-Extraktion
-    - 📚 Kapitel Zusammenfassung - Study Pack mit CoT + Guardian Tokens
-    - 📝 Normale Zusammenfassung - 3 Erkenntnisse unter 100 Wörter
-    - ⚡ Super kurze Zusammenfassung - Max 3 Sätze, 20 Wörter
+### v2.7.0 (aktuell)
+- **Clippy Assistent Animation-Engine & Variationen:**
+  - Verzerrungsfreie SVG-Struktur: Parent-Transformationen (`<g transform="translate(...)">`) von animierten Elementen entkoppelt
+  - Exakte `transform-box: fill-box; transform-origin: center;` Einbindung verhindert das Springen von Augen, Pupillen und Augenbrauen
+  - 6 lebendige, abwechslungsreiche Posen: `pose-float`, `pose-think`, `pose-bounce`, `pose-wink`, `pose-wave`, `pose-surprised`
+  - Automatische kontextbasierte Start-Pose je nach Website-Aktion
+  - Dynamischer Posen-Wechsler alle 4,5 Sekunden & interaktiver Hover-Bounce Effekt
+- **Highlights seit 2.6.8:**
+  - Gemini 3.5 & Flash Integration mit intelligenter Kontext-Matrix
+  - Prompt Enhancer & Chat History Timeline Integration
+  - Deep Research Mode & Local LLM Integration Framework
+  - Umfassendes UI-Theme Redesign (Aero Glass, Retro, Modern Dark)
 
 - **Prompts gesamt:** 87
 - **Implementiert:** ~30 | **Geplant:** ~55

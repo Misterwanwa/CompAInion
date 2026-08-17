@@ -3,6 +3,80 @@ let chatOpen = false;
 let isDragging = false;
 let dragOffset = { x: 0, y: 0 };
 
+let currentTheme = 'aero';
+
+// Load active theme
+chrome.storage.sync.get(['theme'], (result) => {
+  if (result.theme) {
+    currentTheme = result.theme;
+    applyThemeToElements();
+  }
+});
+
+// Watch for theme changes
+chrome.storage.onChanged.addListener((changes, namespace) => {
+  if (changes.theme) {
+    currentTheme = changes.theme.newValue || 'aero';
+    applyThemeToElements();
+  }
+});
+
+function applyThemeToElements() {
+  const chat = document.getElementById('gemini-chat-overlay');
+  if (chat) chat.className = 'theme-' + currentTheme;
+  const logo = document.getElementById('gemini-logo');
+  if (logo) logo.className = 'theme-' + currentTheme;
+  const menu = document.getElementById('gemini-context-menu');
+  if (menu) menu.className = 'theme-' + currentTheme;
+}
+
+// Global Keyboard Shortcuts
+document.addEventListener('keydown', (e) => {
+  if (!e.altKey) return;
+  const key = e.key.toUpperCase();
+  if (key === 'V') {
+    e.preventDefault();
+    startScreenshotSelection();
+  } else if (key === 'S') {
+    e.preventDefault();
+    captureFullTabScreenshot();
+  } else if (key === 'N') {
+    e.preventDefault();
+    resetChatWindow();
+  } else if (key === 'R') {
+    e.preventDefault();
+    chrome.runtime.sendMessage({ action: 'reloadExtension' });
+  }
+});
+
+function resetChatWindow() {
+  const chatContainer = document.getElementById('gemini-chat-overlay');
+  if (!chatContainer || chatContainer.style.display === 'none') {
+    toggleChatWindow();
+  }
+  const promptInput = document.getElementById('prompt-input');
+  if (promptInput) {
+    promptInput.value = '';
+    promptInput.focus();
+  }
+  showToast('Neuer Chat gestartet');
+}
+
+async function captureFullTabScreenshot() {
+  showToast('Screenshot wird erstellt...');
+  try {
+    chrome.runtime.sendMessage({ action: 'captureScreenshot' }, async (response) => {
+      if (response && response.success) {
+        await sendScreenshotToAI(response.dataUrl);
+      } else {
+        showToast('Fehler: ' + (response?.error || 'Konnte Screenshot nicht aufnehmen'));
+      }
+    });
+  } catch (err) {
+    showToast('Fehler: ' + err.message);
+  }
+}
+
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === "toggleChat") toggleChatWindow();
   if (request.action === "showAskPopup") showAskSelectionPopup(request.selectedText);
@@ -74,6 +148,7 @@ function toggleChatWindow() {
 function createChatWindow() {
   const container = document.createElement('div');
   container.id = 'gemini-chat-overlay';
+  container.className = 'theme-' + currentTheme;
   container.innerHTML = `
     <div class="chat-header">
       <span>Gemini Chat</span>
@@ -93,8 +168,18 @@ function createChatWindow() {
 }
 
 function initializeGeminiLogo() {
+  // Warte auf body falls noch nicht verfügbar
+  if (!document.body) {
+    setTimeout(initializeGeminiLogo, 50);
+    return;
+  }
+  
+  // Prüfe ob Logo bereits existiert
+  if (document.getElementById('gemini-logo')) return;
+  
   const logo = document.createElement('div');
   logo.id = 'gemini-logo';
+  logo.className = 'theme-' + currentTheme;
   logo.innerHTML = '✨';
   // Standard-Position (oben links)
   logo.style.left = '20px';
@@ -159,7 +244,12 @@ function stopDrag() {
   }
 }
 
-window.addEventListener('load', initializeGeminiLogo);
+// Sofortige Initialisierung (auch wenn Seite noch lädt)
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initializeGeminiLogo);
+} else {
+  initializeGeminiLogo();
+}
 
 // Hauptaktionen (alphabetisch sortiert)
 const ACTION_LIST = [
@@ -171,34 +261,31 @@ const ACTION_LIST = [
   { label: 'Barrierefreiheit prüfen', key: 'accessibility', implemented: true },
   { label: 'Benötige ich das wirklich?', key: 'doINeedThis', implemented: true },
   { label: 'Checkliste', key: 'checklist', implemented: true },
-  { label: '🚧 Deep Research', key: 'deepResearch', implemented: true },
+  { label: 'Deep Research', key: 'deepResearch', implemented: true },
   { label: 'Diagramm erstellen', key: 'createDiagram', implemented: true },
   { label: 'E-Mail Entwurf', key: 'emailDraft', implemented: true },
-  { label: '🚧 FAQ Erstellen', key: 'createFAQ', implemented: false },
+  { label: 'FAQ Erstellen', key: 'createFAQ', implemented: true },
   { label: 'Faktencheck', key: 'factCheck', implemented: true },
   { label: 'Genderkorrekte Sprache pruefen', key: 'genderLanguage', implemented: true },
   { label: 'Grammatik pruefen', key: 'grammarCheck', implemented: true },
-  { label: '🚧 Im Internet suchen', key: 'webSearch', implemented: false },
-  { label: '🚧 Lernhilfe', key: 'learningHelp', implemented: false },
+  { label: 'Lernhilfe', key: 'learningHelp', implemented: true },
   { label: 'Motivation', key: 'motivation', implemented: true },
-  { label: '🚧 Plagiatscheck', key: 'plagiarism', implemented: true },
+  { label: 'Plagiatscheck', key: 'plagiarism', implemented: true },
   { label: 'Präsentation erstellen', key: 'createPresentation', implemented: true },
   { label: '🚧 Preisvergleich', key: 'priceCompare', implemented: false },
-  { label: '🚧 Produkt Vor- und Nachteile', key: 'productProsCons', implemented: false },
-  { label: '🚧 Quiz erstellen', key: 'createQuiz', implemented: false },
-  { label: '🚧 Rezept', key: 'recipe', hasSubmenu: true, implemented: true },
-  { label: '🚧 Seite wiederverwenden', key: 'reusePage', implemented: false },
-  { label: '🚧 Shopping-Assistent', key: 'shoppingAssistant', implemented: true },
+  { label: 'Vor- und Nachteile', key: 'productProsCons', implemented: true },
+  { label: 'Quiz erstellen', key: 'createQuiz', implemented: true },
+  { label: 'Rezept', key: 'recipe', hasSubmenu: true, implemented: true },
   { label: 'Sokrates-Fragekette', key: 'socraticChain', implemented: true },
-  { label: '🚧 Story erstellen', key: 'createStory', hasSubmenu: true, implemented: true },
-  { label: '🚧 Text vervollständigen', key: 'completeText', implemented: false },
-  { label: '🚧 Uebersetzen', key: 'translate', implemented: true },
-  { label: '🚧 Umschreiben', key: 'rewrite', implemented: true },
-  { label: '🚧 Urlaubsplanung', key: 'vacationPlan', implemented: false },
-  { label: '🚧 Website analysieren', key: 'pageSherlock', implemented: false },
+  { label: 'Story erstellen', key: 'createStory', hasSubmenu: true, implemented: true },
+  { label: 'Text vervollständigen', key: 'completeText', implemented: true },
+  { label: 'Übersetzen', key: 'translate', implemented: true },
+  { label: 'Umschreiben', key: 'rewrite', implemented: true },
+  { label: 'Urlaubsplanung', key: 'vacationPlan', implemented: true },
+  { label: 'Website analysieren', key: 'pageSherlock', implemented: true },
   { label: 'Wie ist die Rechtslage?', key: 'legalCheck', implemented: true },
-  { label: '🚧 Witz erzählen', key: 'tellJoke', implemented: true },
-  { label: '🚧 Zitate extrahieren', key: 'extractQuotes', implemented: false },
+  { label: 'Witz erzählen', key: 'tellJoke', implemented: true },
+  { label: 'Zitate extrahieren', key: 'extractQuotes', implemented: true },
   { label: 'Zusammenfassen', key: 'summary', hasSubmenu: true, implemented: true },
   // Gruppen am Ende (ausklappbar)
   { label: '▼ CODE Tools', key: 'CODE_MENU', isMenu: true, isCollapsible: true },
@@ -210,48 +297,49 @@ const ACTION_LIST = [
 // Untermenüs
 const SUBMENUS = {
   CODE_MENU: [
-    { label: '🚧 CODE Code Review', key: 'codeReview', implemented: false },
-    { label: '🚧 CODE Website kopieren', key: 'copyCode', implemented: false }
+    { label: 'CODE Code Review', key: 'codeReview', implemented: true },
+    { label: 'CODE Website kopieren', key: 'copyCode', implemented: true }
   ],
   SEO_MENU: [
-    { label: '🚧 SEO Audit', key: 'seoAudit', implemented: false },
-    { label: '🚧 SEO Content Analyzer', key: 'seoContentAnalyzer', implemented: false },
-    { label: '🚧 SEO Hero Image Ideen', key: 'seoHeroImages', implemented: false },
-    { label: '🚧 SEO Keyword Cluster', key: 'seoKeywordCluster', implemented: false },
-    { label: '🚧 SEO Keywords', key: 'seoKeywords', implemented: false },
-    { label: '🚧 SEO Strategie', key: 'seoStrategy', implemented: false },
-    { label: '🚧 SEO Themenideen', key: 'seoTopicIdeas', implemented: false },
-    { label: '🚧 SEO Website zu Artikel', key: 'seoWebsiteToArticle', implemented: false }
+    { label: 'SEO Audit', key: 'seoAudit', implemented: true },
+    { label: 'SEO Content Analyzer', key: 'seoContentAnalyzer', implemented: true },
+    { label: 'SEO Hero Image Ideen', key: 'seoHeroImages', implemented: true },
+    { label: 'SEO Keyword Cluster', key: 'seoKeywordCluster', implemented: true },
+    { label: 'SEO Keywords', key: 'seoKeywords', implemented: true },
+    { label: 'SEO Strategie', key: 'seoStrategy', implemented: true },
+    { label: 'SEO Themenideen', key: 'seoTopicIdeas', implemented: true },
+    { label: 'SEO Website zu Artikel', key: 'seoWebsiteToArticle', implemented: true }
   ],
   SOCIAL_MENU: [
-    { label: '🚧 SOCIAL Bio erstellen', key: 'socialBio', implemented: false },
-    { label: '🚧 SOCIAL Clickbait-Artikel', key: 'socialClickbait', implemented: false },
-    { label: '🚧 SOCIAL Facebook Ideen', key: 'socialFacebook', implemented: false },
-    { label: '🚧 SOCIAL Hashtags', key: 'socialHashtags', implemented: false },
-    { label: '🚧 SOCIAL Instagram Ideen', key: 'socialInstagram', implemented: false },
-    { label: '🚧 SOCIAL Post generieren', key: 'socialPost', implemented: false },
-    { label: '🚧 SOCIAL Social Media Ideen', key: 'socialGeneral', implemented: false },
-    { label: '🚧 SOCIAL TikTok Ideen', key: 'socialTikTok', implemented: false },
-    { label: '🚧 SOCIAL Twitter Ideen', key: 'socialTwitter', implemented: false },
-    { label: '🚧 SOCIAL Vor-/Nachteile Post', key: 'socialProsCons', implemented: false },
-    { label: '🚧 SOCIAL YouTube Beschreibung', key: 'socialYouTubeDesc', implemented: false },
-    { label: '🚧 SOCIAL YouTube Ideen', key: 'socialYouTube', implemented: false }
+    { label: 'SOCIAL Bio erstellen', key: 'socialBio', implemented: true },
+    { label: 'SOCIAL Clickbait-Artikel', key: 'socialClickbait', implemented: true },
+    { label: 'SOCIAL Facebook Post', key: 'socialFacebook', implemented: true },
+    { label: 'SOCIAL Hashtags', key: 'socialHashtags', implemented: true },
+    { label: 'SOCIAL Instagram Ideen', key: 'socialInstagram', implemented: true },
+    { label: 'SOCIAL Post generieren', key: 'socialPost', implemented: true },
+    { label: 'SOCIAL Social Media Ideen', key: 'socialGeneral', implemented: true },
+    { label: 'SOCIAL TikTok Ideen', key: 'socialTikTok', implemented: true },
+    { label: 'SOCIAL Twitter Ideen', key: 'socialTwitter', implemented: true },
+    { label: 'SOCIAL Vor-/Nachteile Post', key: 'socialProsCons', implemented: true },
+    { label: 'SOCIAL YouTube Beschreibung', key: 'socialYouTubeDesc', implemented: true },
+    { label: 'SOCIAL YouTube Ideen', key: 'socialYouTube', implemented: true }
   ],
   FINANCE_MENU: [
-    { label: '🚧 FINANCE Aktien Analyse', key: 'financeStockAnalysis', implemented: false },
+    { label: 'FINANCE Aktien Analyse', key: 'financeStockAnalysis', implemented: true },
     { label: 'FINANCE Einfluss auf Märkte', key: 'financeMarket', implemented: true },
     { label: 'FINANCE Finanznews hierzu', key: 'financeNews', implemented: true },
-    { label: '🚧 FINANCE Investitionsrechner', key: 'financeInvestment', implemented: false },
-    { label: '🚧 FINANCE Portfolio Bewertung', key: 'financePortfolio', implemented: false }
+    { label: 'FINANCE Investitionsrechner', key: 'financeInvestment', implemented: true },
+    { label: 'FINANCE Portfolio Bewertung', key: 'financePortfolio', implemented: true }
   ],
   RECIPE_MENU: [
-    { label: '🚧 Einfach Backen Format', key: 'recipeSimpleBake', implemented: true },
-    { label: '🚧 Zutaten auflisten', key: 'recipeIngredients', implemented: true },
-    { label: '🚧 Zutat ersetzen...', key: 'recipeReplace', implemented: true },
-    { label: '🚧 Alternatives Rezept', key: 'recipeAlternative', implemented: true },
-    { label: '🚧 Für Küchengerät umwandeln...', key: 'recipeDevice', implemented: true },
-    { label: '🚧 Wie hübsch anrichten', key: 'recipePlating', implemented: true },
-    { label: '🚧 Kalorien & Nährwerte', key: 'recipeNutrition', implemented: true }
+    { label: 'Einfach Backen Format', key: 'recipeSimpleBake', implemented: true },
+    { label: 'Für Küchengerät umwandeln...', key: 'recipeDevice', implemented: true },
+    { label: 'Kalorien & Nährwerte', key: 'recipeNutrition', implemented: true },
+    { label: 'One-Pot', key: 'recipeOnePot', implemented: true },
+    { label: 'Rezept prüfen', key: 'recipeCheck', implemented: true },
+    { label: 'Wie hübsch anrichten', key: 'recipePlating', implemented: true },
+    { label: 'Zutaten auflisten', key: 'recipeIngredients', implemented: true },
+    { label: 'Zutat ersetzen...', key: 'recipeReplace', implemented: true }
   ],
   SUMMARY_MENU: [
     { label: 'TL;DR', key: 'summaryWithCrawl', implemented: true },
@@ -346,6 +434,7 @@ function showContextMenu(e) {
 
   const menu = document.createElement('div');
   menu.id = 'gemini-context-menu';
+  menu.className = 'theme-' + currentTheme;
   
   // Detect background and add appropriate class
   const brightness = detectBackgroundBrightness();
@@ -538,6 +627,9 @@ function attachMenuItemListeners(container, menu, isSubmenu = false) {
       } else if (action === 'createStory') {
         e.stopPropagation();
         showStorySubmenu(itemEl);
+      } else if (action === 'recipe') {
+        e.stopPropagation();
+        showRecipeSubmenu(itemEl);
       } else if (action === 'deepResearch' || action === 'motivation') {
         handleGeminiAction(action);
         menu.remove();
@@ -647,6 +739,117 @@ function showStorySubmenu(menuItem) {
   });
 }
 
+function showRecipeSubmenu(menuItem) {
+  const oldSubmenu = document.getElementById('gemini-submenu');
+  if (oldSubmenu) oldSubmenu.remove();
+  const submenu = document.createElement('div');
+  submenu.id = 'gemini-submenu';
+
+  function renderMainMenu() {
+    submenu.innerHTML = `
+      <div class="submenu-item" data-action="recipeSimpleBake">Einfach Backen Format</div>
+      <div class="submenu-item" data-action="recipeDevice">Für Küchengerät umwandeln... <span style="float: right; opacity: 0.5;">▶</span></div>
+      <div class="submenu-item" data-action="recipeNutrition">Kalorien & Nährwerte</div>
+      <div class="submenu-item" data-action="recipeOnePot">One-Pot</div>
+      <div class="submenu-item" data-action="recipeCheck">Rezept prüfen</div>
+      <div class="submenu-item" data-action="recipePlating">Wie hübsch anrichten</div>
+      <div class="submenu-item" data-action="recipeIngredients">Zutaten auflisten</div>
+      <div class="submenu-item" data-action="recipeReplace">Zutat ersetzen...</div>
+    `;
+    submenu.style.maxHeight = '';
+    submenu.style.overflowY = '';
+    
+    submenu.querySelectorAll('.submenu-item').forEach(item => {
+      item.addEventListener('click', (e) => {
+        if (e.target.classList.contains('submenu-copy')) return;
+        const action = e.currentTarget.dataset.action;
+        
+        if (action === 'recipeDevice') {
+          e.stopPropagation();
+          renderDeviceMenu();
+          return;
+        }
+        
+        handleGeminiAction(action);
+        document.getElementById('gemini-context-menu')?.remove();
+        submenu.remove();
+        document.removeEventListener('click', closeMenu);
+      });
+    });
+  }
+
+  function renderDeviceMenu() {
+    const devices = [
+      'Apfelsschneider', 'Austernmesser', 'Backofen', 'Baconbräter', 'Brotbackautomat', 
+      'Caipirinhastößel', 'Crepe-Gerät', 'Dampfgarer', 'Dörrautomat', 'Eismaschine', 
+      'Entsafter', 'Filterkaffeemaschine', 'Fondue', 'Grill', 
+      'Heißluftfritteuse', 'Joghurtbereiter', 'Kenwood Cooking Chef Gourmet', 
+      'Kirschkernentferner', 'Kugelformer', 'Le Creuset', 'Löffelwaage', 
+      'Marinierspritze', 'Mikrowelle', 'Milchaufschäumer', 'Mokkakanne', 
+      'One-Pot', 'Optigrill', 'Pancakemaker', 'Pastamaschine', 
+      'Popcornmaschine', 'Raclette', 'Sous-Vide', 'Sushireis', 
+      'Teigschneider', 'Thermomix', 'Toaster', 'Waffeleisen', 'Wiegemesser', 
+      'Zuckerwattemaschine'
+    ];
+    
+    submenu.innerHTML = `
+      <div class="submenu-item" id="recipe-device-back" style="font-weight: bold; text-align: center; border-bottom: 1px solid rgba(0,0,0,0.1); margin-bottom: 5px;">⬅ Zurück</div>
+      <div style="padding: 5px; border-bottom: 1px solid rgba(0,0,0,0.1); display: flex; gap: 5px; margin-bottom: 5px;">
+        <input type="text" id="custom-device-input" placeholder="Eigenes Gerät..." style="flex: 1; padding: 4px; font-size: 12px; border: 1px solid #ccc; border-radius: 3px; background: #fff; color: #000; width: 100%; box-sizing: border-box;" autocomplete="off" />
+        <button id="custom-device-btn" style="padding: 4px 8px; font-size: 12px; cursor: pointer; border: 1px solid #ccc; border-radius: 3px; background: #f0f0f0; color: #333;">OK</button>
+      </div>
+      ${devices.map(d => `<div class="submenu-item device-item" data-device="${d}">${d}</div>`).join('')}
+    `;
+    submenu.style.maxHeight = '400px';
+    submenu.style.overflowY = 'auto';
+    
+    submenu.querySelector('#recipe-device-back').addEventListener('click', (e) => {
+      e.stopPropagation();
+      renderMainMenu();
+    });
+
+    const triggerCustomDevice = () => {
+      const customDevice = submenu.querySelector('#custom-device-input').value.trim();
+      if (customDevice) {
+        handleGeminiAction('recipeDevice', customDevice);
+        document.getElementById('gemini-context-menu')?.remove();
+        submenu.remove();
+        document.removeEventListener('click', closeMenu);
+      }
+    };
+
+    submenu.querySelector('#custom-device-btn').addEventListener('click', (e) => {
+      e.stopPropagation();
+      triggerCustomDevice();
+    });
+
+    submenu.querySelector('#custom-device-input').addEventListener('keydown', (e) => {
+      e.stopPropagation();
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        triggerCustomDevice();
+      }
+    });
+    
+    submenu.querySelectorAll('.device-item').forEach(item => {
+      item.addEventListener('click', (e) => {
+        const device = e.currentTarget.dataset.device;
+        handleGeminiAction('recipeDevice', device);
+        document.getElementById('gemini-context-menu')?.remove();
+        submenu.remove();
+        document.removeEventListener('click', closeMenu);
+      });
+    });
+  }
+
+  renderMainMenu();
+
+  const itemRect = menuItem.getBoundingClientRect();
+  submenu.style.left = (itemRect.right + 5) + 'px';
+  submenu.style.top = itemRect.top + 'px';
+  document.body.appendChild(submenu);
+}
+
 function closeMenu() {
   const menu = document.getElementById('gemini-context-menu');
   const submenu = document.getElementById('gemini-submenu');
@@ -658,6 +861,15 @@ function closeMenu() {
 }
 
 function getPageContext() {
+  // Fallback: Wenn DOM noch nicht bereit ist, nur URL zurückgeben
+  if (!document.body) {
+    return {
+      url: window.location.href,
+      title: document.title || window.location.href,
+      text: `[Seite wird noch geladen - nur URL verfügbar]\n${window.location.href}`
+    };
+  }
+  
   const selectors = ['article', 'main', '[role="main"]', '.content', '.post-content', '.entry-content', '.article-body', '#content', '#main'];
   let textEl = null;
   for (const sel of selectors) {
@@ -667,7 +879,7 @@ function getPageContext() {
       break;
     }
   }
-  const rawText = (textEl || document.body).innerText;
+  const rawText = (textEl || document.body).innerText || '';
   const cleanText = rawText.replace(/\n{3,}/g, '\n\n').trim();
   const selectedText = window.getSelection()?.toString()?.trim();
   return {
@@ -677,15 +889,32 @@ function getPageContext() {
   };
 }
 
-function loadMarked() {
-  return new Promise((resolve, reject) => {
-    if (window.marked) { resolve(); return; }
-    const script = document.createElement('script');
-    script.src = 'https://cdn.jsdelivr.net/npm/marked/marked.min.js';
-    script.onload = resolve;
-    script.onerror = reject;
-    document.head.appendChild(script);
+function sanitizeHtml(html) {
+  const temp = document.createElement('div');
+  temp.innerHTML = html;
+  
+  // Remove scripts, styles, iframes, etc.
+  const scripts = temp.querySelectorAll('script, iframe, object, embed, link, style');
+  scripts.forEach(s => s.remove());
+  
+  // Clean event handlers and javascript: URLs
+  const allElements = temp.querySelectorAll('*');
+  allElements.forEach(el => {
+    for (let i = el.attributes.length - 1; i >= 0; i--) {
+      const attr = el.attributes[i];
+      if (attr.name.startsWith('on')) {
+        el.removeAttribute(attr.name);
+      } else if (['src', 'href', 'action'].includes(attr.name) && attr.value.trim().toLowerCase().startsWith('javascript:')) {
+        el.removeAttribute(attr.name);
+      }
+    }
   });
+  
+  return temp.innerHTML;
+}
+
+function loadMarked() {
+  return Promise.resolve();
 }
 
 async function showResponseModal(responseText, type = 'modal') {
@@ -700,7 +929,7 @@ async function showResponseModal(responseText, type = 'modal') {
       <div class="toast-body"></div>
     `;
     const responseBody = toast.querySelector('.toast-body');
-    if (window.marked) responseBody.innerHTML = window.marked.parse(responseText);
+    if (window.marked) responseBody.innerHTML = sanitizeHtml(window.marked.parse(responseText));
     else responseBody.textContent = responseText;
     document.body.appendChild(toast);
     toast.querySelector('#close-toast-btn').addEventListener('click', () => toast.remove());
@@ -715,7 +944,7 @@ async function showResponseModal(responseText, type = 'modal') {
       <div class="response-body"></div>
     `;
     const responseBody = modal.querySelector('.response-body');
-    if (window.marked) responseBody.innerHTML = window.marked.parse(responseText);
+    if (window.marked) responseBody.innerHTML = sanitizeHtml(window.marked.parse(responseText));
     else responseBody.textContent = responseText;
     overlay.appendChild(modal);
     document.body.appendChild(overlay);
@@ -727,25 +956,7 @@ async function showResponseModal(responseText, type = 'modal') {
   }
 }
 
-async function sendToLocalLlm(config, prompt, type = 'modal') {
-  showToast('Sende an lokales LLM...');
-  try {
-    const response = await fetch(config.endpoint, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${config.apiKey}` },
-      body: JSON.stringify({ model: config.model, messages: [{ role: 'user', content: prompt }] })
-    });
-    if (!response.ok) throw new Error('Request failed');
-    const data = await response.json();
-    const message = data.choices?.[0]?.message?.content || JSON.stringify(data);
-    if (type !== 'silent') showResponseModal(message, type);
-    return message;
-  } catch (error) {
-    const errorMsg = `Fehler: ${error.message}`;
-    if (type !== 'silent') showResponseModal(errorMsg, type);
-    return errorMsg;
-  }
-}
+// Local LLM request is handled by the shared function in local_llm_helpers.js
 
 function showDeepResearchPopup() {
   alert('Deep Research Popup (Platzhalter)');
@@ -1124,22 +1335,112 @@ Fakt 3:
 [Welche Behauptungen sollten mit Vorsicht genossen werden? Zusammenfassung aller problematischen Fakten]`;
       break;
     case 'plagiarism':
-      promptText = `Pruefe auf Plagiate: ${context.url}\n\n${context.text.substring(0, 4000)}`;
+      promptText = `Analysiere den folgenden Text bzw. die folgende Website auf Plagiate und mögliche Rechtsverletzungen. Vergleiche den Inhalt mit verfügbaren Quellen und prüfe auf Übereinstimmungen.
+
+WICHTIG: Korrekt gekennzeichnete Zitate sind KEIN Plagiat. Nur nicht oder falsch zitierte Übernahmen gelten als Plagiat.
+
+URL: ${context.url}
+
+Zu analysierender Inhalt:
+"""
+${context.text.substring(0, 6000)}
+"""
+
+ANALYSE-ANFORDERUNGEN:
+
+1. Prüfe auf textliche Übereinstimmungen mit bekannten Quellen
+2. Prüfe auf paraphrasierte Inhalte ohne Quellenangabe
+3. Prüfe auf übernommene Ideen ohne Quellenangabe
+4. Prüfe auf korrekte Zitierweise (falls Zitate vorhanden)
+5. Falls der Inhalt geeignet ist, prüfe auf:
+   - Urheberrechtsverletzungen (Texte, Fotos, Filme, Musik, Software)
+   - Patentverletzungen (Erfindungen, technische Lösungen)
+   - Designrechtsverletzungen (Gestaltungen, Designs)
+
+ERGEBNISSTRUKTUR:
+
+TEIL 1: PLAGIATSQUOTE
+Plagiat erkannt zu: [XX]%
+(Methode: Wie wurde berechnet? z.B. "Prozentualer Anteil des Textes mit erkennbaren Übereinstimmungen")
+
+---
+
+TEIL 2: IDENTIFIZIERTE PLAGIATE
+
+Plagiat 1:
+- Textstelle im analysierten Werk: [Originalzitat aus dem Text]
+- Verdacht: [Wörtliche Übernahme / Paraphrase / Ideenklau / Fehlende Quellenangabe]
+- Mutmaßliche Originalquelle: [Titel, Autor, URL falls bekannt]
+- Zitierweise: [Korrekt / Falsch / Fehlend]
+- Bewertung: [Begründung warum dies ein Plagiat ist]
+
+---
+
+Plagiat 2:
+[... gleiche Struktur ...]
+
+---
+
+[weitere Plagiate mit gleicher Struktur...]
+
+TEIL 3: RECHTLICHE EINSCHÄTZUNG
+
+Mögliche Rechtsverletzungen:
+- Urheberrecht: [Ja/Nein - Begründung]
+- Patentrecht: [Ja/Nein - Begründung, falls geprüft]
+- Designrecht: [Ja/Nein - Begründung, falls geprüft]
+- Wettbewerbsrecht: [Ja/Nein - Begründung]
+- Strafrecht (Betrug etc.): [Ja/Nein - Begründung]
+
+Grobe Einschätzung: [Kurze Zusammenfassung der rechtlichen Risiken]
+
+---
+
+TEIL 4: FAZIT
+[Maximal 4 Sätze. Zusammenfassung der wichtigsten Erkenntnisse und Empfehlung für nächste Schritte.]`;
       break;
     case 'rewrite':
-      promptText = `Schreibe um (gleiche Infos, neue Formulierung):\n\n${context.text.substring(0, 4000)}`;
+      promptText = `Schreibe den folgenden Text um. Behalte dabei den Stil, den Aufbau und den Inhalt vollständig bei. Verändere ausschließlich die Wortwahl und Satzstruktur, sodass der Text anders klingt, aber dieselbe Bedeutung und denselben Informationsgehalt hat.
+
+URL: ${context.url}
+
+Originaltext:
+"""
+${context.text.substring(0, 5000)}
+"""
+
+ANFORDERUNGEN:
+- Behalte die ursprüngliche Struktur und Gliederung bei
+- Behalte den Ton und Stil des Originals bei (formell, locker, fachlich, etc.)
+- Nutze andere Wörter und andere Satzstellungen
+- Kürze nicht ab und füge keine neuen Informationen hinzu
+- Behalte alle Fakten, Zahlen, Daten und Zitate exakt bei
+- Wenn Zitate im Original vorhanden sind, bleiben sie wörtlich erhalten
+- Der umgeschriebene Text soll sich flüssig und natürlich lesen
+- Falls erforderlich, verwende Formatierungen zur besseren Lesbarkeit: Fettdruck für wichtige Begriffe, Überschriften für Abschnitte, Listen für Aufzählungen, etc.
+
+WICHTIG: Gib als Antwort AUSSCHLIESSLICH den umgeschriebenen Text aus. Keine Einleitung, keine Erklärung, keine Vergleiche mit dem Original, keine Markierungen was sich geändert hat, keine individuellen Prompts, keine Fragen, keine Kommentare. NUR der umgeschriebene Text.`;
       break;
     case 'translate': {
       const textToTranslate = context.text.substring(0, 8000);
-      // Pruefe ob Text fuer DeepL geeignet ist (unter kostenlosem Limit)
-      if (textToTranslate.length < 1500) {
-        // Oeffne DeepL mit Text als Parameter (falls moeglich) oder nutze KI
+      // Automatische Erkennung: Kurze Texte -> DeepL, Lange Texte -> KI
+      const DEEPL_FREE_LIMIT = 1500; // Zeichen
+      
+      if (textToTranslate.length < DEEPL_FREE_LIMIT) {
+        // Kurzer Text: Direkt zu DeepL kopieren und öffnen
         const deeplUrl = `https://www.deepl.com/translator#auto/de/${encodeURIComponent(textToTranslate)}`;
-        window.open(deeplUrl, '_blank');
+        navigator.clipboard.writeText(textToTranslate).then(() => {
+          window.open(deeplUrl, '_blank');
+          showToast('Text kopiert - DeepL wird geöffnet');
+        }).catch(() => {
+          // Fallback falls Clipboard nicht funktioniert
+          window.open(deeplUrl, '_blank');
+        });
         return;
       }
-      // Fallback: Nutze KI fuer laengere Texte
-      promptText = `Uebersetze den folgenden Text ins Deutsche (falls der Text bereits Deutsch ist, uebersetze ins Englische).
+      
+      // Langer Text: KI-Übersetzung
+      promptText = `Übersetze den folgenden Text maximal originalgetreu ins Deutsche (falls der Text bereits Deutsch ist, übersetze ins Englische).
 
 URL: ${context.url}
 
@@ -1148,26 +1449,141 @@ Originaltext:
 ${textToTranslate}
 """
 
-Wichtig:
-- Uebersetze sinngemaess, nicht woertlich
-- Behalte den Ton und Stil bei (formell, locker, fachlich, etc.)
-- Passe kulturelle Referenzen an, falls noetig
-- Fachbegriffe sollten korrekt uebersetzt werden
+ANFORDERUNGEN FÜR MAXIMAL ORIGINALGETREUE ÜBERSETZUNG:
+- Behalte den Satzbau so weit wie möglich bei (Wortstellung, Satzlänge, Satzstruktur)
+- Behalte den Stil exakt bei (formell, locker, fachlich, poetisch, sarkastisch, etc.)
+- Behalte den Inhalt vollständig bei - keine Kürzung, keine Ergänzung
+- Übersetze wörtlich, nicht sinngemäß (sofern grammatikalisch möglich)
+- Behalte alle Fachbegriffe korrekt bei (übersetze nur wenn es im Zielsprachraum üblich ist)
+- Behalte alle Namen, Orte, Marken exakt bei
+- Behalte Zahlen, Daten, Maßeinheiten exakt bei
+- Behalte die Formatierung bei (Absätze, Aufzählungen, etc.)
+- Kulturelle Referenzen: Übersetze wörtlich, füge keine Erklärungen hinzu
 
-Gib nur die Uebersetzung aus, ohne den Originaltext wiederzugeben.`;
+WICHTIG: Gib als Antwort AUSSCHLIESSLICH die Übersetzung aus. Keine Einleitung, keine Erklärung, kein Hinweis auf die Übersetzung, kein Originaltext. NUR die reine Übersetzung.`;
       break;
     }
     case 'completeText':
-      promptText = `Vervollstaendige den Text sinnvoll:\n\n${context.text.substring(0, 4000)}`;
+      promptText = `Vervollständige den folgenden Text oder die folgende Website zu einem vollständigen, kohärenten Satz bzw. Absatz.
+
+URL: ${context.url}
+
+Unvollständiger Text:
+"""
+${context.text.substring(0, 4000)}
+"""
+
+ANFORDERUNGEN:
+- Analysiere den vorhandenen Text und vervollständige ihn zu einem sinnvollen, abgeschlossenen Satz oder Absatz
+- Behalte den Stil, den Ton und die Thematik des bestehenden Textes bei
+- Der vervollständigte Text soll sich natürlich und flüssig anlesen
+- Füge keine neuen Themen oder Informationen hinzu, die nicht im Kontext liegen
+- Wenn der Text bereits vollständig ist, gib ihn unverändert aus
+
+WICHTIG: Gib als Antwort AUSSCHLIESSLICH den vervollständigten Text aus. Keine Einleitung, keine Erklärung, keine Markierungen. NUR der reine Text.`;
       break;
     case 'codeReview':
-      promptText = `Code Review fuer: ${context.url}\n\n${context.text.substring(0, 5000)}\n\nAnalysiere Qualitaet, Sicherheit, Performance.`;
+      promptText = `Führe ein Code Review für den folgenden Code durch.
+
+Quelle: ${context.url}
+
+Code:
+"""
+${context.text.substring(0, 5000)}
+"""
+
+STRUKTUR:
+
+1. Übersicht
+- Sprache/Framework
+- Zweck des Codes
+- Zeilenanzahl
+
+2. Kritische Fehler (Sicherheit, Bugs)
+- Zeile X: [Problem beschreiben]
+- Korrektur: [Korrigierter Code]
+
+---
+
+3. Warnungen (Performance, Best Practices)
+- Zeile Y: [Problem beschreiben]
+- Korrektur: [Korrigierter Code]
+
+---
+
+4. Verbesserungsvorschläge (Lesbarkeit, Wartbarkeit)
+
+5. Positive Aspekte (Was ist gut gemacht?)
+
+6. Gesamtbewertung (1-10) mit Begründung`;
       break;
     case 'copyCode':
-      promptText = `Extrahiere Code von: ${context.url}\n\n${context.text.substring(0, 5000)}`;
+      let cleanHtml = '';
+      if (document.body) {
+        const bodyClone = document.body.cloneNode(true);
+        // Remove extension elements and non-structural tags to keep content compact and clean
+        bodyClone.querySelectorAll('#gemini-context-menu, #gemini-submenu, #gemini-response-overlay, #gemini-toast, #gemini-response-toast, #gemini-overlay-container, script, style, svg').forEach(el => el.remove());
+        cleanHtml = bodyClone.innerHTML;
+      }
+      const htmlSnippet = cleanHtml ? cleanHtml.substring(0, 15000) : '[Keine HTML-Struktur verfügbar]';
+      promptText = `Du bist ein erfahrener Frontend-Entwickler. Deine Aufgabe ist es, die technische HTML- und CSS-Struktur der folgenden Website zu kopieren.
+
+URL: ${context.url}
+
+WICHTIG: Ersetze alle konkreten Texte, Überschriften, Links und visuellen Inhalte (Bilder, Symbole etc.) durch generische Platzhalter (z. B. 'Lorem Ipsum' für Fließtexte, 'Überschrift' oder 'Kategorie' für Überschriften, und 'bild.png' für Bilder). Die technische Struktur (HTML-Tags, CSS-Klassen, Container-Hierarchien, Grid-/Flexbox-Layouts) soll aber exakt erhalten bleiben und sauber nachgebaut werden.
+
+Hier ist die HTML-Struktur der Website (bereinigt um Skripte/Styles/SVGs):
+"""
+${htmlSnippet}
+"""
+
+Generiere den bereinigten, strukturellen HTML- und CSS-Code. Formatiere die Ausgabe sauber in Markdown-Codeblöcken (mit \`\`\`html und \`\`\`css).`;
       break;
     case 'deepResearch':
-      promptText = `Tiefenanalyse fuer: ${context.url}\n\n${context.text.substring(0, 4000)}\n\nHintergruende, offene Fragen, Quellen.`;
+      promptText = `Führe eine äußerst ausführliche, tiefgehende Recherche und Analyse zu diesem Thema durch. Recherchiere alle möglichen Hintergründe, Zusammenhänge und Kontexte.
+
+Ausgangspunkt: ${context.url}
+
+Inhalt:
+"""
+${context.text.substring(0, 6000)}
+"""
+
+ANFORDERUNGEN:
+- Analysiere das Thema extrem ausführlich und detailliert
+- Recherchiere ALLE möglichen Hintergründe: historisch, politisch, wirtschaftlich, sozial, technologisch, kulturell
+- Gehe auf Ursachen, Entwicklungen, Trends und Zukunftsperspektiven ein
+- Berücksichtige verschiedene Perspektiven und Sichtweisen
+- Nenne konkrete Fakten, Daten, Statistiken und Belege
+- Identifiziere Akteure, Institutionen, Schlüsselfiguren
+- Gehe auf kontroverse Punkte und Debatten ein
+- Nenne Quellen und Referenzen wo möglich
+
+STRUKTUR:
+
+1. Themenidentifikation (Was ist der Kern?)
+
+2. Ausführliche Hintergrundanalyse
+   - Historische Entwicklung
+   - Politische Rahmenbedingungen
+   - Wirtschaftliche Faktoren
+   - Gesellschaftliche/soziale Aspekte
+   - Technologische Grundlagen
+   - Kultureller Kontext
+
+3. Faktenlage (Was ist gesichert?)
+   - Konkrete Daten und Statistiken
+   - Belege und Beweise
+
+4. Kontroverse Punkte (Wo gibt es Meinungsverschiedenheiten?)
+
+5. Akteure und Interessengruppen
+
+6. Zukunftsperspektiven und Trends
+
+7. Offene Fragen (Was bleibt ungeklärt?)
+
+8. Quellen und weiterführende Recherche`;
       break;
     case 'askPage': {
       const userQuestion = prompt('Welche Frage hast du zu dieser Website?');
@@ -1189,7 +1605,20 @@ Meine Frage: ${userQuestion}`;
       break;
     }
     case 'pageSherlock':
-      promptText = `Detektiv-Analyse: ${context.url}\n\n${context.text.substring(0, 5000)}\n\nVertrauenswuerdigkeit, Red Flags, Geschaeftsmodell.`;
+      promptText = `Du bist ein investigativer Journalist und Forensiker ("Sherlock"). Analysiere diese Website auf Herz und Nieren:
+
+URL: ${context.url}
+Inhalt:
+"""
+${context.text.substring(0, 5000)}
+"""
+
+Führe eine gründliche Detektiv-Analyse in folgenden Abschnitten durch:
+1. **Seriosität & Trust-Faktoren**: Wirkt die Seite seriös? Gibt es rechtliche Hinweise (Impressumspflicht, Datenschutzerklärung)? Wer steckt dahinter (Unternehmen, Privatperson, Organisation)?
+2. **Red Flags & Alarmzeichen**: Findest du Widersprüche, übertriebene Versprechungen, künstliche Verknappung ("Nur noch heute!"), manipulatives Wording (Dark Patterns) oder verdächtige Behauptungen?
+3. **Geschäftsmodell & Monetarisierung**: Wie verdient diese Seite Geld? (z.B. Affiliate-Links, Werbung, Abos, Direktverkauf, Datensammlung, Spenden).
+4. **Zielgruppe & Manipulationstechniken**: Wer soll hier angesprochen werden? Welche psychologischen Trigger (Social Proof, Authority, Scarcity) werden genutzt, um den Besucher zu beeinflussen?
+5. **Detektivisches Fazit & Urteil**: Eine klare Einschätzung auf einer Skala von 1-10 (1 = hochgradig dubios/Scam, 10 = absolut vertrauenswürdig).`;
       break;
     case 'writeReply':
       promptText = `Erstelle 3 Antwortmöglichkeiten auf diese Nachricht/E-Mail/Kommentar.
@@ -1311,19 +1740,124 @@ Erstelle eine Vergleichsübersicht mit:
       promptText = `Preisvergleich fuer: ${context.url}\n\n${context.text.substring(0, 4000)}\n\nIst der Preis fair? Alternativen?`;
       break;
     case 'productProsCons':
-      promptText = `Vor- und Nachteile Analyse: ${context.url}\n\n${context.text.substring(0, 4000)}`;
+      promptText = `Analysiere den folgenden Text, die Website, das Produkt, die Nachricht oder den Artikel und erstelle eine Liste der Vor- und Nachteile.
+
+URL: ${context.url}
+
+Inhalt:
+"""
+${context.text.substring(0, 6000)}
+"""
+
+ANFORDERUNGEN:
+- Durchsuche den Inhalt nach allem, für das Vorteile und Nachteile ermittelt werden können
+- Das kann sein: Produkte, Dienstleistungen, Websites, Apps, Konzepte, Ideen, Entscheidungen, Nachrichten, Artikel, etc.
+- Die Anzahl der Vor- und Nachteile muss NICHT ausgeglichen sein
+- Wenn keine Vorteile oder keine Nachteile erkennbar sind, schreibe das explizit hin
+- Sei ehrlich und objektiv, übertreibe weder positiv noch negativ
+
+WICHTIG: Gib als Antwort AUSSCHLIESSLICH die Liste der Vor- und Nachteile aus. Kein Fazit, keine Einleitung, keine Erklärung, keine Bewertung, keine Empfehlung. NUR die reine Liste.
+
+Format:
+
+Vorteile:
+- [Vorteil 1]
+- [Vorteil 2]
+- [Vorteil 3]
+- [... oder "Keine erkennbaren Vorteile"]
+
+Nachteile:
+- [Nachteil 1]
+- [Nachteil 2]
+- [Nachteil 3]
+- [... oder "Keine erkennbaren Nachteile"]`;
       break;
     case 'createFAQ':
-      promptText = `Erstelle FAQ (8-12 Fragen) aus: ${context.url}\n\n${context.text.substring(0, 5000)}`;
+      promptText = `Erstelle eine FAQ (Frequently Asked Questions) basierend auf diesem Inhalt.
+
+URL: ${context.url}
+
+Inhalt:
+"""
+${context.text.substring(0, 6000)}
+"""
+
+ANFORDERUNGEN:
+- Erstelle so viele FAQ-Einträge wie sinnvoll und notwendig sind (mindestens 5)
+- Jeder Eintrag besteht aus einer Frage und einer prägnanten Antwort
+- Die Fragen sollen die wichtigsten und häufigsten Fragen zum Thema abdecken
+- Die Antworten sollen kurz, klar und verständlich formuliert sein
+- Die Fragen sollen aus verschiedenen Perspektiven kommen (Anfänger, Fortgeschrittene, Praktiker)
+
+WICHTIG: Gib als Antwort AUSSCHLIESSLICH die FAQ aus. Keine Einleitung, kein Text davor, kein Text danach, keine Erklärung, keine Zusammenfassung, keine 3 Zusatzprompts. NUR die reine FAQ.
+
+Format:
+Q: [Frage]
+A: [Antwort]
+
+Q: [Frage]
+A: [Antwort]
+
+[usw.]`;
       break;
     case 'createQuiz':
-      promptText = `Erstelle Quiz (10 Fragen) aus: ${context.url}\n\n${context.text.substring(0, 5000)}`;
+      promptText = `Erstelle ein interaktives Quiz basierend auf diesem Inhalt. Das Quiz soll so gestaltet sein, dass es den Lernenden aktiv einbindet und nicht nur ein statischer Test ist.
+
+Inhalt:
+"""
+${context.text.substring(0, 6000)}
+"""
+
+ANFORDERUNGEN:
+- Die Anzahl der Fragen richtet sich nach dem Umfang und der Komplexität des Inhalts (mindestens 5, idealerweise so viele wie nötig für gute Abdeckung)
+- Verwende ALLE denkbaren Fragetypen, nicht nur Multiple-Choice:
+  * Multiple-Choice (einzelne/mehrere richtige Antworten)
+  * Wahr/Falsch mit Begründung
+  * Zuordnungsaufgaben (Begriffe zu Definitionen)
+  * Lückentexte
+  * Offene Fragen mit Musterlösung
+  * Rangfolge-Aufgaben
+  * Fallstudien/Szenarien
+  * Bildbeschreibungen (falls Bilder im Text)
+  * Schätzfragen
+  * Ja/Nein-Fragen mit Erklärung
+  * Kreuzworträtsel-ähnliche Aufgaben
+  * Dialogvervollständigung
+  * Fehlerfinden im Text
+- Schwierigkeitsgrad soll variieren und aufsteigend sein
+- Zu jeder Frage: richtige Antwort + kurze Erklärung warum
+- Wenn möglich: Gamification-Elemente einbauen (Punkte, Level, Herausforderungen)
+- Das Quiz soll interaktiv wirken, als würde ein Tutor fragen
+
+WICHTIG: Erstelle ein abwechslungsreiches, interaktives Lernerlebnis. Vermeide monotone Aufzählungen.`;
       break;
     case 'extractQuotes':
-      promptText = `Extrahiere Zitate aus: ${context.url}\n\n${context.text.substring(0, 5000)}\n\nMarkante Aussagen, Statistiken, kontroverse Meinungen.`;
-      break;
-    case 'webSearch':
-      promptText = `Suchstrategie fuer: ${context.url}\n\n${context.text.substring(0, 4000)}\n\nOptimierte Suchanfragen mit Operatoren.`;
+      promptText = `Extrahiere alle Zitate aus dem folgenden Text bzw. der folgenden Website.
+
+URL: ${context.url}
+
+Inhalt:
+"""
+${context.text.substring(0, 6000)}
+"""
+
+ANFORDERUNGEN:
+- Liste ALLE Zitate auf, die im Text vorkommen
+- Ein Zitat ist jede wörtliche Rede, jede direkte Aussage in Anführungszeichen oder jede markante Formulierung, die als Zitat erkennbar ist
+- Zu jedem Zitat: Nenne die Quelle, falls im Text angegeben
+- Falls keine Quelle angegeben ist, schreibe "Quelle: nicht angegeben"
+- Behalte die Originalformulierung exakt bei
+
+WICHTIG: Gib als Antwort AUSSCHLIESSLICH die Liste der Zitate aus. Keine Einleitung, keine Erklärung, keine Bewertung, keine zusätzlichen Kommentare. NUR die Zitate mit ihren Quellen.
+
+Format:
+Zitat 1: "[Originalzitat]"
+Quelle: [Quelle oder "nicht angegeben"]
+
+Zitat 2: "[Originalzitat]"
+Quelle: [Quelle oder "nicht angegeben"]
+
+[usw.]`
       break;
     case 'extractData2':
       promptText = `Extrahiere strukturierte Daten aus: ${context.url}\n\n${context.text.substring(0, 5000)}`;
@@ -1435,13 +1969,82 @@ ${context.text.substring(0, 5000)}
       break;
 
     case 'vacationPlan':
-      promptText = `Urlaubsplanung fuer: ${context.url}\n\n${context.text.substring(0, 4000)}\n\nBeste Reisezeit, Unterkunft, Budget, Must-Sees.`;
+      promptText = `Erstelle einen detaillierten Urlaubsplan basierend auf diesem Inhalt.
+
+URL: ${context.url}
+
+Inhalt:
+"""
+${context.text.substring(0, 5000)}
+"""
+
+STRUKTUR:
+
+1. Zusammenfassung des Reiseziels
+   - Was macht dieses Ziel besonders?
+   - Für wen ist es geeignet?
+
+2. Beste Reisezeit
+   - Wetter, Temperaturen, Niederschlag
+   - Touristensaison vs. Nebensaison
+   - Besondere Events/Festivals
+
+3. Tagesplan
+   - Tag 1: [Morgens / Mittags / Nachmittags / Abends]
+   - Tag 2: [Morgens / Mittags / Nachmittags / Abends]
+   - [weitere Tage...]
+
+4. Unterkunftsempfehlungen
+   - Viertel/Region
+   - Preiskategorien
+
+5. Transport
+   - Anreise
+   - Vor Ort
+
+6. Packliste
+   - Essentials
+   - Je nach Saison
+
+7. Geschätztes Budget
+   - Unterkunft
+   - Essen
+   - Aktivitäten
+   - Transport
+
+8. Praktische Hinweise
+   - Öffnungszeiten
+   - Tickets/Vorabbuchung
+   - Tipps und Tricks`;
       break;
     case 'contextCollector':
       promptText = `Sammle Kontext von: ${context.url}\n\n${context.text.substring(0, 5000)}`;
       break;
     case 'learningHelp':
-      promptText = `Lernmaterial zu: ${context.url}\n\n${context.text.substring(0, 5000)}\n\nErklaerungen, Mnemonics, Quizfragen.`;
+      promptText = `Erstelle umfassende Lernmaterialien aus diesem Inhalt.
+
+Inhalt:
+"""
+${context.text.substring(0, 6000)}
+"""
+
+ANFORDERUNGEN:
+- Erstelle so viele Lernhilfen wie sinnvoll und notwendig sind (keine feste Anzahl)
+- Die Menge richtet sich nach Umfang und Komplexität des Inhalts
+
+MÖGLICHE LERNFORMATE (wähle passende aus):
+- Kurzzusammenfassung
+- Kernbegriffe mit Definitionen
+- Mnemonics und Merksätze
+- Karteikarten (Frage/Antwort)
+- Wichtige Zusammenhänge (als Tabelle oder Liste)
+- Prüfungsrelevante Fragen
+- Visualisierungsvorschläge (Diagramme, Mindmaps)
+- Lernpfad/Vorgehensweise
+- Häufige Fehler und wie man sie vermeidet
+- Vergleiche und Gegenüberstellungen
+
+WICHTIG: Passe Umfang und Tiefe an den Inhalt an. Kurze Inhalte = kompaktere Lernhilfen, lange Inhalte = ausführlichere Lernhilfen.`;
       break;
     case 'createDiagram':
       promptText = `Extrahiere alle quantitativen Daten aus dieser Seite und erstelle einen Visualisierungsplan: Welche Daten eignen sich für Balkendiagramm, Tortendiagramm, Liniengrafik oder Tabelle? Erstelle dann ein Mermaid-Diagramm für die wichtigste Datenaussage.
@@ -1459,45 +2062,34 @@ Anforderungen:
 3. Erstelle Mermaid-Code für die wichtigste Aussage
 4. Gib NUR den Mermaid-Code aus, keine Erklärungen`;
       break;
-    case 'reusePage':
-      promptText = `Content-Reuse fuer: ${context.url}\n\n${context.text.substring(0, 4000)}\n\nSocial Media, Blog, Newsletter Ideen.`;
-      break;
-    case 'shoppingAssistant':
-      promptText = `Shopping-Analyse: ${context.url}\n\n${context.text.substring(0, 2000)}\n\nPreischeck, Alternativen, Gutscheine.`;
-      break;
     case 'tellJoke':
-      promptText = `Analysiere diese Website und erstelle passende Witze zum Thema.
+      promptText = `Analysiere diese Website oder den markierten Text und erstelle EINEN einzigen Witz zum Thema.
 
-Website: ${context.url}
+WICHTIG: Gib als Antwort NUR den Witz aus. Keine Einleitung, keine Erklärung, keine Bewertung, keine Kategorien, kein Format. NUR der reine Witz.
+
+URL: ${context.url}
 
 Kontext:
 """
 ${context.text.substring(0, 3000)}
 """
 
-Erstelle 5 Witze in verschiedenen Kategorien:
+ANFORDERUNGEN AN DEN WITZ:
+- Der Witz soll zum Thema des Textes/der Website passen
+- Länge: 1-3 Sätze (kurz und prägnant)
+- Der Witz darf aus JEDER Kategorie stellen, zum Beispiel:
+  * Wortwitz / Wortspiel
+  * Schmutziger Witz / Sex-Witz
+  * Schwarzer Humor
+  * Witz über Personen oder Gruppen
+  * Absurder Humor ("Deine Mudda", "Klein-Erna", "Chuck Norris")
+  * Antiwitz (erwartet Pointe, kommt keine)
+  * Verwechslungswitz
+  * Sarkasmus / Ironie
+  * Frech / Ü18
+  * Beliebige andere Kategorie
 
-**1. Normal (Allgemein tauglich)**
-Ein Witz, der fuer alle Altersgruppen geeignet ist.
-
-**2. Sarkastisch/Ironisch**
-Ein sarkastischer Kommentar oder Witz ueber das Thema.
-
-**3. Schwarzer Humor**
-Ein etwas dunklerer Witz (aber nicht beleidigend).
-
-**4. Wortspiel**
-Ein kreatives Wortspiel basierend auf Begriffen der Website.
-
-**5. Frech/Ue18**
-Ein etwas frecherer, erwachsener Witz (aber nicht beleidigend).
-
-Format pro Witz:
-**[Kategorie]**
-Setup: [Aufbau]
-Pointe: [Aufloesung]
-
-Optional: Bewertung der Witzqualitaet (1-10) und kurze Erklaerung, falls der Witz ein spezifisches Referenz braucht.`;
+REGEL: Die Antwort darf AUSSCHLIESSLICH aus dem Witz bestehen. Kein "Hier ist dein Witz:", keine Anführungszeichen drumherum, keine Erkläration. NUR der Witz.`;
       break;
     case 'createStory':
       promptText = `Erstelle Story (${summaryType}) zu: ${context.url}\n\n${context.text.substring(0, 3000)}`;
@@ -1584,64 +2176,358 @@ Untersuche das Dokument auf folgende KI-typische Merkmale und bewerte jedes Krit
 [2-3 Saetze mit der Gesamteinschaetzung und den staerksten Indikatoren]`;
       break;
     case 'seoAudit':
-      promptText = `SEO Audit: ${context.url}\n\n${context.text.substring(0, 5000)}\n\nOn-Page, Content, Technisches SEO, Quick Wins.`;
+      promptText = `Du bist ein SEO-Experte. Führe ein umfassendes On-Page- und technisches SEO-Audit für diese Seite durch:
+
+URL: ${context.url}
+Inhalt:
+"""
+${context.text.substring(0, 5000)}
+"""
+
+Analysiere folgende Bereiche und gib konkrete Optimierungsvorschläge:
+1. **Meta-Tags & Title**: Ist der Titel optimal (Länge, Keyword-Platzierung)? Ist eine Meta-Description vorhanden und ansprechend formuliert?
+2. **Überschriften-Struktur**: Ist die H1-H6 Hierarchie logisch aufgebaut? Gibt es mehrere H1?
+3. **Content-Tiefe & Keyword-Fokus**: Ist der Inhalt ausreichend detailliert für Suchmaschinen? Welches Haupt-Keyword wird anvisiert und ist die Keyword-Dichte natürlich?
+4. **Interne & Externe Verlinkung**: Sind sinnvolle Links und sprechende Ankertexte vorhanden?
+5. **Bilder-SEO**: Haben die Bilder (falls im Text beschrieben) sinnvolle Alt-Tags und Dateinamen?
+6. **Core Web Vitals & Mobile Friendliness (theoretische Einschätzung)**: Gibt es Anzeichen für Performance-Probleme oder schlechte mobile Lesbarkeit?
+7. **SEO Quick Wins**: Nenne die 3 am schnellsten umsetzbaren Maßnahmen mit dem größten Hebel.`;
       break;
     case 'seoKeywords':
-      promptText = `Keyword Analyse: ${context.url}\n\n${context.text.substring(0, 5000)}\n\nPrimaer, Sekundaer, Long-Tail Keywords.`;
+      promptText = `Führe eine Keyword-Recherche und -Analyse für die folgende Seite durch:
+
+URL: ${context.url}
+Inhalt:
+"""
+${context.text.substring(0, 5000)}
+"""
+
+Liefer folgende Keyword-Listen:
+1. **Hauptkeyword (Focus Keyword)**: Das wichtigste Keyword, auf das diese Seite optimiert sein sollte.
+2. **Sekundäre Keywords (5-8 Stück)**: Relevante Neben-Keywords, die im Text vorkommen sollten.
+3. **Long-Tail Keywords (5-10 Stück)**: Spezifische, mehrteilige Suchphrasen mit geringerem Wettbewerb.
+4. **W-Fragen (W-Questions)**: 5 konkrete Fragen, nach denen Nutzer suchen und die diese Seite beantworten sollte.
+5. **Suchvolumen & SEO-Difficulty (Schätzung)**: Eine relative Einschätzung (Hoch/Mittel/Niedrig) für jedes Keyword.`;
       break;
     case 'seoContentAnalyzer':
-      promptText = `Content SEO Analyse: ${context.url}\n\n${context.text.substring(0, 5000)}\n\nRelevanz, Struktur, Keyword-Optimierung.`;
+      promptText = `Analysiere den Inhalt dieser Seite als SEO Content Specialist. 
+
+URL: ${context.url}
+Inhalt:
+"""
+${context.text.substring(0, 5000)}
+"""
+
+Prüfe den Text auf folgende Kriterien:
+1. **Lesbarkeitsindex (Flesch-Reading-Ease)**: Wie verständlich ist der Text für die Zielgruppe?
+2. **Suchintention (Search Intent)**: Welcher Intent wird bedient (Informational, Transactional, Navigational, Commercial)? Passt der Content dazu?
+3. **Semantische Dichte (WDF*IDF)**: Welche verwandten Begriffe und LSI-Keywords fehlen, um das Thema holistisch abzudecken?
+4. **Strukturelle Lesbarkeit**: Sind Absätze kurz genug? Werden Bullet Points, Tabellen und fettgedruckte Schlüsselwörter sinnvoll eingesetzt?
+5. **Call-To-Action (CTA)**: Gibt es eine klare Handlungsaufforderung? Ist sie psychologisch gut platziert?
+6. **Konkrete Text-Optimierung**: Schlage 3 konkrete Textänderungen vor, um das Google-Ranking zu verbessern.`;
       break;
     case 'seoStrategy':
-      promptText = `SEO Strategie: ${context.url}\n\n${context.text.substring(0, 4000)}\n\nKeyword-Strategie, Content-Plan, Linkbuilding.`;
+      promptText = `Entwirf eine langfristige, strategische SEO-Roadmap (6-12 Monate) für diese Website:
+
+URL: ${context.url}
+Inhalt:
+"""
+${context.text.substring(0, 4000)}
+"""
+
+Struktur der SEO-Strategie:
+1. **Wettbewerber-Identifikation**: Welche Arten von Websites sind die direkten organischen Konkurrenten für dieses Thema?
+2. **Content-Lücken (Content Gap Analysis)**: Welche Aspekte des Themas fehlen auf der aktuellen Seite noch komplett?
+3. **Technische SEO-Prioritäten**: Welche technischen Fundamente müssen gelegt werden (z. B. Schema.org Markup, Ladezeit)?
+4. **Backlink- & Outreach-Strategie**: Welche Partner-Websites oder Branchenportale eignen sich für Linkaufbau? Welche Content-Assets könnten als "Linkmagneten" dienen?
+5. **Monatlicher Meilenstein-Plan**: Konkrete To-Dos für Monat 1-3 (Quick Wins), Monat 4-6 (Content-Ausbau) und Monat 7-12 (Autoritätsaufbau).`;
       break;
     case 'seoTopicIdeas':
-      promptText = `Content Ideen fuer: ${context.url}\n\n${context.text.substring(0, 4000)}\n\nPillar Content, Cluster, Evergreen, Trending.`;
+      promptText = `Generiere 15 hochrelevante, SEO-optimierte Content- und Themenideen, die perfekt zum Portfolio dieser Website passen:
+
+URL: ${context.url}
+Inhalt:
+"""
+${context.text.substring(0, 4000)}
+"""
+
+Strukturiere die Ideen in folgende Kategorien (je 3-5 Ideen):
+1. **Evergreen Content**: Zeitlose Ratgeber und Anleitungen.
+2. **Trendthemen / News-Jack**: Aktuelle Themen mit schnellem Traffic-Potenzial.
+3. **Vergleichs- & Testberichte**: Entscheidungshelfer für kaufbereite Nutzer.
+4. **Interaktiver Content / Tools**: Ideen für Rechner, Checklisten oder Infografiken.
+
+Für jedes Idee angeben:
+- Arbeitstitel (Catchy & SEO-freundlich)
+- Ziel-Keyword (Fokus)
+- Suchintention
+- Kurze Inhaltsgliederung (3 Sätze)`;
       break;
     case 'seoWebsiteToArticle':
-      promptText = `Wandle in Artikel um: ${context.url}\n\n${context.text.substring(0, 5000)}\n\nSEO-optimierte Struktur mit Keywords.`;
+      promptText = `Schreibe den vorliegenden Werbe- oder Website-Text in einen SEO-optimierten, redaktionellen Fachartikel um:
+
+URL: ${context.url}
+Inhalt:
+"""
+${context.text.substring(0, 5000)}
+"""
+
+Vorgaben für den Artikel:
+- **Tonalität**: Fachlich fundiert, objektiv, informativ (nicht werblich!).
+- **Struktur**:
+  - Aufmerksamkeitsstarke Überschrift (H1) mit dem Hauptkeyword.
+  - Einleitung (Teaser), die das Problem beschreibt und die Leselust weckt.
+  - Hauptteil gegliedert in logische Zwischenüberschriften (H2, H3).
+  - Fazit mit zusammenfassendem Schlusssatz.
+- **SEO-Optimierung**: Integriere das Hauptthema organisch in den Text. Nutze Listen und Hervorhebungen für eine gute Scanbarkeit.
+- **Umfang**: Mindestens 600 Wörter, detailreich und flüssig zu lesen.`;
       break;
     case 'seoKeywordCluster':
-      promptText = `Keyword Cluster fuer: ${context.url}\n\n${context.text.substring(0, 4000)}\n\nThematische Cluster mit Pillar und Cluster Content.`;
+      promptText = `Erstelle ein strategisches Keyword-Clustering basierend auf dem Thema dieser Website:
+
+URL: ${context.url}
+Inhalt:
+"""
+${context.text.substring(0, 4000)}
+"""
+
+Erstelle eine Struktur aus Pillar- und Cluster-Seiten:
+1. **Pillar Page (Hauptthema)**: Welches allumfassende Haupt-Keyword sollte die zentrale Säule sein?
+2. **Keyword Cluster (3-5 Cluster)**:
+   Unterteile das Thema in logische Sub-Cluster. Für jedes Cluster:
+   - **Sub-Thema (Cluster Page)**
+   - **Fokus-Keyword**
+   - **Supporting Keywords (Long-Tail & W-Fragen)**
+   - **Suchintention**
+3. **Interne Verlinkungs-Strategie**: Wie sollten die Cluster-Seiten mit der Pillar-Seite verlinkt werden (Ankertexte, Linkfluss).`;
       break;
     case 'seoHeroImages':
-      promptText = `Hero Image Ideen: ${context.url}\n\n${context.text.substring(0, 4000)}\n\nKonzepte, KI-Prompts, technische Spezifikationen.`;
+      promptText = `Entwickle 5 kreative Konzepte für das Hauptbild (Hero Image) dieser Webseite, um die CTR und das User-Engagement zu steigern.
+
+URL: ${context.url}
+Inhalt:
+"""
+${context.text.substring(0, 4000)}
+"""
+
+Erstelle für jedes der 5 Konzepte:
+1. **Konzept-Name**: Ein prägnanter Titel.
+2. **Visuelle Idee & Psychologische Wirkung**: Was ist zu sehen und welche Emotion soll es beim Besucher auslösen?
+3. **Passender Stil**: (z. B. Minimalistischer 3D-Renders, authentische Business-Fotografie, Flat Illustration).
+4. **Prompt für KI-Generatoren**: Ein detaillierter, englischer Prompt (für Midjourney, DALL-E 3 oder Stable Diffusion), um dieses Bild zu generieren.
+5. **Technische Details**: Empfohlene Farbpalette (passend zum Thema) und Kontrasthinweise für Text-Overlays.`;
       break;
     case 'socialPost':
-      promptText = `Social Media Posts fuer: ${context.url}\n\n${context.text.substring(0, 4000)}\n\nLinkedIn, Twitter, Instagram, Facebook.`;
+      promptText = `Generiere gebrauchsfertige Social-Media-Posts zu dieser Website für verschiedene Plattformen:
+
+URL: ${context.url}
+Inhalt:
+"""
+${context.text.substring(0, 4000)}
+"""
+
+Erstelle jeweils einen Post optimiert für:
+1. **LinkedIn**: Professioneller Ton, Fokus auf Learnings, strukturiert mit Bullet Points, Einladung zur Diskussion, 3 relevante Hashtags.
+2. **Twitter/X**: Maximal 280 Zeichen, starker Hook, kurze Kernaussage, Link-Platzhalter, 2 Hashtags.
+3. **Instagram (Caption)**: Emotionaler oder inspirierender Einstieg, Emojis, klarer CTA zur Bio, Hashtag-Block.
+4. **Facebook**: Längerer, erzählender Text (Storytelling), der Community-Interaktion fördert.`;
       break;
     case 'socialGeneral':
-      promptText = `Social Media Strategie: ${context.url}\n\n${context.text.substring(0, 4000)}\n\nContent-Pillars, Posting-Frequenz, Content-Mix.`;
+      promptText = `Entwirf eine ganzheitliche Social-Media-Content-Strategie für diese Website:
+
+URL: ${context.url}
+Inhalt:
+"""
+${context.text.substring(0, 4000)}
+"""
+
+Die Strategie soll folgende Punkte abdecken:
+1. **3 Content-Säulen (Content Pillars)**: Welche Hauptthemen sollten dauerhaft bespielt werden?
+2. **Zielgruppen-Persona**: Für welchen fiktiven Nutzertyp ist dieser Content auf Social Media am relevantesten?
+3. **Content-Mix-Verhältnis**: Verteilung von Information, Unterhaltung, Promotion und Interaktion.
+4. **Kanal-Empfehlung**: Auf welchen Plattformen (LinkedIn, TikTok, Insta etc.) lohnt sich der Fokus am meisten und warum?
+5. **Redaktionsplan (Vorschlag)**: Ein beispielhafter Wochenplan (Montag bis Sonntag) mit Posting-Ideen.`;
       break;
     case 'socialBio':
-      promptText = `Social Media Bios fuer: ${context.url}\n\n${context.text.substring(0, 3000)}\n\nInstagram, LinkedIn, Twitter, TikTok.`;
+      promptText = `Erstelle professionelle und optimierte Biografien (Bios) für verschiedene Social-Media-Kanäle basierend auf dieser Website:
+
+URL: ${context.url}
+Inhalt:
+"""
+${context.text.substring(0, 3000)}
+"""
+
+Erstelle jeweils 2 Varianten (seriös/professionell & kreativ/locker) für folgende Plattformen:
+1. **LinkedIn Profil-Slogan & Info-Text**: Fokus auf Value Proposition, Expertise und B2B-Klarheit.
+2. **Twitter/X (Max. 160 Zeichen)**: Prägnanter Pitch mit einem relevanten Hashtag.
+3. **Instagram (Max. 150 Zeichen)**: Strukturiert mit Zeilenumbrüchen, passenden Emojis und einem Call-To-Action (CTA) zum Link.
+4. **TikTok (Max. 80 Zeichen)**: Extrem komprimierter, aufmerksamkeitsstarker Hook.`;
       break;
     case 'socialHashtags':
-      promptText = `Hashtag Strategie fuer: ${context.url}\n\n${context.text.substring(0, 3000)}`;
+      promptText = `Entwirf eine maßgeschneiderte Hashtag-Strategie für Social-Media-Posts zu diesem Thema:
+
+URL: ${context.url}
+Inhalt:
+"""
+${context.text.substring(0, 3000)}
+"""
+
+Strukturiere die Hashtags in folgende Kategorien:
+1. **Breite Nischen-Hashtags (Sehr populär)**: Große Reichweite, hoher Wettbewerb.
+2. **Spezifische Themen-Hashtags (Mittlere Größe)**: Hohe Relevanz für die Zielgruppe.
+3. **Long-Tail & Trend-Hashtags (Klein)**: Geringer Wettbewerb, hohe Conversion.
+4. **Brand-Hashtags (Vorschläge)**: Eigene Hashtags für die Marke/Website.
+
+Erstelle fertige Kopier-Sets für:
+- Instagram (ca. 10-15 Hashtags)
+- LinkedIn (3-5 Hashtags)
+- Twitter/X (1-2 Hashtags)
+- TikTok (4-6 Hashtags)`;
       break;
     case 'socialInstagram':
-      promptText = `Instagram Content Ideen: ${context.url}\n\n${context.text.substring(0, 4000)}\n\nFeed, Stories, Reels, Captions.`;
+      promptText = `Erstelle 5 kreative Konzepte für Instagram-Posts basierend auf dem Inhalt dieser Website:
+
+URL: ${context.url}
+Inhalt:
+"""
+${context.text.substring(0, 4000)}
+"""
+
+Die Konzepte sollen verschiedene Formate abdecken:
+1. **Karussell-Post (Infografik)**: Gliederung von Folie 1 bis 10 mit Textvorschlägen für die Slides.
+2. **Reel-Konzept (Kurzvideo)**: Visuelle Szene, Text auf dem Screen, Audio-Vorschlag und Sprecher-Skript.
+3. **Story-Sequenz (3 Stories)**: Interaktive Sticker-Ideen (Umfragen, Quiz, Regler) zur Aktivierung der Follower.
+4. **Statischer Post**: Bildbeschreibung und vollständige Bildunterschrift (Caption) mit starkem Hook und CTA.`;
       break;
     case 'socialTwitter':
-      promptText = `Twitter/X Content: ${context.url}\n\n${context.text.substring(0, 4000)}\n\nTweets, Threads, Templates.`;
+      promptText = `Erstelle Content für Twitter/X basierend auf dieser Seite:
+
+URL: ${context.url}
+Inhalt:
+"""
+${context.text.substring(0, 4000)}
+"""
+
+Liefere:
+1. **3 Einzel-Tweets**: Verschiedene Einstiegspunkte (Zahlen/Fakten, Zitat, kontroverse Frage). Jeweils unter 280 Zeichen inklusive Link-Platzhalter.
+2. **1 Twitter-Thread (5-8 Tweets)**:
+   - Tweet 1: Extrem starker Hook, der zum Klicken auf den Thread anregt.
+   - Tweets 2-6: Stückweise Aufbereitung der Kernpunkte der Website (je ein Learning/Fakt pro Tweet).
+   - Letzter Tweet: Zusammenfassung, Call-To-Action (Link zur Seite) und Frage an die Leser.`;
       break;
     case 'socialFacebook':
-      promptText = `Facebook Content: ${context.url}\n\n${context.text.substring(0, 4000)}\n\nPosts, Videos, Gruppen-Strategie.`;
+      promptText = `Schreibe einen ansprechenden Facebook-Post basierend auf dem Inhalt dieser Website:
+
+URL: ${context.url}
+Inhalt:
+"""
+${context.text.substring(0, 4000)}
+"""
+
+Anforderungen an den Post:
+- **Einleitung (Hook)**: Ein packender erster Satz (z.B. eine Frage oder ein überraschender Fakt), der den Nutzer beim Scrollen stoppt.
+- **Hauptteil (Body)**: 3-4 leicht verdauliche, strukturierte Absätze mit den Kernvorteilen oder Kernaussagen. Nutze Emojis, um den Text visuell aufzulockern.
+- **Call-to-Action (CTA)**: Eine klare Aufforderung am Ende (z.B. "Besuche die Website für alle Details:", "Teile deine Meinung in den Kommentaren!").
+- **Link-Platzhalter**: Füge den Link ${context.url} am Ende ein.
+- **Hashtags**: 3-5 relevante Hashtags am Ende des Posts.
+- **Tonalität**: Nahbar, freundlich, informativ und community-orientiert.`;
       break;
     case 'socialTikTok':
-      promptText = `TikTok Content: ${context.url}\n\n${context.text.substring(0, 4000)}\n\nVideo-Ideen, Trends, Hooks.`;
+      promptText = `Entwickle 3 virale TikTok-Videokonzepte basierend auf diesem Inhalt:
+
+URL: ${context.url}
+Inhalt:
+"""
+${context.text.substring(0, 4000)}
+"""
+
+Jedes Konzept muss folgende Struktur haben:
+1. **Der Hook (Erste 3 Sekunden)**: Visueller und verbaler Hook, der das Weiterscrollen verhindert.
+2. **Das Videoskript**: Genaue Beschreibung der Szenen und gesprochener Text (Voiceover).
+3. **Trend- & Audio-Empfehlung**: Welcher Musikstil oder Sound-Effekt passt dazu?
+4. **Text-Overlay-Ideen**: Kurze Texteinblendungen für das Video.
+5. **Caption & Hashtags**: Optimierter Begleittext für den TikTok-Algorithmus.`;
       break;
     case 'socialYouTube':
-      promptText = `YouTube Content: ${context.url}\n\n${context.text.substring(0, 4000)}\n\nVideo-Ideen, Thumbnails, SEO.`;
+      promptText = `Entwickle 3 detaillierte YouTube-Video-Konzepte basierend auf diesem Webseiteninhalt:
+
+URL: ${context.url}
+Inhalt:
+"""
+${context.text.substring(0, 4000)}
+"""
+
+Jedes Konzept muss enthalten:
+1. **Video-Titel**: 3 Varianten (SEO-optimiert, Neugier-erweckend, Kurz & Prägnant).
+2. **Thumbnail-Konzept**: Beschreibung des Bildes, Text auf dem Thumbnail, Farbschema.
+3. **Hook (Erste 30 Sekunden)**: Wie wird der Zuschauer sofort gefesselt, um die Watchtime zu maximieren?
+4. **Grob-Gliederung**: Gliederung der Video-Sektionen (Intro, Hauptteil 1-3, Outro).
+5. **Idee für YouTube Shorts**: Ein Ableger-Konzept für ein 60-sekündiges Hochkantvideo.`;
       break;
     case 'socialYouTubeDesc':
-      promptText = `YouTube Beschreibung: ${context.url}\n\n${context.text.substring(0, 4000)}\n\nMit Timestamps, Links, Tags.`;
+      promptText = `Schreibe eine SEO-optimierte YouTube-Videobeschreibung für ein Video über das Thema dieser Website:
+
+URL: ${context.url}
+Inhalt:
+"""
+${context.text.substring(0, 4000)}
+"""
+
+Die Videobeschreibung soll folgende Abschnitte enthalten:
+1. **Die ersten 2 Zeilen (wichtig für die Suche)**: Einladender Text mit den Haupt-Keywords, der die Kernaussage des Videos zusammenfasst.
+2. **Ausführliche Zusammenfassung**: Detaillierter Text über den Videoinhalt (ca. 100-150 Wörter).
+3. **Kapitelmarker (Timestamps - geschätzt)**: Video in Abschnitte strukturieren (z. B. 00:00 Intro, 02:30 Hauptteil...).
+4. **Call-To-Actions & Links**: Verweis auf diese Website und Social Channels.
+5. **Hashtags & Such-Tags**: 3 relevante Hashtags und eine Liste von 10 passenden Video-Tags (Keywords).`;
       break;
     case 'socialClickbait':
-      promptText = `Clickbait Headlines: ${context.url}\n\n${context.text.substring(0, 4000)}\n\n5 Headlines mit Curiosity Gap.`;
+      promptText = `Generiere 10 ethische, aber klickstarke Headline-Ideen (Clickbait) basierend auf diesem Webseiteninhalt:
+
+URL: ${context.url}
+Inhalt:
+"""
+${context.text.substring(0, 4000)}
+"""
+
+Nutze bewährte psychologische Trigger für die Headlines:
+1. **Die Neugier-Lücke (Curiosity Gap)**: Verrate fast alles, aber behalte das wichtigste Detail vor.
+2. **Die Zahlen-Formel**: Nutze ungerade Zahlen ("Warum 7 von 10...")
+3. **Der überraschende Fakt**: Stelle eine gängige Meinung in Frage.
+4. **Die Angst, etwas zu verpassen (FOMO)**: Betone die Dringlichkeit oder Exklusivität.
+5. **Der persönliche Benefit**: Direktes Versprechen an den Leser.
+
+Gib für jede Headline an, für welches Social Network (Facebook, LinkedIn, Twitter, Pinterest) sie sich am besten eignet.`;
       break;
     case 'socialProsCons':
-      promptText = `Pro/Contra Social Post: ${context.url}\n\n${context.text.substring(0, 4000)}`;
+      promptText = `Erstelle Vor- und Nachteile-Posts zum Thema dieser Website für LinkedIn, Instagram und das YouTube Community Tab:
+
+URL: ${context.url}
+Inhalt:
+"""
+${context.text.substring(0, 4000)}
+"""
+
+Generiere folgende Varianten:
+
+1. **LinkedIn-Variante**:
+   - Professionell-sachlicher Ton.
+   - Kurze Einleitung zum Thema.
+   - Gegenüberstellung mit Emojis (👍 Vorteile / 👎 Nachteile), maximal 3 prägnante Punkte je Seite.
+   - Einbindung der Community durch eine offene Abschlussfrage.
+   - 3 relevante Hashtags.
+
+2. **Instagram-Variante (Karussell- & Caption-Konzept)**:
+   - **Bildbeschreibung für Karussell-Folien**:
+     * Folie 1 (Titel): Aufmerksamkeitsstarke Überschrift ("Die nackte Wahrheit über...")
+     * Folie 2-3 (Vorteile): Visuelle Beschreibung + je 1-2 Key-Vorteile.
+     * Folie 4-5 (Nachteile): Visuelle Beschreibung + je 1-2 Key-Nachteile.
+     * Folie 6 (Fazit/CTA): "Schreib deine Meinung in die Kommentare!"
+   - **Caption (Bildunterschrift)**: Kurzer Hook, Zusammenfassung der Pro/Contra-Punkte, Emojis, CTA zur Bio, Hashtag-Block.
+
+3. **YouTube Community Tab-Variante**:
+   - Kurzer, direkt ansprechender Post für Abonnenten.
+   - Fokussierte Pro/Contra-Gegenüberstellung (sehr kompakt).
+   - Umfrage-Vorschlag (Poll), die unter dem Post erstellt werden kann (z.B. "Wie steht ihr zu diesem Thema? Option A: ..., Option B: ..., Option C: ...").`;
       break;
     case 'financeMarket':
       promptText = `Analysiere den potenziellen Einfluss dieses Themas auf die Finanzmärkte.
@@ -1704,8 +2590,89 @@ Recherchiere (simuliert) und berichte über:
 
 Falls keine spezifischen aktuellen News erkennbar: Schlage vor, wo man aktuelle Informationen findet (Ticker, News-Portale).`;
       break;
+    case 'financeStockAnalysis':
+      promptText = `Du bist ein renommierter Finanzanalyst und Chartered Financial Analyst (CFA). Führe eine tiefgehende, professionelle Aktien- und Unternehmensanalyse durch, basierend auf dem Inhalt dieser Website:
+
+URL: ${context.url}
+Inhalt:
+"""
+${context.text.substring(0, 5000)}
+"""
+
+Strukturiere deine Analyse in folgende detaillierte Abschnitte:
+
+1. **Unternehmensprofil & Geschäftsmodell**:
+   - Was ist das Kerngeschäft? Welche Produkte/Dienstleistungen generieren den meisten Umsatz?
+   - In welchen geographischen Märkten ist das Unternehmen active?
+   - Identifikation von Ticker, WKN/ISIN (falls aus dem Kontext ersichtlich).
+
+2. **Fundamentalanalyse & Kennzahlen (soweit im Text vorhanden oder schätzbar)**:
+   - Umsatz- und Gewinnentwicklung, Margen (Brutto-, EBITDA-, Netto-Marge).
+   - Verschuldungsgrad, Cashflow-Generierung (Free Cashflow) und Dividendenpolitik.
+   - Wichtige Wachstumstreiber.
+
+3. **Wettbewerbsanalyse & Marktposition (Moat/Burggraben)**:
+   - Wer sind die Hauptkonkurrenten?
+   - Besitzt das Unternehmen einen nachhaltigen Wettbewerbsvorteil (z.B. starke Marke, hohe Wechselkosten, Netzwerkeffekte, Kostenvorteile)?
+   - Porter's Five Forces (Branchenstrukturanalyse im Schnelldurchlauf).
+
+4. **Chancen (Bull-Case) & Risiken (Bear-Case)**:
+   - **Chancen**: Neue Märkte, technologische Trends, Synergien, Übernahmen.
+   - **Risiken**: Regulatorische Hürden, makroökonomische Risiken (Zinsen, Inflation), Reputationsrisiken, technologische Disruption.
+
+5. **Zukunftsausblick & Bewertung**:
+   - Wo steht das Unternehmen in 3–5 Jahren?
+   - Relative Bewertung (z.B. KGV, KBV, EV/EBITDA im Branchenvergleich - falls Schätzungen möglich).
+
+6. **Analysten-Fazit & Investment-Thesis**:
+   - Klares Urteil: **Kauf (Buy) / Halten (Hold) / Verkauf (Sell)**.
+   - Ausführliche Begründung deines Urteils mit Kernargumenten.
+   - Risikohinweis (Disclaimer).`;
+      break;
+    case 'financeInvestment':
+      promptText = `Erstelle ein umfassendes und flexibles Berechnungsmodell für ein Investitionsvorhaben basierend auf den Daten dieser Website:
+
+URL: ${context.url}
+Inhalt:
+"""
+${context.text.substring(0, 5000)}
+"""
+
+Liefere das Modell in drei verschiedenen interaktiven Formaten (wähle die passendsten aus):
+
+1. **Tabellenkalkulation (Excel/Google Sheets)**:
+   - Strukturierung von Eingabeparametern (Anschaffungskosten, jährliche Einnahmen/Ausgaben, Nutzungsdauer, Diskontsatz).
+   - Formel-Vorschläge (z. B. \`=IKV()\`, \`=KAPITALWERT()\`, \`=AMORTISATION\`).
+
+2. **Python-Skript (für Datenanalysten)**:
+   - Ein sauberes, ausführbares Python-Skript (unter Verwendung von Standardbibliotheken oder \`numpy\`/\`pandas\`), das die Cashflows berechnet, den Kapitalwert (NPV), die interne Rendite (IRR) und die Amortisationszeit ermittelt und die Ergebnisse in der Konsole formatiert ausgibt.
+
+3. **Interaktives HTML/JavaScript-Widget**:
+   - Ein vollständiger, kopierbarer HTML/CSS/JS-Codeblock, der als lokales Mini-Tool oder Widget im Browser geöffnet werden kann. Dieses Widget soll Schieberegler (Slider) oder Eingabefelder für die wichtigsten Investitionsparameter enthalten und die Rentabilitätskennzahlen live im Browser berechnen.
+
+4. **Szenarioanalyse (Best/Real/Worst Case)**:
+   - Eine mathematische Übersicht der Auswirkungen von Zinsänderungen oder Abweichungen im Cashflow auf die Rentabilität.`;
+      break;
+    case 'financePortfolio':
+      promptText = `Analysiere, wie sich das Thema oder die Anlageklasse dieser Website in ein bestehendes Anlageportfolio integrieren lässt:
+
+URL: ${context.url}
+Inhalt:
+"""
+${context.text.substring(0, 5000)}
+"""
+
+Führe eine Portfolio-Bewertung durch:
+1. **Asset-Allokation**: Zu welcher Anlageklasse gehört dieses Thema? (Nutze die offizielle Klassifizierung: Aktien, Immobilien, Rohstoffe, Krypto etc.)
+2. **Korrelation**: Wie korreliert diese Anlageklasse typischerweise mit dem breiten Aktienmarkt (Gering, Mittel, Hoch)? Bietet sie Diversifikationsvorteile?
+3. **Risiko-Rendite-Profil**: Wie hoch ist das geschätzte Risiko (Volatilität) im Vergleich zur erwarteten Rendite?
+4. **Gewichtungsempfehlung**: Welcher Prozentsatz eines Gesamtportfolios (z. B. konservativ, ausgewogen, offensiv) sollte maximal in diese Anlageklasse investiert werden?
+5. **Eignung**: Für welchen Anlegertyp (langfristig, kurzfristig, risikoavers, risikofreudig) ist dieses Investment geeignet?`;
+      break;
     case 'recipeSimpleBake':
-      promptText = `Wandle das Rezept von dieser Website in das "Einfach Backen" Format um.
+      promptText = `Wandle das Rezept in das "Einfach Backen" Format um.
+
+WICHTIG: Der Originaltext wird 1:1 zu 100% genau beibehalten. Es erfolgt KEINE Textänderung, KEINE Übersetzung, KEINE Umformulierung. Der Text wird exakt so beibehalten wie im Original.
 
 URL: ${context.url}
 
@@ -1714,22 +2681,33 @@ Originaltext:
 ${context.text.substring(0, 5000)}
 """
 
-Format:
-**Zutatenliste**
-- 5g Zutat X
-- 10 EL Zutat Y
-- 200g Zutat Z
-...
+FORMAT "EINFACH BACKEN":
+
+Die jeweils im jeweiligen Schritt gebrauchten Zutaten werden IN DER IM SCHRITT BENÖTIGTEN MENGE ÜBER DEM SCHRITT aufgelistet.
+
+Beispiel:
+Wird ein Kuchen mit 4 Eiern, 100g Mehl und 50g Zucker gebacken und zunächst Mehl und Zucker vermischt, so lautet es:
 
 **Schritt 1**
-5g Zutat X mit 10 EL Zutat Y vermischen...
+100g Mehl, 50g Zucker
+
+Mehl und Zucker vermischen
 
 **Schritt 2**
-200g Zutat Z unterheben...
+2 Eier
 
-usw.
+Der Mehl-Zucker-Mischung zugeben
 
-Behalte den Originaltext bei, aber strukturiere ihn in dieses Format.`;
+**Schritt 3**
+[weitere Zutaten]
+
+[weitere Anweisung]
+
+REGELN:
+- Der Originaltext wird 1:1 beibehalten
+- Nur die Zutaten-Mengen werden über jeden Schritt geschrieben
+- Die Abtrennung der Schritte und der Zutaten erfolgt mit passenden Formatierungen (Fettdruck, Leerzeilen)
+- Keine zusätzlichen Erklärungen, keine Tipps, keine Variationen`;
       break;
     case 'recipeIngredients':
       promptText = `Extrahiere alle Zutaten aus diesem Rezept als Einkaufsliste.
@@ -1758,8 +2736,8 @@ ${context.text.substring(0, 4000)}
 Womit kann ich "${missingIngredient}" ersetzen? Gib 2-3 Alternativen an mit Mengenumrechnung.`;
       break;
     }
-    case 'recipeAlternative':
-      promptText = `Erstelle ein alternatives Rezept zu diesem.
+    case 'recipeOnePot':
+      promptText = `Wandle dieses Rezept in ein One-Pot-Gericht um. Das bedeutet: Alles wird in einem einzigen Topf zubereitet.
 
 URL: ${context.url}
 
@@ -1768,17 +2746,21 @@ Originalrezept:
 ${context.text.substring(0, 4000)}
 """
 
-Varianten (bitte alle erstellen):
-1. **Schnellere Variante** (unter 30 Min.)
-2. **Gesündere Variante** (weniger Kalorien, mehr Nährstoffe)
-3. **Günstigere Variante** (mit einfachen Zutaten)
-4. **Vegetarische/Vegane Variante** (falls nicht schon so)`;
+ANFORDERUNGEN:
+- Alle Zutaten werden in einem Topf gekocht/gebraten
+- Passe die Reihenfolge an (härtere Zutaten zuerst)
+- Passe Flüssigkeitsmenge an (nicht zu viel, nicht zu wenig)
+- Garzeiten anpassen
+- Tipps zur Topfwahl geben`;
       break;
     case 'recipeDevice': {
-      const devices = ['Heissluftfritteuse', 'Backofen', 'Waffeleisen', 'Dampfgarer', 'Slow Cooker', 'Instant Pot', 'Mikrowelle', 'Grill', 'Doehrrautomat', 'Sous-Vide', 'Brotbackautomat', 'Eismaschine', 'Thermomix'];
-      const device = prompt(`Fuer welches Küchengerät umwandeln?\n${devices.join(', ')}`);
-      if (!device) return;
-      promptText = `Wandle dieses Rezept fuer ein(e/n) ${device} um.
+      const selectedDevice = summaryType;
+      if (!selectedDevice || selectedDevice === 'normal') {
+        showToast('Kein Gerät ausgewählt');
+        return;
+      }
+      
+      promptText = `Wandle dieses Rezept für ein(e/n) ${selectedDevice} um.
 
 URL: ${context.url}
 
@@ -1788,14 +2770,17 @@ ${context.text.substring(0, 4000)}
 """
 
 Wichtig:
-- Behalte den Geschmack so originalgetreu wie möglich bei
-- Passe Temperatur und Zeit an das Gerät an
-- Berücksichtige die Besonderheiten des ${device}
-- Gib Tipps zur optimalen Zubereitung mit diesem Gerät`;
+- Zunächst soll immer probiert werden, das gesamte Gericht an das Küchengerät (${selectedDevice}) anzupassen.
+- Falls das Rezept oder Teile davon unpassend für das Gerät sind (z.B. Suppe in einer Zuckerwattemaschine), dann wandle nicht das gesamte Gericht um! Ergänze oder tausche in diesem Fall nur Komponenten aus, die sinnvoll mit dem Gerät zubereitet werden können.
+- Im Zweifel gib bitte beide Alternativen (komplette Anpassung und nur Komponenten-Anpassung) aus.
+- Behalte den Geschmack so originalgetreu wie möglich bei.
+- Passe Temperatur und Zeit an das Gerät an.
+- Berücksichtige die Besonderheiten des ${selectedDevice}.
+- Gib Tipps zur optimalen Zubereitung mit diesem Gerät.`;
       break;
     }
     case 'recipePlating':
-      promptText = `Beschreibe, wie dieses Gericht auf Michelin-Sterne Niveau angerichtet werden könnte.
+      promptText = `Erstelle einen KI-Bildgenerierungs-Prompt, der zeigt, wie dieses Gericht auf Michelin-Sterne Niveau angerichtet werden könnte.
 
 Rezept von: ${context.url}
 
@@ -1804,12 +2789,16 @@ Gericht:
 ${context.text.substring(0, 4000)}
 """
 
-Erstelle:
-1. **Beschreibung des Plating** (Schritt für Schritt)
-2. **Farbenkonzept**
-3. **Dekorationselemente**
-4. **Ki-Prompt für Bildgenerierung**:
-   "Professional food photography, Michelin star plating of [Gericht], elegant ceramic plate, artistic sauce drizzle, microgreens garnish, dramatic lighting, shallow depth of field, 8k, photorealistic"`;
+WICHTIG: Gib als Antwort AUSSCHLIESSLICH den Bildgenerierungs-Prompt aus. Keine Beschreibung, kein Text, keine Erklärung, kein Fazit. NUR der Prompt für die Bildgenerierung.
+
+Der Prompt soll in Englisch sein und folgende Elemente enthalten:
+- Professional food photography
+- Michelin star plating
+- Das konkrete Gericht
+- Elegante Präsentation
+- Künstlerische Details
+- Dramatische Beleuchtung
+- Photorealistisch, 8k`;
       break;
     case 'recipeNutrition':
       promptText = `Analysiere die Nährwerte dieses Rezepts pro Portion.
@@ -1838,6 +2827,114 @@ Erstelle eine kompakte Tabelle mit:
 Zusätzlich:
 - Bewertung: [Gesund / Moderat / Weniger gesund]
 - Tipps zur Optimierung der Nährwerte`;
+      break;
+    case 'recipeCheck':
+      promptText = `Prüfe das folgende Rezept auf Fehler, Unstimmigkeiten und Optimierungspotenzial.
+
+URL: ${context.url}
+
+Rezept:
+"""
+${context.text.substring(0, 5000)}
+"""
+
+WICHTIG: Die folgenden 3 Extra-Prompts sollen im Chat optisch abgehoben dargestellt werden (z.B. durch Trennlinien, Fettdruck oder Rahmen).
+
+========================================
+
+PRÜFUNG 1: ZEITANGABE
+Ist die angegebene Gesamtzeit realistisch?
+- Prüfe jede Zubereitungsschritt-Zeit
+- Berücksichtige Vorbereitungszeit (z.B. "500g in Scheiben geschnittene Zwiebeln" bedeutet: Zwiebel schälen + schneiden)
+- Berücksichtige Garzeiten, Aufheizzeiten
+- NICHT berücksichtigen: Ruhezeiten
+
+Format:
+- Vorbereitungszeit: [XX Min]
+- Garzeit: [XX Min]
+- Mischen/Zusammenfügen: [XX Min]
+- Tatsächlich benötigte Zeit: [XX Min]
+
+========================================
+
+PRÜFUNG 2: SKALIERBARKEIT
+Kann das Rezept sinnvoll vervielfacht werden?
+
+2x Menge:
+- [✓/✗] Topf/Pfanne groß genug
+- [✓/✗] Backform geeignet
+- [✓/✗] Garzeit identisch
+- [✓/✗] Sonstige Probleme: [...]
+
+3x Menge:
+- [✓/✗] Topf/Pfanne groß genug
+- [✓/✗] Backform geeignet
+- [✓/✗] Garzeit identisch
+- [✓/✗] Sonstige Probleme: [...]
+
+4x Menge:
+- [✓/✗] Topf/Pfanne groß genug
+- [✓/✗] Backform geeignet
+- [✓/✗] Garzeit identisch
+- [✓/✗] Sonstige Probleme: [...]
+
+========================================
+
+PRÜFUNG 3: LOGISCHE FEHLER
+- Zutaten in der Liste, die im Rezept nicht verwendet werden: [auflisten oder "keine"]
+- Zutaten im Rezept, die nicht in der Liste stehen: [auflisten oder "keine"]
+- Widersprüchliche Anweisungen: [auflisten oder "keine"]
+- Unmögliche/unlogische Schritte: [auflisten oder "keine"]
+
+========================================
+
+PRÜFUNG 4: FEHLER & EMPFEHLUNGEN
+Pro Zutat ein Punkt:
+
+- [Zutat 1]: [Zu viel / Zu wenig / OK] - [Begründung]
+- [Zutat 2]: [Zu viel / Zu wenig / OK] - [Begründung]
+- [Zutat 3]: [Zu viel / Zu wenig / OK] - [Begründung]
+- [usw.]
+
+Zusätzlich:
+- Garzeit: [Zu kurz / Zu lang / OK] - [Begründung]
+- Temperatur: [Zu hoch / Zu niedrig / OK] - [Begründung]
+- Technik: [Bessere Alternative?] - [Begründung]
+
+========================================
+
+PRÜFUNG 5: NÄHRWERTE (gesamte Menge)
+Kalorien: ... kcal
+Protein: ...g
+Kohlenhydrate: ...g
+Fett: ...g
+Ballaststoffe: ...g
+
+========================================
+
+PRÜFUNG 6: SAISONALITÄT
+NUR ausgeben, wenn aktuell NICHT saisonale Zutaten verwendet werden.
+Falls alle Zutaten saisonal sind: Diesen Abschnitt komplett entfallen lassen.
+
+Falls nicht saisonal:
+- Nicht saisonale Zutaten: [auflisten]
+- Alternative saisonale Zutaten: [Vorschläge]
+
+========================================
+
+PRÜFUNG 7: GESCHIRRSPÜL-AUFWAND
+NICHT mitzählen (gehen in Spülmaschine): Kleine Schüsseln, Reiben, Teigschaber, Messlöffel, Kochlöffel, Schneebesen, Tassen, Zangen
+
+- Benötigte Töpfe/Pfannen: [Anzahl]
+- Benötigte Formen/Bleche: [Anzahl]
+- Benötigte Schüsseln: [Anzahl]
+- Sonstiges Geschirr (nicht spülmaschinenfähig): [auflisten]
+- Bewertung: [Gering / Mittel / Hoch]
+
+========================================
+
+FAZIT
+[Maximal 3 Sätze mit den wichtigsten Erkenntnissen]`;
       break;
     default:
       const labelObj = ACTION_LIST.find(a => a.key === action);
@@ -2006,26 +3103,17 @@ function startScreenshotSelection() {
 async function captureScreenshotArea(left, top, width, height) {
   // Verwende chrome.tabs.captureVisibleTab über background script
   return new Promise((resolve, reject) => {
-    // Temporäres Canvas erstellen
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
-    canvas.width = width;
-    canvas.height = height;
-    
-    // Versuche html2canvas-ähnliche Methode: HTML clonen und rendern
-    // Für bessere Ergebnisse nutzen wir die native Screenshot-API
-    
     chrome.runtime.sendMessage({ 
-      action: 'captureScreenshot',
-      area: { left, top, width, height }
+      action: 'captureScreenshot'
     }, (response) => {
       if (chrome.runtime.lastError) {
-        // Fallback: Text-basierte Beschreibung ohne Bild
         reject(new Error('Screenshot-API nicht verfügbar'));
         return;
       }
       if (response && response.success) {
-        resolve(response.dataUrl);
+        cropScreenshot(response.dataUrl, { left, top, width, height })
+          .then(resolve)
+          .catch(reject);
       } else {
         reject(new Error(response?.error || 'Unbekannter Fehler'));
       }
@@ -2033,6 +3121,39 @@ async function captureScreenshotArea(left, top, width, height) {
     
     // Timeout falls keine Antwort kommt
     setTimeout(() => reject(new Error('Timeout beim Screenshot')), 5000);
+  });
+}
+
+async function cropScreenshot(dataUrl, area) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      
+      canvas.width = area.width;
+      canvas.height = area.height;
+      
+      // Skalierungsfaktor berechnen (für High-DPI Displays)
+      const scaleX = img.width / window.innerWidth;
+      const scaleY = img.height / window.innerHeight;
+      
+      ctx.drawImage(
+        img,
+        area.left * scaleX,
+        area.top * scaleY,
+        area.width * scaleX,
+        area.height * scaleY,
+        0,
+        0,
+        area.width,
+        area.height
+      );
+      
+      resolve(canvas.toDataURL('image/png'));
+    };
+    img.onerror = () => reject(new Error('Bild konnte nicht geladen werden'));
+    img.src = dataUrl;
   });
 }
 
@@ -2065,4 +3186,360 @@ Sei ausführlich und hilfreich.`;
       });
     }
   });
+}
+
+/* ============================================
+   CLIPPY ASSISTENT FEATURE
+   ============================================ */
+
+let clippyShownInSession = false;
+
+function initClippyDwellTimer() {
+  if (typeof chrome === 'undefined' || !chrome.storage || !chrome.storage.sync) return;
+
+  chrome.storage.sync.get(['enableClippy', 'clippyDwellTime', 'clippyChance', 'geminiApiKey', 'geminiAuthToken', 'geminiApiModel', 'clippyMode'], (result) => {
+    const isEnabled = result.enableClippy !== false;
+    if (!isEnabled || clippyShownInSession) return;
+
+    const dwellSeconds = result.clippyDwellTime || 60;
+    const chance = result.clippyChance !== undefined ? result.clippyChance : 0.2;
+    const clippyMode = result.clippyMode || 'animation';
+
+    setTimeout(() => {
+      if (clippyShownInSession) return;
+      if (Math.random() <= chance) {
+        triggerClippyAssistant(result.geminiApiKey, result.geminiApiModel || 'gemini-3.5-flash', result.geminiAuthToken, clippyMode);
+      }
+    }, dwellSeconds * 1000);
+  });
+}
+
+// Pre-defined fallback mappings if API key is not set or network fails
+const CLIPPY_FALLBACK_RULES = [
+  { keywords: ['mail.google.com', 'outlook', 'webmail', 'inbox', 'postfach', 'e-mail', 'email', 'gmail'], action: 'writeReply', speech: 'Eine E-Mail im Blick! Soll ich dir direkt einen passenden Antwort-Entwurf schreiben?' },
+  { keywords: ['amazon', 'ebay', 'otto', 'zalando', 'shop', 'kaufen', 'warenkorb', 'preis', 'produkt', 'angebot', 'etsy'], action: 'doINeedThis', speech: 'Impulskauf-Gefahr! Soll ich prüfen, ob du dieses Produkt wirklich brauchst oder wo die Haken sind?' },
+  { keywords: ['youtube.com', 'vimeo', 'twitch', 'video', 'stream', 'yt'], action: 'socialYouTube', speech: 'Ein Video auf dem Schirm! Soll ich dir kreative Video-Konzepte oder eine passende Beschreibung generieren?' },
+  { keywords: ['booking.com', 'airbnb', 'tripadvisor', 'expedia', 'holidaycheck', 'trivago', 'reisen', 'flug', 'hotel', 'urlaub'], action: 'vacationPlan', speech: 'Reiselust? Soll ich eine detaillierte Urlaubsplanung mit Sehenswürdigkeiten und Packliste für dich erstellen?' },
+  { keywords: ['stepstone', 'indeed', 'xing', 'jobs', 'karriere', 'bewerbung', 'jobsuche'], action: 'socialBio', speech: 'Bewerbung oder Profil-Optimierung? Soll ich dir eine überzeugende Bio oder Formulierungshilfen erstellen?' },
+  { keywords: ['witze', 'fun', 'joke', 'lustig', 'humor', 'lachschon', 'gag', 'meme'], action: 'tellJoke', speech: 'Lust auf ein Schmunzeln? Soll ich dir einen retro, thematisch passenden Witz erzählen?' },
+  { keywords: ['deepl.com', 'translate.google', 'dict.cc', 'leo.org', 'wörterbuch', 'dictionary'], action: 'translate', speech: 'Sprachbarriere? Lass mich diese Seite oder fremdsprachige Abschnitte für dich übersetzen!' },
+  { keywords: ['faq', 'definition', 'lexikon', 'glossar', 'wiki', 'erklärung'], action: 'createFAQ', speech: 'Erklärungsbedarf? Soll ich dir ein praktisches FAQ mit Antworten auf die wichtigsten Fragen erstellen?' },
+  { keywords: ['docs.google', 'duden.de', 'schreiben', 'editor', 'docx', 'overleaf', 'latex'], action: 'grammarCheck', speech: 'Textarbeit im Gange! Soll ich die Rechtschreibung, Grammatik und den Stil deiner Sätze prüfen?' },
+  { keywords: ['rezept', 'kochen', 'backen', 'zutaten', 'chefkoch', 'lecker', 'eatsmarter', 'kitchenstories'], action: 'recipeCheck', speech: 'Sieht lecker aus! Soll ich die Garzeiten, Mengen und logische Fehler im Rezept prüfen?' },
+  { keywords: ['arxiv', 'researchgate', 'paper', 'studie', 'dissertation', 'wissenschaft', 'journal', 'doi.org', 'scholar'], action: 'plagiarism', speech: 'Ein wissenschaftlicher Text! Soll ich den Inhalt auf Plagiatsmuster und Quellen untersuchen?' },
+  { keywords: ['wikipedia', 'lernen', 'studium', 'vorlesung', 'skript', 'klausur', 'kurs', 'quiz'], action: 'createQuiz', speech: 'Prüfungsstoff entdeckt! Soll ich dir ein 10-Fragen-Quiz zum Lernen erstellen?' },
+  { keywords: ['news', 'zeitung', 'spiegel', 'focus', 'zeit.de', 'tagesschau', 'bild.de', 'nzz', 'politik', 'artikel'], action: 'factCheck', speech: 'Steile Thesen im Artikel! Soll ich die Aussagen auf Fakten und Logik prüfen?' },
+  { keywords: ['gesetz', 'paragraph', 'urteil', 'klage', 'anwalt', 'agb', 'datenschutz', 'recht', 'juristisch'], action: 'legalCheck', speech: 'Rechtlich brenzlig? Lass mich die Rechtslage und Gesetzestexte dazu beleuchten!' },
+  { keywords: ['statistik', 'zahlen', 'tabelle', 'diagramm', 'prozent', 'daten', 'report', 'auswertung'], action: 'createDiagram', speech: 'Jede Menge Daten und Fakten! Soll ich daraus ein übersichtliches Mermaid.js-Diagramm bauen?' },
+  { keywords: ['finanz', 'aktie', 'börse', 'kurs', 'depot', 'etf', 'finanzen.net', 'tradingview', 'wallstreetbets'], action: 'financeStockAnalysis', speech: 'Börsen- und Finanzdaten entdeckt! Willst du eine Kennzahlen- und Risikoanalyse dazu?' },
+  { keywords: ['wordpress', 'blog', 'medium.com', 'substack', 'article', 'post'], action: 'aiDetection', speech: 'Dieser Artikel wirkt verdächtig glatt! Soll ich prüfen, ob er von einer KI geschrieben wurde?' },
+  { keywords: ['linkedin', 'twitter', 'x.com', 'reddit', 'instagram', 'facebook'], action: 'socialPost', speech: 'Social Media gesichtet! Soll ich dir passende Kommentar-Hooks oder Post-Ideen dazu generieren?' },
+  { keywords: ['seo', 'meta', 'backlink', 'traffic', 'serp', 'google search'], action: 'seoAudit', speech: 'Blogpost im Blick! Soll ich einen SEO-Audit für Keywords, H-Tags und Lesbarkeit machen?' },
+  { keywords: ['github', 'stackoverflow', 'gitlab', 'code', 'function', 'class', 'const', 'script', 'developer'], action: 'codeReview', speech: 'Code auf dem Schirm! Soll ich ein Code Review auf Bugs und Refactoring durchführen?' },
+  { keywords: ['recherche', 'analyse', 'hintergrund', 'komplex', 'dossier'], action: 'deepResearch', speech: 'Komplexes Thema! Wollen wir einen Deep-Research-Durchlauf mit Hintergrundanalyse starten?' }
+];
+
+async function triggerClippyAssistant(apiKey, apiModel, authToken, clippyMode) {
+  clippyShownInSession = true;
+
+  let chosenAction = 'summaryNormal';
+  let speechText = 'Hey! Ich sehe, du schaust dir diese Seite an. Soll ich sie kurz für dich zusammenfassen?';
+
+  if (apiKey || authToken) {
+    try {
+      const pageTitle = document.title || '';
+      const pageUrl = window.location.href;
+      const textContent = (document.body ? document.body.innerText : '').replace(/\s+/g, ' ').trim().substring(0, 500);
+
+      const candidateActions = [
+        { key: 'aiDetection', desc: 'AI-Erkennung (Prüfen, ob der Text auf Blogs/Social Media von einer KI stammt)' },
+        { key: 'doINeedThis', desc: 'Kaufberatung / Impulskauf-Check (Brauche ich dieses Produkt auf Amazon/eBay wirklich?)' },
+        { key: 'priceCompare', desc: 'Preisvergleich & Alternativen für Produkte' },
+        { key: 'productProsCons', desc: 'Vor- und Nachteile eines Produkts oder Themas' },
+        { key: 'writeReply', desc: 'Antwort schreiben (E-Mail Antwort auf Gmail/Outlook oder Kommentar)' },
+        { key: 'plagiarism', desc: 'Plagiats- & Quellen-Check bei wissenschaftlichen Texten & Studien' },
+        { key: 'createQuiz', desc: '10-Fragen-Lern-Quiz aus Lernportalen oder Fachtexten erstellen' },
+        { key: 'factCheck', desc: 'Faktencheck der Aussagen bei News, Zeitungsartikeln & Politik' },
+        { key: 'legalCheck', desc: 'Wie ist die Rechtslage? Rechtliche Einordnung & Gesetzestexte' },
+        { key: 'createDiagram', desc: 'Mermaid.js Diagramm & Prozessablauf aus Zahlen, Daten & Fakten generieren' },
+        { key: 'deepResearch', desc: 'Deep Research: Ausführliche Hintergrund-Recherche & Analyse' },
+        { key: 'recipeCheck', desc: 'Rezept-TÜV: Garzeiten, Mengenskalierung & logische Fehler in Rezepten prüfen' },
+        { key: 'recipeDevice', desc: 'Rezept für Küchengeräte (Airfryer, Thermomix, etc.) anpassen' },
+        { key: 'translate', desc: 'Smart Translation (Übersetzen von englischen/fremdsprachigen Texten)' },
+        { key: 'seoAudit', desc: 'SEO-Audit: Keywords, H-Überschriften & Lesbarkeit von Blogs optimieren' },
+        { key: 'socialPost', desc: 'Social Media Post / Hook aus dem Seiteninhalt generieren' },
+        { key: 'socialComment', desc: 'Schlagfertigen Kommentar für Social Media schreiben' },
+        { key: 'financeStockAnalysis', desc: 'Aktien- & Finanzanalyse (Börsen-News, Kennzahlen, Reddit-Aktien)' },
+        { key: 'codeReview', desc: 'Code Review & Quelltextanalyse für Entwicklerseiten' },
+        { key: 'vacationPlan', desc: 'Urlaubs- & Reiseplanung für Reise-Websites' },
+        { key: 'pageSherlock', desc: 'Detaillierte Sherlock-Analyse der Website' },
+        { key: 'tellJoke', desc: 'Passenden Retro-Witz zur Seite erzählen' },
+        { key: 'summaryNormal', desc: 'Kurze Zusammenfassung der Webseite' },
+        { key: 'summarySuperShort', desc: 'Super kurze TL;DR Zusammenfassung' }
+      ];
+
+      const prompt = `Du bist Clippy, der sympathische retro Büroklammer-Assistent aus der Browser-Erweiterung CompAInion.
+Du siehst, dass der Nutzer seit einer Minute auf folgender Website verweilt:
+- Titel: "${pageTitle}"
+- URL: "${pageUrl}"
+- Vorschau: "${textContent}"
+
+WICHTIGSTE REGEL FÜR DIE AKTIONS-AUSWAHL:
+VERMEIDE langweilige Standard-Zusammenfassungen ('summaryNormal' oder 'summarySuperShort'), WENN eine spezifischere Kontext-Aktion zur Website passt!
+- E-Mail/Gmail -> writeReply
+- Shopping/Amazon/eBay -> doINeedThis, priceCompare oder productProsCons
+- Blog/Artikel -> aiDetection oder seoAudit
+- Social Media -> socialPost, socialComment oder aiDetection
+- News/Politik -> factCheck oder legalCheck
+- Uni/Studium/Paper -> plagiarism oder createQuiz
+- Daten/Zahlen/Statistik -> createDiagram
+- Rezepte/Kochen -> recipeCheck oder recipeDevice
+- Fremdsprachig/Englisch -> translate
+- Finanzen/Aktien/Börse -> financeStockAnalysis
+- GitHub/Code -> codeReview
+Wähle 'summaryNormal' NUR DANN, wenn absolut keine der Spezial-Aktionen sinnvoll zur Seite passt.
+
+Erstelle dazu EINEN einzigen, kurzen (max. 1-2 Sätze), sympathischen, leicht frechen/witzigen Vorschlagssatz im typischen Clippy-Retro-Ton auf Deutsch in der Du-Form für Clippy's Sprechblase.
+
+Verfügbare Aktionen:
+${candidateActions.map(a => `- ${a.key}: ${a.desc}`).join('\n')}
+
+WICHTIG: Antworte AUSSCHLIESSLICH im folgenden JSON-Format ohne Markdown-Codeblock:
+{
+  "action": "<action_key>",
+  "speech": "<Dein Clippy-Spruch auf Deutsch>"
+}`;
+
+      const endpointUrl = apiKey 
+        ? `https://generativelanguage.googleapis.com/v1beta/models/${apiModel}:generateContent?key=${apiKey}`
+        : `https://generativelanguage.googleapis.com/v1beta/models/${apiModel}:generateContent`;
+
+      const headers = { 'Content-Type': 'application/json' };
+      if (authToken) {
+        headers['Authorization'] = `Bearer ${authToken}`;
+        headers['x-api-key'] = authToken;
+      }
+
+      const resp = await fetch(endpointUrl, {
+        method: 'POST',
+        headers: headers,
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: {
+            responseMimeType: 'application/json',
+            temperature: 0.3,
+            maxOutputTokens: 150
+          }
+        })
+      });
+
+      if (resp.ok) {
+        const data = await resp.json();
+        const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+        const parsed = JSON.parse(rawText.replace(/```json\s*/, '').replace(/```\s*$/, ''));
+        if (parsed.action && parsed.speech) {
+          chosenAction = parsed.action;
+          speechText = parsed.speech;
+        }
+      }
+    } catch (e) {
+      console.log('Clippy API suggestion failed, using fallback:', e);
+      const pageStr = (document.title + ' ' + window.location.href).toLowerCase();
+      for (const rule of CLIPPY_FALLBACK_RULES) {
+        if (rule.keywords.some(kw => pageStr.includes(kw))) {
+          chosenAction = rule.action;
+          speechText = rule.speech;
+          break;
+        }
+      }
+    }
+  } else {
+    const pageStr = (document.title + ' ' + window.location.href).toLowerCase();
+    for (const rule of CLIPPY_FALLBACK_RULES) {
+      if (rule.keywords.some(kw => pageStr.includes(kw))) {
+        chosenAction = rule.action;
+        speechText = rule.speech;
+        break;
+      }
+    }
+  }
+
+  showClippyWidget(chosenAction, speechText, clippyMode);
+}
+
+function showClippyWidget(actionKey, speechText, clippyMode) {
+  const old = document.getElementById('clippy-container');
+  if (old) old.remove();
+
+  const container = document.createElement('div');
+  container.id = 'clippy-container';
+  container.className = 'theme-' + currentTheme;
+
+  const placeholderUrl = chrome.runtime.getURL('clippy_placeholder.svg');
+  const customImgUrl = chrome.runtime.getURL('clippy.png');
+
+  let avatarHTML = '';
+  if (clippyMode === 'animation') {
+    avatarHTML = `
+      <svg id="clippy-svg" class="pose-float" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 120" width="65" height="78">
+        <defs>
+          <filter id="clippy-drop-shadow" x="-20%" y="-20%" width="140%" height="140%">
+            <feDropShadow dx="2" dy="4" stdDeviation="3" flood-color="#000000" flood-opacity="0.3"/>
+          </filter>
+          <linearGradient id="clippy-silver-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#FFFFFF"/>
+            <stop offset="25%" stop-color="#E0E6ED"/>
+            <stop offset="50%" stop-color="#9BA8B7"/>
+            <stop offset="75%" stop-color="#D1D9E0"/>
+            <stop offset="100%" stop-color="#7B8B9A"/>
+          </linearGradient>
+          <linearGradient id="clippy-eye-shine" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#FFFFFF"/>
+            <stop offset="100%" stop-color="#CCCCCC"/>
+          </linearGradient>
+        </defs>
+        <g filter="url(#clippy-drop-shadow)" class="clippy-body-group">
+          <path class="clippy-wire" d="M 35,95 L 35,35 A 18,18 0 0,1 71,35 L 71,85 A 24,24 0 0,1 23,85 L 23,25 A 14,14 0 0,1 51,25 L 51,75" fill="none" stroke="url(#clippy-silver-grad)" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+          <path class="clippy-wire-outline" d="M 35,95 L 35,35 A 18,18 0 0,1 71,35 L 71,85 A 24,24 0 0,1 23,85 L 23,25 A 14,14 0 0,1 51,25 L 51,75" fill="none" stroke="#4A5568" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" opacity="0.4"/>
+          
+          <g class="clippy-eye-pos left-eye-pos" transform="translate(32, 42)">
+            <g class="clippy-eye-anim left-eye-anim">
+              <ellipse class="clippy-eye-white" cx="0" cy="0" rx="9" ry="11" fill="url(#clippy-eye-shine)" stroke="#2B3648" stroke-width="1.5"/>
+              <g class="clippy-pupil-group left-pupil-group">
+                <ellipse class="clippy-eye-pupil" cx="1" cy="2" rx="4.5" ry="5.5" fill="#1A202C"/>
+                <circle class="clippy-eye-glint" cx="-1.5" cy="-2.5" r="2" fill="#FFFFFF"/>
+              </g>
+            </g>
+          </g>
+
+          <g class="clippy-eye-pos right-eye-pos" transform="translate(52, 42)">
+            <g class="clippy-eye-anim right-eye-anim">
+              <ellipse class="clippy-eye-white" cx="0" cy="0" rx="9" ry="11" fill="url(#clippy-eye-shine)" stroke="#2B3648" stroke-width="1.5"/>
+              <g class="clippy-pupil-group right-pupil-group">
+                <ellipse class="clippy-eye-pupil" cx="0" cy="2" rx="4.5" ry="5.5" fill="#1A202C"/>
+                <circle class="clippy-eye-glint" cx="-2.5" cy="-2.5" r="2" fill="#FFFFFF"/>
+              </g>
+            </g>
+          </g>
+
+          <g class="clippy-eyebrow-group left-eyebrow-group">
+            <path class="clippy-eyebrow eyebrow-left" d="M 23,28 Q 32,24 39,30" fill="none" stroke="#2B3648" stroke-width="2.5" stroke-linecap="round"/>
+          </g>
+          <g class="clippy-eyebrow-group right-eyebrow-group">
+            <path class="clippy-eyebrow eyebrow-right" d="M 46,30 Q 53,24 62,28" fill="none" stroke="#2B3648" stroke-width="2.5" stroke-linecap="round"/>
+          </g>
+
+          <g class="clippy-mouth-group">
+            <path class="clippy-smile" d="M 36,60 Q 42,67 48,60" fill="none" stroke="#2B3648" stroke-width="2" stroke-linecap="round"/>
+          </g>
+        </g>
+      </svg>
+    `;
+  } else {
+    avatarHTML = `<img id="clippy-avatar-img" src="${placeholderUrl}" alt="Clippy Assistent">`;
+  }
+
+  container.innerHTML = `
+    <div id="clippy-speech-bubble">
+      <button id="clippy-close-btn" title="Schließen">&times;</button>
+      <div id="clippy-speech-text">${escapeHtml(speechText)}</div>
+      <button id="clippy-action-btn">🚀 Funktion ausführen</button>
+    </div>
+    <div id="clippy-avatar-wrapper" title="Klick für Ausführung!">
+      ${avatarHTML}
+    </div>
+  `;
+
+  // Try loading clippy.png if user uploaded one
+  const testImg = new Image();
+  testImg.onload = () => {
+    const avatarWrapper = container.querySelector('#clippy-avatar-wrapper');
+    if (avatarWrapper) {
+      avatarWrapper.innerHTML = `<img id="clippy-avatar-img" src="${customImgUrl}" alt="Clippy Assistent">`;
+    }
+  };
+  testImg.src = customImgUrl;
+
+  document.body.appendChild(container);
+
+  // Animation Pose Manager & Dynamic Variations
+  const svgEl = container.querySelector('#clippy-svg');
+  if (svgEl) {
+    const ALL_POSES = ['pose-float', 'pose-think', 'pose-bounce', 'pose-wink', 'pose-wave', 'pose-surprised'];
+    let initialPose = 'pose-float';
+
+    if (['factCheck', 'legalCheck', 'plagiarism', 'codeReview', 'deepResearch', 'financeStockAnalysis', 'seoAudit', 'recipeCheck', 'pageSherlock'].includes(actionKey)) {
+      initialPose = 'pose-think';
+    } else if (['aiDetection', 'createQuiz', 'createDiagram'].includes(actionKey)) {
+      initialPose = 'pose-surprised';
+    } else if (['socialPost', 'socialComment', 'tellJoke', 'vacationPlan'].includes(actionKey)) {
+      initialPose = 'pose-bounce';
+    } else if (['writeReply', 'doINeedThis', 'priceCompare', 'productProsCons'].includes(actionKey)) {
+      initialPose = 'pose-wink';
+    } else {
+      initialPose = 'pose-wave';
+    }
+
+    svgEl.className = initialPose;
+    let currentPose = initialPose;
+
+    // Periodically switch poses every 4.5 seconds for dynamic animation variation
+    const poseInterval = setInterval(() => {
+      if (!document.body.contains(container)) {
+        clearInterval(poseInterval);
+        return;
+      }
+      const choices = ALL_POSES.filter(p => p !== currentPose);
+      const nextPose = choices[Math.floor(Math.random() * choices.length)];
+      svgEl.classList.remove(currentPose);
+      svgEl.classList.add(nextPose);
+      currentPose = nextPose;
+    }, 4500);
+
+    const avatarWrapper = container.querySelector('#clippy-avatar-wrapper');
+    if (avatarWrapper) {
+      avatarWrapper.addEventListener('mouseenter', () => {
+        svgEl.classList.remove(currentPose);
+        svgEl.classList.add('pose-bounce');
+      });
+      avatarWrapper.addEventListener('mouseleave', () => {
+        svgEl.classList.remove('pose-bounce');
+        svgEl.classList.add(currentPose);
+      });
+    }
+  }
+
+  // Close handler
+  container.querySelector('#clippy-close-btn').addEventListener('click', (e) => {
+    e.stopPropagation();
+    container.classList.add('clippy-hide');
+    setTimeout(() => container.remove(), 400);
+  });
+
+  // Action handlers
+  const triggerFn = () => {
+    container.classList.add('clippy-hide');
+    setTimeout(() => container.remove(), 400);
+    handleGeminiAction(actionKey);
+  };
+
+  container.querySelector('#clippy-action-btn').addEventListener('click', (e) => {
+    e.stopPropagation();
+    triggerFn();
+  });
+
+  container.querySelector('#clippy-avatar-wrapper').addEventListener('click', (e) => {
+    e.stopPropagation();
+    triggerFn();
+  });
+}
+
+function escapeHtml(str) {
+  return (str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initClippyDwellTimer);
+} else {
+  initClippyDwellTimer();
 }
