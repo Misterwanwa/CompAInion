@@ -2838,19 +2838,19 @@ Rezept:
 ${context.text.substring(0, 5000)}
 """
 
-WICHTIG: Die folgenden 3 Extra-Prompts sollen im Chat optisch abgehoben dargestellt werden (z.B. durch Trennlinien, Fettdruck oder Rahmen).
+WICHTIG: Die folgenden Prüfungen sollen im Chat optisch klar strukturiert und abgehoben dargestellt werden (z.B. durch Trennlinien, Fettdruck oder Rahmen).
 
 ========================================
 
 PRÜFUNG 1: ZEITANGABE
 Ist die angegebene Gesamtzeit realistisch?
-- Prüfe jede Zubereitungsschritt-Zeit
-- Berücksichtige Vorbereitungszeit (z.B. "500g in Scheiben geschnittene Zwiebeln" bedeutet: Zwiebel schälen + schneiden)
+- Prüfe jeden Zubereitungsschritt und dessen Zeitbedarf
+- Berücksichtige alle impliziten Vorbereitungszeiten aus der Zutatenliste (z.B. "4 large cloves garlic, minced", "500g Zwiebeln gewürfelt", "geriebener Käse", "gehackte Kräuter" – das Schälen, Hacken, Schneiden oder Reiben erfordert reale Arbeitszeit, die zwingend in die Vorbereitungszeit eingerechnet werden muss!)
 - Berücksichtige Garzeiten, Aufheizzeiten
-- NICHT berücksichtigen: Ruhezeiten
+- NICHT berücksichtigen: Ruhezeiten / Wartezeiten
 
 Format:
-- Vorbereitungszeit: [XX Min]
+- Vorbereitungszeit: [XX Min] (inkl. aller impliziten Schneide-/Hack-/Schälarbeiten aus der Zutatenliste)
 - Garzeit: [XX Min]
 - Mischen/Zusammenfügen: [XX Min]
 - Tatsächlich benötigte Zeit: [XX Min]
@@ -2859,23 +2859,24 @@ Format:
 
 PRÜFUNG 2: SKALIERBARKEIT
 Kann das Rezept sinnvoll vervielfacht werden?
+(Hinweis zur Notation: Verwende ✓ für Ja/Erfüllt/Kein Problem [insbesondere: "Garzeit identisch" = ✓, wenn die Garzeit gleich bleibt und das Rezept somit skalierbar ist], und ✗ für Nein/Problem/Garzeit ändert sich).
 
 2x Menge:
 - [✓/✗] Topf/Pfanne groß genug
 - [✓/✗] Backform geeignet
-- [✓/✗] Garzeit identisch
+- [✓/✗] Garzeit identisch (✓ = bleibt identisch / skalierbar, ✗ = Garzeit weicht ab)
 - [✓/✗] Sonstige Probleme: [...]
 
 3x Menge:
 - [✓/✗] Topf/Pfanne groß genug
 - [✓/✗] Backform geeignet
-- [✓/✗] Garzeit identisch
+- [✓/✗] Garzeit identisch (✓ = bleibt identisch / skalierbar, ✗ = Garzeit weicht ab)
 - [✓/✗] Sonstige Probleme: [...]
 
 4x Menge:
 - [✓/✗] Topf/Pfanne groß genug
 - [✓/✗] Backform geeignet
-- [✓/✗] Garzeit identisch
+- [✓/✗] Garzeit identisch (✓ = bleibt identisch / skalierbar, ✗ = Garzeit weicht ab)
 - [✓/✗] Sonstige Probleme: [...]
 
 ========================================
@@ -2883,23 +2884,18 @@ Kann das Rezept sinnvoll vervielfacht werden?
 PRÜFUNG 3: LOGISCHE FEHLER
 - Zutaten in der Liste, die im Rezept nicht verwendet werden: [auflisten oder "keine"]
 - Zutaten im Rezept, die nicht in der Liste stehen: [auflisten oder "keine"]
+- Fehlende Vorbereitungsschritte / implizite Schritte: Prüfe, ob in der Zutatenliste bereits vorverarbeitete Zutaten stehen (z.B. "4 large cloves garlic, minced", "gehackte Petersilie", "Zwiebeln gewürfelt"), deren Vorbereitungsschritt (Schälen, Hacken, Schneiden) in der Rezeptanleitung komplett fehlt und somit die reale Kochzeit unbemerkt erweitert: [auflisten oder "keine"]
 - Widersprüchliche Anweisungen: [auflisten oder "keine"]
 - Unmögliche/unlogische Schritte: [auflisten oder "keine"]
 
 ========================================
 
 PRÜFUNG 4: FEHLER & EMPFEHLUNGEN
-Pro Zutat ein Punkt:
+WICHTIG: Liste HIER NUR tatsächliche Fehler, unausgewogene Mengen oder konkrete Empfehlungen/Verbesserungen auf! Dinge, Zutaten oder Parameter, die in Ordnung (OK) sind, dürfen HIER NICHT aufgeführt werden.
+Falls alles perfekt ist und keinerlei Fehler oder Empfehlungen vorliegen: Schreibe "Keine Fehler oder Korrekturbedarfe gefunden."
 
-- [Zutat 1]: [Zu viel / Zu wenig / OK] - [Begründung]
-- [Zutat 2]: [Zu viel / Zu wenig / OK] - [Begründung]
-- [Zutat 3]: [Zu viel / Zu wenig / OK] - [Begründung]
-- [usw.]
-
-Zusätzlich:
-- Garzeit: [Zu kurz / Zu lang / OK] - [Begründung]
-- Temperatur: [Zu hoch / Zu niedrig / OK] - [Begründung]
-- Technik: [Bessere Alternative?] - [Begründung]
+Format für gefundene Fehler & Empfehlungen:
+- [Betroffene Zutat / Garzeit / Temperatur / Technik]: [Problem / Zu viel / Zu wenig / Bessere Alternative] – [Begründung und konkreter Korrekturvorschlag]
 
 ========================================
 

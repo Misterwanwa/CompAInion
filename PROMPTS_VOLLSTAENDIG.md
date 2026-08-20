@@ -2091,6 +2091,115 @@ Hinweis: Dies sind Schätzwerte basierend auf Standardzutaten.
 
 ---
 
+### 🍳 Rezept - Rezept prüfen / Rezept-TÜV (`recipeCheck`)
+
+```
+Prüfe das folgende Rezept auf Fehler, Unstimmigkeiten und Optimierungspotenzial.
+
+URL: ${context.url}
+
+Rezept:
+"""
+${context.text.substring(0, 5000)}
+"""
+
+WICHTIG: Die folgenden Prüfungen sollen im Chat optisch klar strukturiert und abgehoben dargestellt werden (z.B. durch Trennlinien, Fettdruck oder Rahmen).
+
+========================================
+
+PRÜFUNG 1: ZEITANGABE
+Ist die angegebene Gesamtzeit realistisch?
+- Prüfe jeden Zubereitungsschritt und dessen Zeitbedarf
+- Berücksichtige alle impliziten Vorbereitungszeiten aus der Zutatenliste (z.B. "4 large cloves garlic, minced", "500g Zwiebeln gewürfelt", "geriebener Käse", "gehackte Kräuter" – das Schälen, Hacken, Schneiden oder Reiben erfordert reale Arbeitszeit, die zwingend in die Vorbereitungszeit eingerechnet werden muss!)
+- Berücksichtige Garzeiten, Aufheizzeiten
+- NICHT berücksichtigen: Ruhezeiten / Wartezeiten
+
+Format:
+- Vorbereitungszeit: [XX Min] (inkl. aller impliziten Schneide-/Hack-/Schälarbeiten aus der Zutatenliste)
+- Garzeit: [XX Min]
+- Mischen/Zusammenfügen: [XX Min]
+- Tatsächlich benötigte Zeit: [XX Min]
+
+========================================
+
+PRÜFUNG 2: SKALIERBARKEIT
+Kann das Rezept sinnvoll vervielfacht werden?
+(Hinweis zur Notation: Verwende ✓ für Ja/Erfüllt/Kein Problem [insbesondere: "Garzeit identisch" = ✓, wenn die Garzeit gleich bleibt und das Rezept somit skalierbar ist], und ✗ für Nein/Problem/Garzeit ändert sich).
+
+2x Menge:
+- [✓/✗] Topf/Pfanne groß genug
+- [✓/✗] Backform geeignet
+- [✓/✗] Garzeit identisch (✓ = bleibt identisch / skalierbar, ✗ = Garzeit weicht ab)
+- [✓/✗] Sonstige Probleme: [...]
+
+3x Menge:
+- [✓/✗] Topf/Pfanne groß genug
+- [✓/✗] Backform geeignet
+- [✓/✗] Garzeit identisch (✓ = bleibt identisch / skalierbar, ✗ = Garzeit weicht ab)
+- [✓/✗] Sonstige Probleme: [...]
+
+4x Menge:
+- [✓/✗] Topf/Pfanne groß genug
+- [✓/✗] Backform geeignet
+- [✓/✗] Garzeit identisch (✓ = bleibt identisch / skalierbar, ✗ = Garzeit weicht ab)
+- [✓/✗] Sonstige Probleme: [...]
+
+========================================
+
+PRÜFUNG 3: LOGISCHE FEHLER
+- Zutaten in der Liste, die im Rezept nicht verwendet werden: [auflisten oder "keine"]
+- Zutaten im Rezept, die nicht in der Liste stehen: [auflisten oder "keine"]
+- Fehlende Vorbereitungsschritte / implizite Schritte: Prüfe, ob in der Zutatenliste bereits vorverarbeitete Zutaten stehen (z.B. "4 large cloves garlic, minced", "gehackte Petersilie", "Zwiebeln gewürfelt"), deren Vorbereitungsschritt (Schälen, Hacken, Schneiden) in der Rezeptanleitung komplett fehlt und somit die reale Kochzeit unbemerkt erweitert: [auflisten oder "keine"]
+- Widersprüchliche Anweisungen: [auflisten oder "keine"]
+- Unmögliche/unlogische Schritte: [auflisten oder "keine"]
+
+========================================
+
+PRÜFUNG 4: FEHLER & EMPFEHLUNGEN
+WICHTIG: Liste HIER NUR tatsächliche Fehler, unausgewogene Mengen oder konkrete Empfehlungen/Verbesserungen auf! Dinge, Zutaten oder Parameter, die in Ordnung (OK) sind, dürfen HIER NICHT aufgeführt werden.
+Falls alles perfekt ist und keinerlei Fehler oder Empfehlungen vorliegen: Schreibe "Keine Fehler oder Korrekturbedarfe gefunden."
+
+Format für gefundene Fehler & Empfehlungen:
+- [Betroffene Zutat / Garzeit / Temperatur / Technik]: [Problem / Zu viel / Zu wenig / Bessere Alternative] – [Begründung und konkreter Korrekturvorschlag]
+
+========================================
+
+PRÜFUNG 5: NÄHRWERTE (gesamte Menge)
+Kalorien: ... kcal
+Protein: ...g
+Kohlenhydrate: ...g
+Fett: ...g
+Ballaststoffe: ...g
+
+========================================
+
+PRÜFUNG 6: SAISONALITÄT
+NUR ausgeben, wenn aktuell NICHT saisonale Zutaten verwendet werden.
+Falls alle Zutaten saisonal sind: Diesen Abschnitt komplett entfallen lassen.
+
+Falls nicht saisonal:
+- Nicht saisonale Zutaten: [auflisten]
+- Alternative saisonale Zutaten: [Vorschläge]
+
+========================================
+
+PRÜFUNG 7: GESCHIRRSPÜL-AUFWAND
+NICHT mitzählen (gehen in Spülmaschine): Kleine Schüsseln, Reiben, Teigschaber, Messlöffel, Kochlöffel, Schneebesen, Tassen, Zangen
+
+- Benötigte Töpfe/Pfannen: [Anzahl]
+- Benötigte Formen/Bleche: [Anzahl]
+- Benötigte Schüsseln: [Anzahl]
+- Sonstiges Geschirr (nicht spülmaschinenfähig): [auflisten]
+- Bewertung: [Gering / Mittel / Hoch]
+
+========================================
+
+FAZIT
+[Maximal 3 Sätze mit den wichtigsten Erkenntnissen]
+```
+
+---
+
 ## Sonstige
 
 ### Deep Research (`deepResearch`)
