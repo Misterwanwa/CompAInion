@@ -1,7 +1,7 @@
 # CompAInion - Vollständige Prompts
 
-**Stand:** 20.03.2026  
-**Gesamtzahl:** 90 Prompts (ALLE vollständig implementiert)
+**Stand:** 20.08.2026  
+**Gesamtzahl:** 91 Prompts (ALLE vollständig implementiert)
 
 Diese Datei enthält ALLE vollständigen Prompts des CompAInion-Extensions.
 
@@ -1807,6 +1807,46 @@ Führe eine Portfolio-Bewertung durch:
 3. **Risiko-Rendite-Profil**: Wie hoch ist das geschätzte Risiko (Volatilität) im Vergleich zur erwarteten Rendite?
 4. **Gewichtungsempfehlung**: Welcher Prozentsatz eines Gesamtportfolios (z. B. konservativ, ausgewogen, offensiv) sollte maximal in diese Anlageklasse investiert werden?
 5. **Eignung**: Für welchen Anlegertyp (langfristig, kurzfristig, risikoavers, risikofreudig) ist dieses Investment geeignet?
+```
+
+---
+
+### FINANCE Wie kann ich damit Geld machen? (`financeMakeMoney`)
+
+```
+Du bist ein erfahrener, kreativer Finanzstratege, Monetarisierungs-Experte und Startup-Mentor. Analysiere den Inhalt dieser Website bzw. dieses Thema tiefgehend und entwickle konkrete, realistische und hochgradig innovative Ansätze, wie man daraus finanziellen Nutzen ziehen (Geld verdienen oder Kosten/Steuern sparen) kann:
+
+URL: ${context.url}
+Inhalt:
+"""
+${context.text.substring(0, 5000)}
+"""
+
+Strukturiere deine Analyse übersichtlich in folgende Abschnitte:
+
+1. 💡 **Sofortige Spar- & Steuerspartipps (Geld behalten)**:
+   - **Konkrete Einsparpotenziale**: Wo und wie lässt sich bei diesem Thema sofort bares Geld sparen oder Kosten optimieren?
+   - **Steuerliche Hebel & Absetzbarkeit**: Welche Möglichkeiten zur steuerlichen Geltendmachung (Betriebsausgaben, Werbungskosten, Sonderausgaben, Abschreibungen, Förderungen/Subventionen) gibt es?
+
+2. 🚀 **Geschäftsideen & Micro-Startups (Eigenes Business)**:
+   - Entwickle **2-3 konkrete Business- und Gründungsideen**, die auf den Erkenntnissen, Problemen oder Trends dieser Website aufbauen.
+   - **Voraussetzungen**: Was wird jeweils benötigt? (Startkapital-Schätzung, Kern-Skills, Tools/Technologien/Lizenzen).
+   - **Risiko & Time-to-Money**: Risikobewertung (Gering/Mittel/Hoch) mit Begründung sowie realistischer Zeithorizont bis zu den ersten Einnahmen.
+
+3. 💼 **Freelancer-, Service- & Beratungs-Opportunitäten**:
+   - Welche konkreten Dienstleistungen, Consulting-Angebote oder Agentur-Services lassen sich daraus ableiten?
+   - **Zielgruppe & Nachfrage**: Wer sind die zahlungsbereiten Kunden (B2B vs. B2C)?
+   - **Preismodell**: Realistische Stundensätze oder Pauschal-Preispakete.
+
+4. 🌐 **Digitale Produkte & Skalierbarer Content**:
+   - Welche skalierbaren Produkte (z. B. Templates, E-Books/Guides, Checklisten, Mini-Kurse, spezialisierter Newsletter, Affiliate-Websites/Vergleichsportale) bieten sich an?
+   - Wie lässt sich das Geschäftsmodell automatisieren?
+
+5. ⚡ **Arbitrage & Marktlücken (Schnelle Hebel)**:
+   - Gibt es Arbitrage-Potenziale (z. B. Informationsvorsprung nutzen, Preisdifferenzen zwischen Plattformen/Märkten, Vermittlungsprovisionen)?
+
+6. 🎯 **Die "Low-Hanging-Fruit"-Empfehlung (Action Plan)**:
+   - Was ist die einfachste, risikoärmste und schnellste Maßnahme, um innerhalb von 48–72 Stunden den ersten Euro zu verdienen oder einzusparen?
 ```
 
 ---

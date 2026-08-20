@@ -329,7 +329,8 @@ const SUBMENUS = {
     { label: 'FINANCE Einfluss auf Märkte', key: 'financeMarket', implemented: true },
     { label: 'FINANCE Finanznews hierzu', key: 'financeNews', implemented: true },
     { label: 'FINANCE Investitionsrechner', key: 'financeInvestment', implemented: true },
-    { label: 'FINANCE Portfolio Bewertung', key: 'financePortfolio', implemented: true }
+    { label: 'FINANCE Portfolio Bewertung', key: 'financePortfolio', implemented: true },
+    { label: 'FINANCE Wie kann ich damit Geld machen?', key: 'financeMakeMoney', implemented: true }
   ],
   RECIPE_MENU: [
     { label: 'Einfach Backen Format', key: 'recipeSimpleBake', implemented: true },
@@ -2669,6 +2670,41 @@ Führe eine Portfolio-Bewertung durch:
 4. **Gewichtungsempfehlung**: Welcher Prozentsatz eines Gesamtportfolios (z. B. konservativ, ausgewogen, offensiv) sollte maximal in diese Anlageklasse investiert werden?
 5. **Eignung**: Für welchen Anlegertyp (langfristig, kurzfristig, risikoavers, risikofreudig) ist dieses Investment geeignet?`;
       break;
+    case 'financeMakeMoney':
+      promptText = `Du bist ein erfahrener, kreativer Finanzstratege, Monetarisierungs-Experte und Startup-Mentor. Analysiere den Inhalt dieser Website bzw. dieses Thema tiefgehend und entwickle konkrete, realistische und hochgradig innovative Ansätze, wie man daraus finanziellen Nutzen ziehen (Geld verdienen oder Kosten/Steuern sparen) kann:
+
+URL: ${context.url}
+Inhalt:
+"""
+${context.text.substring(0, 5000)}
+"""
+
+Strukturiere deine Analyse übersichtlich in folgende Abschnitte:
+
+1. 💡 **Sofortige Spar- & Steuerspartipps (Geld behalten)**:
+   - **Konkrete Einsparpotenziale**: Wo und wie lässt sich bei diesem Thema sofort bares Geld sparen oder Kosten optimieren?
+   - **Steuerliche Hebel & Absetzbarkeit**: Welche Möglichkeiten zur steuerlichen Geltendmachung (Betriebsausgaben, Werbungskosten, Sonderausgaben, Abschreibungen, Förderungen/Subventionen) gibt es?
+
+2. 🚀 **Geschäftsideen & Micro-Startups (Eigenes Business)**:
+   - Entwickle **2-3 konkrete Business- und Gründungsideen**, die auf den Erkenntnissen, Problemen oder Trends dieser Website aufbauen.
+   - **Voraussetzungen**: Was wird jeweils benötigt? (Startkapital-Schätzung, Kern-Skills, Tools/Technologien/Lizenzen).
+   - **Risiko & Time-to-Money**: Risikobewertung (Gering/Mittel/Hoch) mit Begründung sowie realistischer Zeithorizont bis zu den ersten Einnahmen.
+
+3. 💼 **Freelancer-, Service- & Beratungs-Opportunitäten**:
+   - Welche konkreten Dienstleistungen, Consulting-Angebote oder Agentur-Services lassen sich daraus ableiten?
+   - **Zielgruppe & Nachfrage**: Wer sind die zahlungsbereiten Kunden (B2B vs. B2C)?
+   - **Preismodell**: Realistische Stundensätze oder Pauschal-Preispakete.
+
+4. 🌐 **Digitale Produkte & Skalierbarer Content**:
+   - Welche skalierbaren Produkte (z. B. Templates, E-Books/Guides, Checklisten, Mini-Kurse, spezialisierter Newsletter, Affiliate-Websites/Vergleichsportale) bieten sich an?
+   - Wie lässt sich das Geschäftsmodell automatisieren?
+
+5. ⚡ **Arbitrage & Marktlücken (Schnelle Hebel)**:
+   - Gibt es Arbitrage-Potenziale (z. B. Informationsvorsprung nutzen, Preisdifferenzen zwischen Plattformen/Märkten, Vermittlungsprovisionen)?
+
+6. 🎯 **Die "Low-Hanging-Fruit"-Empfehlung (Action Plan)**:
+   - Was ist die einfachste, risikoärmste und schnellste Maßnahme, um innerhalb von 48–72 Stunden den ersten Euro zu verdienen oder einzusparen?`;
+      break;
     case 'recipeSimpleBake':
       promptText = `Wandle das Rezept in das "Einfach Backen" Format um.
 
@@ -3266,6 +3302,7 @@ async function triggerClippyAssistant(apiKey, apiModel, authToken, clippyMode) {
         { key: 'socialPost', desc: 'Social Media Post / Hook aus dem Seiteninhalt generieren' },
         { key: 'socialComment', desc: 'Schlagfertigen Kommentar für Social Media schreiben' },
         { key: 'financeStockAnalysis', desc: 'Aktien- & Finanzanalyse (Börsen-News, Kennzahlen, Reddit-Aktien)' },
+        { key: 'financeMakeMoney', desc: 'Monetarisierungs-Check (Wie kann ich mit dieser Seite/Thema Geld verdienen oder sparen?)' },
         { key: 'codeReview', desc: 'Code Review & Quelltextanalyse für Entwicklerseiten' },
         { key: 'vacationPlan', desc: 'Urlaubs- & Reiseplanung für Reise-Websites' },
         { key: 'pageSherlock', desc: 'Detaillierte Sherlock-Analyse der Website' },
@@ -3464,7 +3501,7 @@ function showClippyWidget(actionKey, speechText, clippyMode) {
     const ALL_POSES = ['pose-float', 'pose-think', 'pose-bounce', 'pose-wink', 'pose-wave', 'pose-surprised'];
     let initialPose = 'pose-float';
 
-    if (['factCheck', 'legalCheck', 'plagiarism', 'codeReview', 'deepResearch', 'financeStockAnalysis', 'seoAudit', 'recipeCheck', 'pageSherlock'].includes(actionKey)) {
+    if (['factCheck', 'legalCheck', 'plagiarism', 'codeReview', 'deepResearch', 'financeStockAnalysis', 'financeMakeMoney', 'seoAudit', 'recipeCheck', 'pageSherlock'].includes(actionKey)) {
       initialPose = 'pose-think';
     } else if (['aiDetection', 'createQuiz', 'createDiagram'].includes(actionKey)) {
       initialPose = 'pose-surprised';

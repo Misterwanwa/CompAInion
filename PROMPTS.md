@@ -1,7 +1,7 @@
 # CompAInion - Alle Prompts im Überblick
 
-**Stand:** 22.03.2026  
-**Gesamtzahl:** 90 Prompts + 17 Submenu-Optionen (ALLE implementiert, keine Placeholder mehr)
+**Stand:** 20.08.2026  
+**Gesamtzahl:** 91 Prompts + 17 Submenu-Optionen (ALLE implementiert, keine Placeholder mehr)
 
 ---
 
@@ -313,6 +313,10 @@ Berechnungstool-Generator (Excel-Formeln, Python-Skript oder HTML/JS-Widget).
 ### FINANCE Portfolio Bewertung
 **Key:** `financePortfolio`  
 Bewertung der Eignung einer Anlageklasse zur Integration in das Gesamtportfolio.
+
+### FINANCE Wie kann ich damit Geld machen?
+**Key:** `financeMakeMoney`  
+Analysiert Website/Text nach Monetarisierungsmöglichkeiten: Spar- & Steuertipps, Gründungsideen, Freelance-Services, digitale Produkte & Arbitrage.
 
 ---
 
