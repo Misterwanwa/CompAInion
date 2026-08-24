@@ -3247,35 +3247,214 @@ function initClippyDwellTimer() {
 }
 
 // Pre-defined fallback mappings if API key is not set or network fails
+// Each rule has multiple speeches for variety — a random one is picked
 const CLIPPY_FALLBACK_RULES = [
-  { keywords: ['mail.google.com', 'outlook', 'webmail', 'inbox', 'postfach', 'e-mail', 'email', 'gmail'], action: 'writeReply', speech: 'Eine E-Mail im Blick! Soll ich dir direkt einen passenden Antwort-Entwurf schreiben?' },
-  { keywords: ['amazon', 'ebay', 'otto', 'zalando', 'shop', 'kaufen', 'warenkorb', 'preis', 'produkt', 'angebot', 'etsy'], action: 'doINeedThis', speech: 'Impulskauf-Gefahr! Soll ich prüfen, ob du dieses Produkt wirklich brauchst oder wo die Haken sind?' },
-  { keywords: ['youtube.com', 'vimeo', 'twitch', 'video', 'stream', 'yt'], action: 'socialYouTube', speech: 'Ein Video auf dem Schirm! Soll ich dir kreative Video-Konzepte oder eine passende Beschreibung generieren?' },
-  { keywords: ['booking.com', 'airbnb', 'tripadvisor', 'expedia', 'holidaycheck', 'trivago', 'reisen', 'flug', 'hotel', 'urlaub'], action: 'vacationPlan', speech: 'Reiselust? Soll ich eine detaillierte Urlaubsplanung mit Sehenswürdigkeiten und Packliste für dich erstellen?' },
-  { keywords: ['stepstone', 'indeed', 'xing', 'jobs', 'karriere', 'bewerbung', 'jobsuche'], action: 'socialBio', speech: 'Bewerbung oder Profil-Optimierung? Soll ich dir eine überzeugende Bio oder Formulierungshilfen erstellen?' },
-  { keywords: ['witze', 'fun', 'joke', 'lustig', 'humor', 'lachschon', 'gag', 'meme'], action: 'tellJoke', speech: 'Lust auf ein Schmunzeln? Soll ich dir einen retro, thematisch passenden Witz erzählen?' },
-  { keywords: ['deepl.com', 'translate.google', 'dict.cc', 'leo.org', 'wörterbuch', 'dictionary'], action: 'translate', speech: 'Sprachbarriere? Lass mich diese Seite oder fremdsprachige Abschnitte für dich übersetzen!' },
-  { keywords: ['faq', 'definition', 'lexikon', 'glossar', 'wiki', 'erklärung'], action: 'createFAQ', speech: 'Erklärungsbedarf? Soll ich dir ein praktisches FAQ mit Antworten auf die wichtigsten Fragen erstellen?' },
-  { keywords: ['docs.google', 'duden.de', 'schreiben', 'editor', 'docx', 'overleaf', 'latex'], action: 'grammarCheck', speech: 'Textarbeit im Gange! Soll ich die Rechtschreibung, Grammatik und den Stil deiner Sätze prüfen?' },
-  { keywords: ['rezept', 'kochen', 'backen', 'zutaten', 'chefkoch', 'lecker', 'eatsmarter', 'kitchenstories'], action: 'recipeCheck', speech: 'Sieht lecker aus! Soll ich die Garzeiten, Mengen und logische Fehler im Rezept prüfen?' },
-  { keywords: ['arxiv', 'researchgate', 'paper', 'studie', 'dissertation', 'wissenschaft', 'journal', 'doi.org', 'scholar'], action: 'plagiarism', speech: 'Ein wissenschaftlicher Text! Soll ich den Inhalt auf Plagiatsmuster und Quellen untersuchen?' },
-  { keywords: ['wikipedia', 'lernen', 'studium', 'vorlesung', 'skript', 'klausur', 'kurs', 'quiz'], action: 'createQuiz', speech: 'Prüfungsstoff entdeckt! Soll ich dir ein 10-Fragen-Quiz zum Lernen erstellen?' },
-  { keywords: ['news', 'zeitung', 'spiegel', 'focus', 'zeit.de', 'tagesschau', 'bild.de', 'nzz', 'politik', 'artikel'], action: 'factCheck', speech: 'Steile Thesen im Artikel! Soll ich die Aussagen auf Fakten und Logik prüfen?' },
-  { keywords: ['gesetz', 'paragraph', 'urteil', 'klage', 'anwalt', 'agb', 'datenschutz', 'recht', 'juristisch'], action: 'legalCheck', speech: 'Rechtlich brenzlig? Lass mich die Rechtslage und Gesetzestexte dazu beleuchten!' },
-  { keywords: ['statistik', 'zahlen', 'tabelle', 'diagramm', 'prozent', 'daten', 'report', 'auswertung'], action: 'createDiagram', speech: 'Jede Menge Daten und Fakten! Soll ich daraus ein übersichtliches Mermaid.js-Diagramm bauen?' },
-  { keywords: ['finanz', 'aktie', 'börse', 'kurs', 'depot', 'etf', 'finanzen.net', 'tradingview', 'wallstreetbets'], action: 'financeStockAnalysis', speech: 'Börsen- und Finanzdaten entdeckt! Willst du eine Kennzahlen- und Risikoanalyse dazu?' },
-  { keywords: ['wordpress', 'blog', 'medium.com', 'substack', 'article', 'post'], action: 'aiDetection', speech: 'Dieser Artikel wirkt verdächtig glatt! Soll ich prüfen, ob er von einer KI geschrieben wurde?' },
-  { keywords: ['linkedin', 'twitter', 'x.com', 'reddit', 'instagram', 'facebook'], action: 'socialPost', speech: 'Social Media gesichtet! Soll ich dir passende Kommentar-Hooks oder Post-Ideen dazu generieren?' },
-  { keywords: ['seo', 'meta', 'backlink', 'traffic', 'serp', 'google search'], action: 'seoAudit', speech: 'Blogpost im Blick! Soll ich einen SEO-Audit für Keywords, H-Tags und Lesbarkeit machen?' },
-  { keywords: ['github', 'stackoverflow', 'gitlab', 'code', 'function', 'class', 'const', 'script', 'developer'], action: 'codeReview', speech: 'Code auf dem Schirm! Soll ich ein Code Review auf Bugs und Refactoring durchführen?' },
-  { keywords: ['recherche', 'analyse', 'hintergrund', 'komplex', 'dossier'], action: 'deepResearch', speech: 'Komplexes Thema! Wollen wir einen Deep-Research-Durchlauf mit Hintergrundanalyse starten?' }
+  { keywords: ['mail.google.com', 'outlook', 'webmail', 'inbox', 'postfach', 'e-mail', 'email', 'gmail'], action: 'writeReply', speeches: [
+    'Eine E-Mail im Blick! Soll ich dir direkt einen passenden Antwort-Entwurf schreiben?',
+    'Posteingang-Alarm! 📬 Ich könnte dir eine diplomatische Antwort auf diese Mail zaubern.',
+    'Na, was schreibt man denn da zurück? Ich hätte da ein paar schlagfertige Formulierungen…',
+    'Mailbox-Detektiv Clippy meldet sich! Soll ich die perfekte Antwort für dich entwerfen?',
+    'Brieffreundschaft 2.0? Lass mich dir eine Antwort vorformulieren, die sitzt!'
+  ]},
+  { keywords: ['amazon', 'ebay', 'otto', 'zalando', 'shop', 'kaufen', 'warenkorb', 'preis', 'produkt', 'angebot', 'etsy'], action: 'doINeedThis', speeches: [
+    'Impulskauf-Gefahr! 🛒 Soll ich prüfen, ob du dieses Produkt wirklich brauchst?',
+    'Moment mal — dein Geldbeutel möchte ein Wörtchen mitreden! Brauchen-Check?',
+    'Shopping-Therapie oder echtes Bedürfnis? Ich spiele kurz den Finanz-Berater.',
+    'Halt! Bevor du auf „Kaufen" klickst — soll ich prüfen, wo die Haken sind?',
+    'Dein Bankkonto flüstert: „Frag erst Clippy!" — Kaufberatung gefällig?',
+    'Oha, Schnäppchenjäger*in unterwegs? Lass mich kurz die Fakten checken!'
+  ]},
+  { keywords: ['youtube.com', 'vimeo', 'twitch', 'video', 'stream', 'yt'], action: 'socialYouTube', speeches: [
+    'Ein Video auf dem Schirm! Soll ich dir kreative Video-Konzepte generieren?',
+    'YouTube-Time! 🎬 Brauchst du eine knackige Beschreibung oder Thumbnail-Idee?',
+    'Lights, Camera, Clippy! Soll ich Content-Ideen für deinen Kanal spinnen?',
+    'Popcorn-Modus aktiviert! 🍿 Aber im Ernst — soll ich das Video zusammenfassen?',
+    'Video-Vibes! Soll ich dir Hooks, Tags oder eine SEO-optimierte Beschreibung bauen?'
+  ]},
+  { keywords: ['booking.com', 'airbnb', 'tripadvisor', 'expedia', 'holidaycheck', 'trivago', 'reisen', 'flug', 'hotel', 'urlaub'], action: 'vacationPlan', speeches: [
+    'Reiselust entdeckt! ✈️ Soll ich eine Urlaubsplanung mit Packliste erstellen?',
+    'Fernweh-Alarm! Ich packe schon mal den Koffer — äh, den Reiseplan!',
+    'Urlaubsmodus: AN! 🏖️ Soll ich Sehenswürdigkeiten und Budget durchrechnen?',
+    'Ab in den Urlaub? Lass mich den perfekten Reiseplan zusammenstellen!',
+    'Wanderlust detected! Ich kann dir einen kompletten Trip mit Geheimtipps planen.'
+  ]},
+  { keywords: ['stepstone', 'indeed', 'xing', 'jobs', 'karriere', 'bewerbung', 'jobsuche'], action: 'socialBio', speeches: [
+    'Karriere-Modus aktiviert! 💼 Soll ich dein Profil auf Hochglanz polieren?',
+    'Bewerbung oder Profil-Optimierung? Ich erstelle dir eine überzeugende Bio!',
+    'Traumjob in Sicht? Lass mich dein LinkedIn-Profil zum Magneten machen!',
+    'Jobsuche detected! Soll ich dir überzeugende Formulierungen zaubern?',
+    'Karriere-Clippy an Bord! 🚀 Profi-Bio und Anschreiben-Hilfe gefällig?'
+  ]},
+  { keywords: ['witze', 'fun', 'joke', 'lustig', 'humor', 'lachschon', 'gag', 'meme'], action: 'tellJoke', speeches: [
+    'Humor-Sensor schlägt aus! 😄 Darf ich dir einen Retro-Witz erzählen?',
+    'Lachflash incoming! Soll ich einen thematisch passenden Witz zum Besten geben?',
+    'Fun-Fact: Büroklammern haben den besten Humor! Willst du einen Beweis?',
+    'Comedy-Clippy activated! 🎤 Ein Witz gefällig? Versprochen: jugendnefrei!'
+  ]},
+  { keywords: ['deepl.com', 'translate.google', 'dict.cc', 'leo.org', 'wörterbuch', 'dictionary'], action: 'translate', speeches: [
+    'Sprachbarriere? 🌍 Lass mich das für dich übersetzen!',
+    'Lost in Translation? Ich spreche fließend alle Sprachen — fast!',
+    'Babelfish-Modus! 🐟 Soll ich diese Seite in verständliches Deutsch verwandeln?',
+    'Polyglotter Clippy an der Strippe! Übersetzung gefällig?',
+    'Sprachgenie Clippy meldet sich! Welche Sprache darf es sein?'
+  ]},
+  { keywords: ['faq', 'definition', 'lexikon', 'glossar', 'wiki', 'erklärung'], action: 'createFAQ', speeches: [
+    'Erklärungsbedarf? 📖 Soll ich ein praktisches FAQ erstellen?',
+    'Wissens-Alarm! Ich könnte daraus ein übersichtliches FAQ mit klaren Antworten machen.',
+    'Lexikon-Vibes! Soll ich die wichtigsten Fragen und Antworten zusammenstellen?',
+    'So viele Infos! Lass mich die häufigsten Fragen daraus destillieren.',
+    'FAQ-Factory am Start! Ich fasse die Kernfragen in ein praktisches Format.'
+  ]},
+  { keywords: ['docs.google', 'duden.de', 'schreiben', 'editor', 'docx', 'overleaf', 'latex'], action: 'grammarCheck', speeches: [
+    'Textarbeit im Gange! ✍️ Soll ich Rechtschreibung und Stil prüfen?',
+    'Korrektur-Clippy an Bord! Grammatik, Stil und Rechtschreibung — ich check das!',
+    'Duden wäre stolz! Soll ich deinen Text auf Herz und Nieren prüfen?',
+    'Schreibblockade? Oder Feinschliff nötig? Ich poliere deinen Text!',
+    'Rotstift gezückt! 📝 Lass mich den Text professionell durchsehen.'
+  ]},
+  { keywords: ['rezept', 'kochen', 'backen', 'zutaten', 'chefkoch', 'lecker', 'eatsmarter', 'kitchenstories'], action: 'recipeCheck', speeches: [
+    'Sieht lecker aus! 🍳 Soll ich Garzeiten und Mengen prüfen?',
+    'Küchenpolizei Clippy! Ich checke das Rezept auf logische Fehler.',
+    'Hmm, da läuft mir das Wasser im Mund zusammen! Rezept-Check gefällig?',
+    'Sterneküche oder Katastrophe? Lass mich die Angaben im Rezept prüfen!',
+    'Gordon Ramsay würde sagen: „Check das Rezept!" — Also, soll ich?',
+    'Mise en place! 👨‍🍳 Stimmen die Mengen, Zeiten und Temperaturen?'
+  ]},
+  { keywords: ['arxiv', 'researchgate', 'paper', 'studie', 'dissertation', 'wissenschaft', 'journal', 'doi.org', 'scholar'], action: 'plagiarism', speeches: [
+    'Wissenschaftlicher Text entdeckt! 🔬 Plagiats-Check gefällig?',
+    'Paper-Detektiv Clippy! Soll ich nach Plagiatmustern und Quellen suchen?',
+    'Peer-Review-Clippy meldet sich! Ist dieser Text wirklich original?',
+    'Akademische Integrität am Herzen! Soll ich den Text durchleuchten?',
+    'Zitier-Polizei! 📚 Soll ich prüfen, ob alles korrekt referenziert ist?'
+  ]},
+  { keywords: ['wikipedia', 'lernen', 'studium', 'vorlesung', 'skript', 'klausur', 'kurs', 'quiz'], action: 'createQuiz', speeches: [
+    'Prüfungsstoff entdeckt! 🎓 Soll ich ein 10-Fragen-Quiz erstellen?',
+    'Lernmodus aktiviert! Ich bastle dir ein Quiz mit verschiedenen Schwierigkeitsstufen.',
+    'Study-Buddy Clippy am Start! Quiz, Karteikarten oder Zusammenfassung?',
+    'Wissen ist Macht — und Quizze machen Spaß! Soll ich loslegen?',
+    'Klausurvorbereitung? Lass mich die wichtigsten Prüfungsfragen generieren!'
+  ]},
+  { keywords: ['news', 'zeitung', 'spiegel', 'focus', 'zeit.de', 'tagesschau', 'bild.de', 'nzz', 'politik', 'artikel'], action: 'factCheck', speeches: [
+    'Steile Thesen im Artikel! 📰 Faktencheck gefällig?',
+    'Breaking News! Aber stimmt das auch alles? Soll ich die Fakten prüfen?',
+    'Nachrichten-Detektiv Clippy! Ich checke die Aussagen auf Wahrheitsgehalt.',
+    'Fake News oder echte Nachricht? Lass mich die Fakten auf den Tisch legen!',
+    'Medienkompetenz-Clippy hier! 🔍 Soll ich die Quellen und Aussagen durchleuchten?',
+    'Vertrauen ist gut, Faktencheck ist besser! Soll ich ran?'
+  ]},
+  { keywords: ['gesetz', 'paragraph', 'urteil', 'klage', 'anwalt', 'agb', 'datenschutz', 'recht', 'juristisch'], action: 'legalCheck', speeches: [
+    'Rechtlich brenzlig? ⚖️ Lass mich die Rechtslage beleuchten!',
+    'Juristischer Dschungel? Clippy hackt sich durch die Paragraphen!',
+    'Anwalts-Clippy meldet sich! Soll ich die Gesetzestexte durchforsten?',
+    'DSGVO, BGB, StGB — klingt nach einem Fall für mich! Rechtsanalyse?',
+    'Vorsicht, Rechtsfalle! Soll ich die juristischen Stolpersteine aufdecken?'
+  ]},
+  { keywords: ['statistik', 'zahlen', 'tabelle', 'diagramm', 'prozent', 'daten', 'report', 'auswertung'], action: 'createDiagram', speeches: [
+    'Jede Menge Daten! 📊 Soll ich daraus ein Mermaid.js-Diagramm bauen?',
+    'Zahlen-Tsunami! Lass mich das in ein übersichtliches Diagramm verwandeln.',
+    'Data-Nerd Clippy! Ich visualisiere dir die Daten als schickes Chart.',
+    'Excel kann das? Clippy kann's besser! Diagramm gefällig?',
+    'Daten-Chaos? Ich bringe Struktur rein — mit einem eleganten Diagramm!'
+  ]},
+  { keywords: ['finanz', 'aktie', 'börse', 'kurs', 'depot', 'etf', 'finanzen.net', 'tradingview', 'wallstreetbets'], action: 'financeStockAnalysis', speeches: [
+    'Börsen- und Finanzdaten entdeckt! 📈 Kennzahlen-Analyse gefällig?',
+    'Wall-Street-Clippy an der Börse! Soll ich die Fundamentaldaten durchleuchten?',
+    'To the moon? 🚀 Oder lieber erst mal die Risiken checken?',
+    'Finanz-Guru Clippy hier! KGV, Dividende, Volatilität — ich rechne das durch!',
+    'Diamond Hands oder Paper Hands? Lass mich die Aktie analysieren!',
+    'Dein Portfolio hat Fragen — ich habe Antworten! Analyse starten?'
+  ]},
+  { keywords: ['wordpress', 'blog', 'medium.com', 'substack', 'article', 'post'], action: 'aiDetection', speeches: [
+    'Dieser Artikel wirkt verdächtig glatt! 🤖 KI-Erkennung starten?',
+    'Hmm, klingt wie ChatGPT auf Koffein! Soll ich den Text auf KI prüfen?',
+    'Blog-Polizei! Mensch oder Maschine? Ich finde es heraus!',
+    'Content-Forensik! Soll ich analysieren, ob hier eine KI geschrieben hat?',
+    'Turing-Test für diesen Artikel! Soll ich meine KI-Detektoren einschalten?'
+  ]},
+  { keywords: ['linkedin', 'twitter', 'x.com', 'reddit', 'instagram', 'facebook'], action: 'socialPost', speeches: [
+    'Social Media gesichtet! 📱 Post-Ideen oder Hooks generieren?',
+    'Scrollst du nur, oder postest du auch? Ich hätte ein paar Content-Ideen!',
+    'Social-Media-Muse Clippy! Soll ich dir virale Post-Vorschläge machen?',
+    'Algorithmus-Flüsterer hier! 🎯 Soll ich dir engagement-starke Posts schreiben?',
+    'Like, Share, Clippy! Ich generiere dir Content, der durch die Decke geht!',
+    'Timeline-Inspiration gefällig? Ich spinne dir ein paar kreative Posts!'
+  ]},
+  { keywords: ['seo', 'meta', 'backlink', 'traffic', 'serp', 'google search'], action: 'seoAudit', speeches: [
+    'SEO-Radar aktiviert! 🔎 Soll ich Keywords, H-Tags und Lesbarkeit prüfen?',
+    'Google liebt optimierte Seiten — ich auch! SEO-Audit starten?',
+    'Rankst du schon oder optimierst du noch? SEO-Check gefällig!',
+    'SEO-Ninja Clippy! Lass mich die technischen SEO-Basics durchgehen.',
+    'Deine Seite hat SEO-Potenzial! Soll ich die Low-Hanging Fruits identifizieren?'
+  ]},
+  { keywords: ['github', 'stackoverflow', 'gitlab', 'code', 'function', 'class', 'const', 'script', 'developer'], action: 'codeReview', speeches: [
+    'Code auf dem Schirm! 💻 Code Review auf Bugs und Refactoring?',
+    'Compile-Error? Clippy to the rescue! Soll ich den Code reviewen?',
+    'Debug-Modus: AN! 🐛 Soll ich nach Bugs und Security-Issues suchen?',
+    'Clean Code oder Spaghetti? Lass mich mal drüberschauen!',
+    'Rubber-Duck-Debugging? Ich bin deine Badeente! Code Review gefällig?',
+    'Stack Overflow war gestern — frag einfach mich! Review starten?'
+  ]},
+  { keywords: ['recherche', 'analyse', 'hintergrund', 'komplex', 'dossier'], action: 'deepResearch', speeches: [
+    'Komplexes Thema! 🕵️ Deep-Research-Durchlauf starten?',
+    'Recherche-Modus aktiviert! Soll ich ein umfassendes Dossier zusammenstellen?',
+    'Investigativ-Clippy meldet sich! Hintergrundanalyse gefällig?',
+    'Da steckt mehr dahinter! Soll ich tiefer graben und alles zusammentragen?',
+    'Sherlock Clippy auf der Fährte! 🔍 Detailanalyse starten?'
+  ]},
+  { keywords: ['notion', 'obsidian', 'evernote', 'notiz', 'note', 'zusammenfassung'], action: 'contextCollector', speeches: [
+    'Notiz-App entdeckt! 📋 Soll ich den Kontext für dich zusammentragen?',
+    'Second Brain gefällig? Ich sammle die wichtigsten Infos für Notion/Obsidian!',
+    'Knowledge-Worker Clippy! Soll ich alles Wichtige in ein Kontext-Paket packen?',
+    'Dein Wissens-Management braucht Futter! Content-Extraktion starten?'
+  ]},
+  { keywords: ['barrierefreiheit', 'accessibility', 'a11y', 'screenreader', 'wcag', 'aria'], action: 'accessibility', speeches: [
+    'Inklusion ist wichtig! ♿ Soll ich die Barrierefreiheit der Seite prüfen?',
+    'WCAG-Check gefällig? Ich prüfe, ob die Seite für alle zugänglich ist!',
+    'Accessibility-Audit! Screenreader, Kontraste, ARIA — ich check das!',
+    'Barrierefreiheit ist kein Feature, sondern Pflicht! Soll ich testen?'
+  ]},
+  { keywords: ['präsentation', 'powerpoint', 'slides', 'vortrag', 'referat', 'keynote', 'pitch'], action: 'createPresentation', speeches: [
+    'Präsentation in Arbeit? 🎤 Soll ich dir Folien und Gliederung erstellen?',
+    'Pitch-Perfect-Clippy! Ich bastle dir eine überzeugende Slide-Struktur.',
+    'Von langweilig zu brilliant! Soll ich deine Präsentation aufmotzen?',
+    'Steve Jobs wäre neidisch! Soll ich eine Killer-Präsentation designen?',
+    'Vortrag anstehend? Lass mich die Folienstruktur mit Wow-Faktor entwerfen!'
+  ]}
 ];
 
 async function triggerClippyAssistant(apiKey, apiModel, authToken, clippyMode) {
   clippyShownInSession = true;
 
+  // Generic fallback speeches for when nothing specific matches
+  const GENERIC_FALLBACK_SPEECHES = [
+    'Hey! Ich sehe, du schaust dir diese Seite an. Soll ich sie kurz für dich zusammenfassen?',
+    'Na, was treibt dich hierher? 🤔 Ich könnte diese Seite für dich analysieren!',
+    'Clippy meldet sich zum Dienst! Soll ich die wichtigsten Punkte zusammenfassen?',
+    'Lange genug gestarrt! Lass mich dir die Kernaussagen auf dem Silbertablett servieren.',
+    'Psst! Deine Lieblings-Büroklammer hat einen Vorschlag: Zusammenfassung gefällig?',
+    'Hey du! Soll ich diese Seite in mundgerechte Häppchen zerlegen? 📝',
+    'Clippy sagt: Diese Seite ist zu lang zum Lesen! TL;DR incoming?',
+    'Ich seh dich scrollen! Soll ich das Wichtigste rauspicken?'
+  ];
+
   let chosenAction = 'summaryNormal';
-  let speechText = 'Hey! Ich sehe, du schaust dir diese Seite an. Soll ich sie kurz für dich zusammenfassen?';
+  let speechText = GENERIC_FALLBACK_SPEECHES[Math.floor(Math.random() * GENERIC_FALLBACK_SPEECHES.length)];
+
+  // Helper: pick from matching fallback rules (suitability pool, then random)
+  function pickFromFallbackRules() {
+    const pageStr = (document.title + ' ' + window.location.href + ' ' + (document.body ? document.body.innerText : '').substring(0, 300)).toLowerCase();
+    // Collect ALL matching rules (suitability pool)
+    const matchingRules = CLIPPY_FALLBACK_RULES.filter(rule =>
+      rule.keywords.some(kw => pageStr.includes(kw))
+    );
+    if (matchingRules.length > 0) {
+      // Pick a random matching rule
+      const chosen = matchingRules[Math.floor(Math.random() * matchingRules.length)];
+      chosenAction = chosen.action;
+      // Pick a random speech from that rule's speeches array
+      speechText = chosen.speeches[Math.floor(Math.random() * chosen.speeches.length)];
+    }
+  }
 
   if (apiKey || authToken) {
     try {
@@ -3284,55 +3463,85 @@ async function triggerClippyAssistant(apiKey, apiModel, authToken, clippyMode) {
       const textContent = (document.body ? document.body.innerText : '').replace(/\s+/g, ' ').trim().substring(0, 500);
 
       const candidateActions = [
-        { key: 'aiDetection', desc: 'AI-Erkennung (Prüfen, ob der Text auf Blogs/Social Media von einer KI stammt)' },
-        { key: 'doINeedThis', desc: 'Kaufberatung / Impulskauf-Check (Brauche ich dieses Produkt auf Amazon/eBay wirklich?)' },
-        { key: 'priceCompare', desc: 'Preisvergleich & Alternativen für Produkte' },
-        { key: 'productProsCons', desc: 'Vor- und Nachteile eines Produkts oder Themas' },
-        { key: 'writeReply', desc: 'Antwort schreiben (E-Mail Antwort auf Gmail/Outlook oder Kommentar)' },
-        { key: 'plagiarism', desc: 'Plagiats- & Quellen-Check bei wissenschaftlichen Texten & Studien' },
-        { key: 'createQuiz', desc: '10-Fragen-Lern-Quiz aus Lernportalen oder Fachtexten erstellen' },
-        { key: 'factCheck', desc: 'Faktencheck der Aussagen bei News, Zeitungsartikeln & Politik' },
-        { key: 'legalCheck', desc: 'Wie ist die Rechtslage? Rechtliche Einordnung & Gesetzestexte' },
-        { key: 'createDiagram', desc: 'Mermaid.js Diagramm & Prozessablauf aus Zahlen, Daten & Fakten generieren' },
-        { key: 'deepResearch', desc: 'Deep Research: Ausführliche Hintergrund-Recherche & Analyse' },
-        { key: 'recipeCheck', desc: 'Rezept-TÜV: Garzeiten, Mengenskalierung & logische Fehler in Rezepten prüfen' },
-        { key: 'recipeDevice', desc: 'Rezept für Küchengeräte (Airfryer, Thermomix, etc.) anpassen' },
-        { key: 'translate', desc: 'Smart Translation (Übersetzen von englischen/fremdsprachigen Texten)' },
-        { key: 'seoAudit', desc: 'SEO-Audit: Keywords, H-Überschriften & Lesbarkeit von Blogs optimieren' },
-        { key: 'socialPost', desc: 'Social Media Post / Hook aus dem Seiteninhalt generieren' },
-        { key: 'socialComment', desc: 'Schlagfertigen Kommentar für Social Media schreiben' },
-        { key: 'financeStockAnalysis', desc: 'Aktien- & Finanzanalyse (Börsen-News, Kennzahlen, Reddit-Aktien)' },
-        { key: 'financeMakeMoney', desc: 'Monetarisierungs-Check (Wie kann ich mit dieser Seite/Thema Geld verdienen oder sparen?)' },
-        { key: 'codeReview', desc: 'Code Review & Quelltextanalyse für Entwicklerseiten' },
-        { key: 'vacationPlan', desc: 'Urlaubs- & Reiseplanung für Reise-Websites' },
-        { key: 'pageSherlock', desc: 'Detaillierte Sherlock-Analyse der Website' },
-        { key: 'tellJoke', desc: 'Passenden Retro-Witz zur Seite erzählen' },
-        { key: 'summaryNormal', desc: 'Kurze Zusammenfassung der Webseite' },
-        { key: 'summarySuperShort', desc: 'Super kurze TL;DR Zusammenfassung' }
+        { key: 'aiDetection', desc: 'AI-Erkennung (Prüfen ob Text von KI stammt — Blogs, Social Media, Artikel)' },
+        { key: 'doINeedThis', desc: 'Kaufberatung / Impulskauf-Check (Amazon, eBay, Online-Shops)' },
+        { key: 'priceCompare', desc: 'Preisvergleich & günstigere Alternativen finden' },
+        { key: 'productProsCons', desc: 'Vor- und Nachteile eines Produkts oder Themas abwägen' },
+        { key: 'shoppingAssistant', desc: 'Shopping-Assistent: Gutscheine, Cashback, Deals aufspüren' },
+        { key: 'writeReply', desc: 'Antwort/E-Mail schreiben (Gmail, Outlook, Kommentare)' },
+        { key: 'emailDraft', desc: 'E-Mail-Entwurf erstellen (formell oder informell)' },
+        { key: 'plagiarism', desc: 'Plagiats- & Quellen-Check bei wissenschaftlichen Texten' },
+        { key: 'createQuiz', desc: '10-Fragen-Quiz zum Lernen aus dem Seiteninhalt erstellen' },
+        { key: 'learningHelp', desc: 'Lernhilfe mit Mnemonics, Eselsbrücken und Karteikarten' },
+        { key: 'factCheck', desc: 'Faktencheck: Aussagen in News & Artikeln auf Wahrheit prüfen' },
+        { key: 'legalCheck', desc: 'Rechtslage klären: BGB, DSGVO, Vertragsrecht, AGBs' },
+        { key: 'createDiagram', desc: 'Mermaid.js Diagramm aus Daten, Statistiken oder Prozessen' },
+        { key: 'deepResearch', desc: 'Deep Research: Hintergrundanalyse & Dossier erstellen' },
+        { key: 'recipeCheck', desc: 'Rezept-Check: Garzeiten, Mengen, logische Fehler finden' },
+        { key: 'recipeDevice', desc: 'Rezept für Küchengerät anpassen (Airfryer, Thermomix, etc.)' },
+        { key: 'translate', desc: 'Übersetzen von fremdsprachigen Texten/Seiten' },
+        { key: 'seoAudit', desc: 'SEO-Audit: Keywords, H-Tags, Meta, technisches SEO' },
+        { key: 'seoContentAnalyzer', desc: 'Content-SEO: Keyword-Dichte, Lesbarkeit, Search Intent' },
+        { key: 'socialPost', desc: 'Social Media Post/Hook aus dem Seiteninhalt generieren' },
+        { key: 'socialComment', desc: 'Schlagfertigen, engagement-starken Kommentar schreiben' },
+        { key: 'socialFacebook', desc: 'Facebook Post mit Hook, Emojis und Call-to-Action' },
+        { key: 'socialInstagram', desc: 'Instagram Content-Ideen: Feed, Stories, Reels, Carousels' },
+        { key: 'financeStockAnalysis', desc: 'Aktienanalyse: Fundamentaldaten, KGV, Dividende, Risiken' },
+        { key: 'financeMakeMoney', desc: 'Monetarisierungs-Check: Wie mit diesem Thema Geld verdienen?' },
+        { key: 'codeReview', desc: 'Code Review: Bugs, Security, Best Practices, Refactoring' },
+        { key: 'vacationPlan', desc: 'Urlaubsplanung: Sehenswürdigkeiten, Budget, Packliste' },
+        { key: 'pageSherlock', desc: 'Website-Detektiv: Trust-Check, Strategie, Red Flags' },
+        { key: 'extractQuotes', desc: 'Zitate extrahieren: Die besten Zitate für Social Media' },
+        { key: 'createPresentation', desc: 'Präsentation erstellen: 6-10 Folien mit Gliederung' },
+        { key: 'contextCollector', desc: 'Kontext sammeln: Infos für Notion/Obsidian strukturieren' },
+        { key: 'accessibility', desc: 'Barrierefreiheits-Check: WCAG, Kontraste, Screenreader' },
+        { key: 'grammarCheck', desc: 'Grammatik & Stil prüfen: Rechtschreibung, Ausdruck, Ton' },
+        { key: 'reusePage', desc: 'Content Recycling: Inhalte für andere Plattformen umschreiben' },
+        { key: 'checklist', desc: 'Checkliste erstellen: To-Do-Liste mit Zeitplanung' },
+        { key: 'tellJoke', desc: 'Passenden kontextbezogenen Witz erzählen' },
+        { key: 'summaryNormal', desc: 'Zusammenfassung der Webseite (3 Erkenntnisse, Statistik, Zitat)' },
+        { key: 'summarySuperShort', desc: 'TL;DR — Super kurze Zusammenfassung in max. 3 Sätzen' },
+        { key: 'socialBio', desc: 'Profil-Bio erstellen für LinkedIn, Twitter, Instagram' }
       ];
 
-      const prompt = `Du bist Clippy, der sympathische retro Büroklammer-Assistent aus der Browser-Erweiterung CompAInion.
-Du siehst, dass der Nutzer seit einer Minute auf folgender Website verweilt:
+      const prompt = `Du bist Clippy, der legendäre retro Büroklammer-Assistent aus der Browser-Erweiterung CompAInion.
+Der Nutzer verweilt gerade auf dieser Website:
 - Titel: "${pageTitle}"
 - URL: "${pageUrl}"
 - Vorschau: "${textContent}"
 
-WICHTIGSTE REGEL FÜR DIE AKTIONS-AUSWAHL:
-VERMEIDE langweilige Standard-Zusammenfassungen ('summaryNormal' oder 'summarySuperShort'), WENN eine spezifischere Kontext-Aktion zur Website passt!
-- E-Mail/Gmail -> writeReply
-- Shopping/Amazon/eBay -> doINeedThis, priceCompare oder productProsCons
-- Blog/Artikel -> aiDetection oder seoAudit
-- Social Media -> socialPost, socialComment oder aiDetection
-- News/Politik -> factCheck oder legalCheck
-- Uni/Studium/Paper -> plagiarism oder createQuiz
-- Daten/Zahlen/Statistik -> createDiagram
-- Rezepte/Kochen -> recipeCheck oder recipeDevice
-- Fremdsprachig/Englisch -> translate
-- Finanzen/Aktien/Börse -> financeStockAnalysis
-- GitHub/Code -> codeReview
-Wähle 'summaryNormal' NUR DANN, wenn absolut keine der Spezial-Aktionen sinnvoll zur Seite passt.
+## AKTIONS-AUSWAHL (Eignung vor Zufall!)
+Wähle die PASSENDSTE Aktion für den Kontext der Website. Nutze diese Orientierung, aber sei KREATIV und überrasche manchmal:
+- E-Mail/Gmail → writeReply, emailDraft
+- Shopping/Amazon/eBay → doINeedThis, priceCompare, productProsCons, shoppingAssistant
+- Blog/Artikel → aiDetection, seoAudit, extractQuotes, reusePage
+- Social Media → socialPost, socialComment, socialFacebook, socialInstagram
+- News/Politik → factCheck, legalCheck, deepResearch
+- Uni/Studium/Paper → plagiarism, createQuiz, learningHelp
+- Daten/Zahlen/Statistik → createDiagram, checklist
+- Rezepte/Kochen → recipeCheck, recipeDevice
+- Fremdsprachig → translate
+- Finanzen/Aktien → financeStockAnalysis, financeMakeMoney
+- GitHub/Code → codeReview
+- Texte/Dokumente → grammarCheck, createPresentation, contextCollector
+- Barrierefreiheit → accessibility
+- Reise/Urlaub → vacationPlan
+- Karriere/Jobs → socialBio
+NUTZE 'summaryNormal' NUR, wenn KEINE Spezial-Aktion sinnvoll passt.
+Wähle auch gern mal überraschende Kombinationen! Z.B. 'tellJoke' auf einer Nachrichtenseite, 'extractQuotes' auf einem Blog, 'financeMakeMoney' auf einer beliebigen Seite.
 
-Erstelle dazu EINEN einzigen, kurzen (max. 1-2 Sätze), sympathischen, leicht frechen/witzigen Vorschlagssatz im typischen Clippy-Retro-Ton auf Deutsch in der Du-Form für Clippy's Sprechblase.
+## SPRUCH-STIL (Sei MAXIMAL kreativ und abwechslungsreich!)
+Schreibe EINEN Satz (max. 2 kurze Sätze) für Clippys Sprechblase. Variiere deinen Stil STARK zwischen:
+🎭 Dramatisch: "ALARM! Diese Seite braucht dringend meinen Faktencheck!"
+🤓 Nerdig: "Fun Fact: 73% aller Büroklammern empfehlen einen Code Review."
+😏 Frech: "Scrollst du noch oder liest du schon? Ich hätte da was..."
+🎬 Pop-Kultur: "Wie Gandalf sagen würde: 'Du sollst nicht kaufen ohne Preisvergleich!'"
+📢 Motivierend: "Du bist hier genau richtig — lass uns das Beste rausholen!"
+🕵️ Detektiv: "Mein Büroklammer-Instinkt sagt mir, da steckt mehr dahinter..."
+🎲 Wortspiel: "Ich bin ganz ge-CLIP-t von dieser Seite!"
+❓ Rhetorisch: "Hast du dich auch schon gefragt, ob dieser Text echt ist?"
+Mische Emojis ein, nutze Wortspiele, Referenzen und rhetorische Fragen. WIEDERHOLE DICH NICHT!
+Schreibe IMMER auf Deutsch in der Du-Form.
 
 Verfügbare Aktionen:
 ${candidateActions.map(a => `- ${a.key}: ${a.desc}`).join('\n')}
@@ -3340,7 +3549,7 @@ ${candidateActions.map(a => `- ${a.key}: ${a.desc}`).join('\n')}
 WICHTIG: Antworte AUSSCHLIESSLICH im folgenden JSON-Format ohne Markdown-Codeblock:
 {
   "action": "<action_key>",
-  "speech": "<Dein Clippy-Spruch auf Deutsch>"
+  "speech": "<Dein kreativer Clippy-Spruch auf Deutsch>"
 }`;
 
       const endpointUrl = apiKey 
@@ -3360,8 +3569,8 @@ WICHTIG: Antworte AUSSCHLIESSLICH im folgenden JSON-Format ohne Markdown-Codeblo
           contents: [{ parts: [{ text: prompt }] }],
           generationConfig: {
             responseMimeType: 'application/json',
-            temperature: 0.3,
-            maxOutputTokens: 150
+            temperature: 0.9,
+            maxOutputTokens: 200
           }
         })
       });
@@ -3377,24 +3586,10 @@ WICHTIG: Antworte AUSSCHLIESSLICH im folgenden JSON-Format ohne Markdown-Codeblo
       }
     } catch (e) {
       console.log('Clippy API suggestion failed, using fallback:', e);
-      const pageStr = (document.title + ' ' + window.location.href).toLowerCase();
-      for (const rule of CLIPPY_FALLBACK_RULES) {
-        if (rule.keywords.some(kw => pageStr.includes(kw))) {
-          chosenAction = rule.action;
-          speechText = rule.speech;
-          break;
-        }
-      }
+      pickFromFallbackRules();
     }
   } else {
-    const pageStr = (document.title + ' ' + window.location.href).toLowerCase();
-    for (const rule of CLIPPY_FALLBACK_RULES) {
-      if (rule.keywords.some(kw => pageStr.includes(kw))) {
-        chosenAction = rule.action;
-        speechText = rule.speech;
-        break;
-      }
-    }
+    pickFromFallbackRules();
   }
 
   showClippyWidget(chosenAction, speechText, clippyMode);
@@ -3498,17 +3693,26 @@ function showClippyWidget(actionKey, speechText, clippyMode) {
   // Animation Pose Manager & Dynamic Variations
   const svgEl = container.querySelector('#clippy-svg');
   if (svgEl) {
-    const ALL_POSES = ['pose-float', 'pose-think', 'pose-bounce', 'pose-wink', 'pose-wave', 'pose-surprised'];
+    const ALL_POSES = ['pose-float', 'pose-think', 'pose-bounce', 'pose-wink', 'pose-wave', 'pose-surprised', 'pose-nod', 'pose-peek', 'pose-dizzy', 'pose-celebrate', 'pose-shy'];
     let initialPose = 'pose-float';
 
-    if (['factCheck', 'legalCheck', 'plagiarism', 'codeReview', 'deepResearch', 'financeStockAnalysis', 'financeMakeMoney', 'seoAudit', 'recipeCheck', 'pageSherlock'].includes(actionKey)) {
+    // Expanded pose mapping for all candidate actions
+    if (['factCheck', 'legalCheck', 'plagiarism', 'codeReview', 'deepResearch', 'financeStockAnalysis', 'financeMakeMoney', 'seoAudit', 'seoContentAnalyzer', 'recipeCheck', 'pageSherlock', 'grammarCheck'].includes(actionKey)) {
       initialPose = 'pose-think';
-    } else if (['aiDetection', 'createQuiz', 'createDiagram'].includes(actionKey)) {
+    } else if (['aiDetection', 'createQuiz', 'createDiagram', 'accessibility'].includes(actionKey)) {
       initialPose = 'pose-surprised';
-    } else if (['socialPost', 'socialComment', 'tellJoke', 'vacationPlan'].includes(actionKey)) {
+    } else if (['socialPost', 'socialComment', 'socialFacebook', 'socialInstagram', 'tellJoke', 'vacationPlan'].includes(actionKey)) {
       initialPose = 'pose-bounce';
-    } else if (['writeReply', 'doINeedThis', 'priceCompare', 'productProsCons'].includes(actionKey)) {
+    } else if (['writeReply', 'emailDraft', 'doINeedThis', 'priceCompare', 'productProsCons', 'shoppingAssistant'].includes(actionKey)) {
       initialPose = 'pose-wink';
+    } else if (['createPresentation', 'extractQuotes', 'reusePage', 'checklist'].includes(actionKey)) {
+      initialPose = 'pose-nod';
+    } else if (['contextCollector', 'learningHelp'].includes(actionKey)) {
+      initialPose = 'pose-peek';
+    } else if (['translate', 'recipeDevice'].includes(actionKey)) {
+      initialPose = 'pose-dizzy';
+    } else if (['socialBio', 'summaryNormal', 'summarySuperShort'].includes(actionKey)) {
+      initialPose = 'pose-celebrate';
     } else {
       initialPose = 'pose-wave';
     }
@@ -3516,27 +3720,29 @@ function showClippyWidget(actionKey, speechText, clippyMode) {
     svgEl.className = initialPose;
     let currentPose = initialPose;
 
-    // Periodically switch poses every 4.5 seconds for dynamic animation variation
-    const poseInterval = setInterval(() => {
-      if (!document.body.contains(container)) {
-        clearInterval(poseInterval);
-        return;
-      }
-      const choices = ALL_POSES.filter(p => p !== currentPose);
-      const nextPose = choices[Math.floor(Math.random() * choices.length)];
-      svgEl.classList.remove(currentPose);
-      svgEl.classList.add(nextPose);
-      currentPose = nextPose;
-    }, 4500);
+    // Schedule pose switches with randomized intervals (3-7 seconds) for organic variation
+    function schedulePoseSwitch() {
+      const delay = 3000 + Math.floor(Math.random() * 4000); // 3000-7000ms
+      setTimeout(() => {
+        if (!document.body.contains(container)) return;
+        const choices = ALL_POSES.filter(p => p !== currentPose);
+        const nextPose = choices[Math.floor(Math.random() * choices.length)];
+        svgEl.classList.remove(currentPose);
+        svgEl.classList.add(nextPose);
+        currentPose = nextPose;
+        schedulePoseSwitch(); // Schedule next switch
+      }, delay);
+    }
+    schedulePoseSwitch();
 
     const avatarWrapper = container.querySelector('#clippy-avatar-wrapper');
     if (avatarWrapper) {
       avatarWrapper.addEventListener('mouseenter', () => {
         svgEl.classList.remove(currentPose);
-        svgEl.classList.add('pose-bounce');
+        svgEl.classList.add('pose-celebrate');
       });
       avatarWrapper.addEventListener('mouseleave', () => {
-        svgEl.classList.remove('pose-bounce');
+        svgEl.classList.remove('pose-celebrate');
         svgEl.classList.add(currentPose);
       });
     }

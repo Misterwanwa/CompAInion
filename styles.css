@@ -2286,3 +2286,181 @@
 #clippy-svg.pose-surprised .clippy-eyebrow-group {
   animation: clippyPoseSurprisedEyebrows 2.5s infinite ease-in-out !important;
 }
+
+/* --- NEW POSE: Nod (Approving nod, gentle up-down tilt) --- */
+@keyframes clippyPoseNodBody {
+  0%, 100% { transform: rotate(0deg) translateY(0); }
+  20% { transform: rotate(-3deg) translateY(-4px); }
+  40% { transform: rotate(2deg) translateY(2px); }
+  60% { transform: rotate(-2deg) translateY(-3px); }
+  80% { transform: rotate(1deg) translateY(1px); }
+}
+@keyframes clippyPoseNodEyebrows {
+  0%, 100% { transform: translateY(0); }
+  40% { transform: translateY(-2px); }
+}
+
+#clippy-svg.pose-nod {
+  animation: clippyPoseNodBody 2s infinite ease-in-out !important;
+}
+#clippy-svg.pose-nod .clippy-eye-anim {
+  animation: clippyNaturalBlink 3.5s infinite !important;
+}
+#clippy-svg.pose-nod .clippy-eyebrow-group {
+  animation: clippyPoseNodEyebrows 2s infinite ease-in-out !important;
+}
+#clippy-svg.pose-nod .clippy-pupil-group {
+  animation: clippyEyeLook 5s infinite ease-in-out !important;
+}
+
+/* --- NEW POSE: Peek (Curious side lean, peering) --- */
+@keyframes clippyPosePeekBody {
+  0%, 100% { transform: translateX(0) rotate(0deg) scale(1); }
+  30% { transform: translateX(10px) rotate(6deg) scale(1.02); }
+  70% { transform: translateX(10px) rotate(6deg) scale(1.02); }
+}
+@keyframes clippyPosePeekPupil {
+  0%, 100% { transform: translate(3px, 1px); }
+  50% { transform: translate(4px, 0px); }
+}
+@keyframes clippyPosePeekEyebrows {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-3px) rotate(-5deg); }
+}
+
+#clippy-svg.pose-peek {
+  animation: clippyPosePeekBody 3s infinite ease-in-out !important;
+}
+#clippy-svg.pose-peek .clippy-eye-anim {
+  animation: clippyNaturalBlink 5s infinite !important;
+}
+#clippy-svg.pose-peek .clippy-pupil-group {
+  animation: clippyPosePeekPupil 3s infinite ease-in-out !important;
+}
+#clippy-svg.pose-peek .clippy-eyebrow-group {
+  animation: clippyPosePeekEyebrows 3s infinite ease-in-out !important;
+}
+
+/* --- NEW POSE: Dizzy (Gentle wobble, eyes spin) --- */
+@keyframes clippyPoseDizzyBody {
+  0% { transform: rotate(0deg) translateX(0); }
+  25% { transform: rotate(-4deg) translateX(-3px); }
+  50% { transform: rotate(3deg) translateX(3px); }
+  75% { transform: rotate(-2deg) translateX(-2px); }
+  100% { transform: rotate(0deg) translateX(0); }
+}
+@keyframes clippyPoseDizzyPupil {
+  0% { transform: translate(0, 0); }
+  25% { transform: translate(-3px, 2px); }
+  50% { transform: translate(3px, -2px); }
+  75% { transform: translate(-2px, -1px); }
+  100% { transform: translate(0, 0); }
+}
+@keyframes clippyPoseDizzyEyebrows {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(6deg) translateY(-2px); }
+}
+
+#clippy-svg.pose-dizzy {
+  animation: clippyPoseDizzyBody 2.2s infinite ease-in-out !important;
+}
+#clippy-svg.pose-dizzy .clippy-eye-anim {
+  animation: clippyNaturalBlink 2.5s infinite !important;
+}
+#clippy-svg.pose-dizzy .clippy-pupil-group {
+  animation: clippyPoseDizzyPupil 1.8s infinite ease-in-out !important;
+}
+#clippy-svg.pose-dizzy .clippy-eyebrow-group {
+  animation: clippyPoseDizzyEyebrows 2.2s infinite ease-in-out !important;
+}
+
+/* --- NEW POSE: Celebrate (Jubilant bounce + scale + rotation party) --- */
+@keyframes clippyPoseCelebrateBody {
+  0%, 100% { transform: translateY(0) rotate(0deg) scale(1); }
+  15% { transform: translateY(-14px) rotate(-8deg) scale(1.08); }
+  30% { transform: translateY(-2px) rotate(4deg) scale(0.96); }
+  45% { transform: translateY(-10px) rotate(-4deg) scale(1.06); }
+  60% { transform: translateY(0) rotate(2deg) scale(0.98); }
+  80% { transform: translateY(-6px) rotate(-2deg) scale(1.03); }
+}
+@keyframes clippyPoseCelebrateEyebrows {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  25% { transform: translateY(-5px) rotate(-6deg); }
+  50% { transform: translateY(-3px) rotate(4deg); }
+  75% { transform: translateY(-6px) rotate(-4deg); }
+}
+
+#clippy-svg.pose-celebrate {
+  animation: clippyPoseCelebrateBody 1.8s infinite ease-in-out !important;
+}
+#clippy-svg.pose-celebrate .clippy-eye-anim {
+  animation: clippyNaturalBlink 2.5s infinite !important;
+}
+#clippy-svg.pose-celebrate .clippy-eyebrow-group {
+  animation: clippyPoseCelebrateEyebrows 1.8s infinite ease-in-out !important;
+}
+#clippy-svg.pose-celebrate .clippy-pupil-group {
+  animation: clippyEyeLook 4s infinite ease-in-out !important;
+}
+
+/* --- NEW POSE: Shy (Looking down, slight shrink) --- */
+@keyframes clippyPoseShyBody {
+  0%, 100% { transform: scaleX(0.95) scaleY(0.97) rotate(-2deg) translateY(3px); }
+  50% { transform: scaleX(0.93) scaleY(0.95) rotate(-4deg) translateY(5px); }
+}
+@keyframes clippyPoseShyPupil {
+  0%, 100% { transform: translate(-1px, 4px); }
+  50% { transform: translate(0px, 5px); }
+}
+@keyframes clippyPoseShyEyebrows {
+  0%, 100% { transform: translateY(2px) rotate(4deg); }
+  50% { transform: translateY(3px) rotate(6deg); }
+}
+
+#clippy-svg.pose-shy {
+  animation: clippyPoseShyBody 3s infinite ease-in-out !important;
+}
+#clippy-svg.pose-shy .clippy-eye-anim {
+  animation: clippyNaturalBlink 5s infinite !important;
+}
+#clippy-svg.pose-shy .clippy-pupil-group {
+  animation: clippyPoseShyPupil 3s infinite ease-in-out !important;
+}
+#clippy-svg.pose-shy .clippy-eyebrow-group {
+  animation: clippyPoseShyEyebrows 3s infinite ease-in-out !important;
+}
+
+/* --- ENHANCED: Mouth speaking animation --- */
+@keyframes clippyMouthSpeak {
+  0%, 100% { transform: scaleY(1) scaleX(1); }
+  15% { transform: scaleY(1.4) scaleX(0.9); }
+  30% { transform: scaleY(0.8) scaleX(1.1); }
+  45% { transform: scaleY(1.3) scaleX(0.95); }
+  60% { transform: scaleY(0.9) scaleX(1.05); }
+  75% { transform: scaleY(1.2) scaleX(0.92); }
+}
+
+.clippy-mouth-group {
+  animation: clippyMouthSpeak 1.5s ease-in-out 3 !important;
+}
+
+/* --- ENHANCED: Richer eye tracking (more positions, natural) --- */
+@keyframes clippyEyeLookRich {
+  0%, 100% { transform: translate(0px, 0px); }
+  10%, 20% { transform: translate(-3px, 1px); }
+  30%, 35% { transform: translate(2px, -1.5px); }
+  45%, 55% { transform: translate(3.5px, 0.5px); }
+  65%, 70% { transform: translate(-1px, 2px); }
+  80%, 90% { transform: translate(0.5px, -2.5px); }
+}
+
+/* --- Speech bubble typewriter effect --- */
+@keyframes clippyTypewriter {
+  from { max-height: 0; opacity: 0; }
+  to { max-height: 200px; opacity: 1; }
+}
+
+#clippy-speech-text {
+  animation: clippyTypewriter 0.6s ease-out forwards !important;
+  overflow: hidden !important;
+}
