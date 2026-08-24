@@ -431,53 +431,93 @@ Einfache Erklärung mit Analogien.
 
 ## Clippy Assistent & Kontext-Matrix
 
-Der Clippy-Assistent (`triggerClippyAssistant` in `content.js`) analysiert den Webseiten-Kontext (Titel, URL, Text-Vorschau) und wählt dynamisch aus über 24+ spezialisierten Erweiterungs-Aktionen den treffendsten Vorschlag aus. Pauschale Standard-Zusammenfassungen (`summaryNormal`) werden durch strikte System-Prompt-Regeln zurückgehalten.
+Der Clippy-Assistent (`triggerClippyAssistant` in `content.js`) analysiert den Webseiten-Kontext (Titel, URL, Text-Vorschau) und wählt dynamisch aus 39 spezialisierten Erweiterungs-Aktionen den treffendsten Vorschlag aus (Eignung vor Zufall). Pauschale Standard-Zusammenfassungen (`summaryNormal`) werden durch strikte System-Prompt-Regeln zurückgehalten.
 
 ### System-Prompt & Verhaltens-Regeln
-Clippy verwendet folgenden generativen System-Prompt zur Aktions- und Spruch-Auswahl:
-- **Tonalität**: Retro-Büroklammer-Assistent, freundlich-hilfsbereit, leicht frech/witzig, direkte Du-Form.
+Clippy verwendet folgenden generativen System-Prompt zur Aktions- und Spruch-Auswahl (`temperature: 0.9` für maximale sprachliche Kreativität):
+- **Tonalität**: Retro-Büroklammer-Assistent, sympathisch, abwechslungsreich (Dramatisch, Nerdig, Frech, Pop-Kultur, Motivierend, Detektivisch, Wortspiele, Rhetorisch), direkte Du-Form.
 - **Kontext-Priorisierung**:
-  - `mail.google.com` / E-Mail -> `writeReply`
-  - Amazon / eBay / Online-Shops -> `doINeedThis`, `priceCompare`, `productProsCons`
-  - Blogs / Content-Artikel -> `aiDetection`, `seoAudit`
-  - Social Media (LinkedIn, X, Reddit) -> `socialPost`, `socialComment`, `aiDetection`
-  - News / Politik -> `factCheck`, `legalCheck`
-  - Wissenschaft & Studium (Papers, Wikipedia) -> `plagiarism`, `createQuiz`
-  - Daten / Tabellen / Statistik -> `createDiagram`
+  - `mail.google.com` / E-Mail -> `writeReply`, `emailDraft`
+  - Amazon / eBay / Online-Shops -> `doINeedThis`, `priceCompare`, `productProsCons`, `shoppingAssistant`
+  - Blogs / Content-Artikel -> `aiDetection`, `seoAudit`, `extractQuotes`, `reusePage`
+  - Social Media (LinkedIn, X, Reddit, Facebook, Instagram) -> `socialPost`, `socialComment`, `socialFacebook`, `socialInstagram`
+  - News / Politik -> `factCheck`, `legalCheck`, `deepResearch`
+  - Wissenschaft & Studium (Papers, Wikipedia) -> `plagiarism`, `createQuiz`, `learningHelp`
+  - Daten / Tabellen / Statistik -> `createDiagram`, `checklist`
   - Rezepte / Kochen -> `recipeCheck`, `recipeDevice`
   - Fremdsprachig (Englisch) -> `translate`
-  - Finanzen / Aktien -> `financeStockAnalysis`
+  - Finanzen / Aktien -> `financeStockAnalysis`, `financeMakeMoney`
   - GitHub / Dev-Devtools -> `codeReview`
+  - Texte / Dokumente -> `grammarCheck`, `createPresentation`, `contextCollector`
+  - Barrierefreiheit -> `accessibility`
+  - Reise / Urlaub -> `vacationPlan`
+  - Karriere / Jobs -> `socialBio`
 
-### Auswahlliste der Clippy-Aktionen (`candidateActions`)
-1. `aiDetection` - AI-Erkennung bei Blogs & Social Media
+### Auswahlliste der Clippy-Aktionen (39 `candidateActions`)
+1. `aiDetection` - AI-Erkennung bei Blogs, Social Media & Artikeln
 2. `doINeedThis` - Kaufberatung / Impulskauf-Check für Shopping-Seiten
-3. `priceCompare` - Preisvergleich & Produkt-Alternativen
+3. `priceCompare` - Preisvergleich & günstigere Alternativen
 4. `productProsCons` - Neutrale Pro & Contra Gegenüberstellung
-5. `writeReply` - Professionelle Antwort-Entwürfe für E-Mails & Nachrichten
-6. `plagiarism` - Plagiats- & Quellencheck bei wissenschaftlichen Texten
-7. `createQuiz` - Interactive 10-Fragen-Lernquiz aus Texten
-8. `factCheck` - Faktencheck & Logikprüfung für News & Artikel
-9. `legalCheck` - Rechtslage, AGB- & Gesetzes-Analyse
-10. `createDiagram` - Mermaid.js Prozess- & Daten-Diagramme
-11. `deepResearch` - Tiefgehende Recherche & Hintergrundanalyse
-12. `recipeCheck` - Rezept-TÜV (Garzeiten, Skalierung, Fehler)
-13. `recipeDevice` - Rezeptanpassung für Küchengeräte (Airfryer, Thermomix etc.)
-14. `translate` - Übersetzen fremdsprachiger Seiten
-15. `seoAudit` - SEO-Audit für Blogs (Keywords, Lesbarkeit, H-Tags)
-16. `socialPost` - Posts & Hooks für Social Media generieren
-17. `socialComment` - Schlagfertige Kommentare verfassen
-18. `financeStockAnalysis` - Aktien- & Finanzkennzahlen-Analyse
-19. `codeReview` - Quelltextanalyse & Security-Check
-20. `vacationPlan` - Reise- & Urlaubsplanung
-21. `pageSherlock` - Detaillierte Website-Analyse
-22. `tellJoke` - Kontextbezogener Retro-Witz
-23. `summaryNormal` - Standard Zusammenfassung (Fallback)
-24. `summarySuperShort` - TL;DR Zusammenfassung
+5. `shoppingAssistant` - Gutscheine, Deals & Cashback aufspüren
+6. `writeReply` - Professionelle Antwort-Entwürfe für E-Mails & Nachrichten
+7. `emailDraft` - E-Mail-Entwurf (formell oder locker)
+8. `plagiarism` - Plagiats- & Quellencheck bei wissenschaftlichen Texten
+9. `createQuiz` - Interaktives 10-Fragen-Lernquiz aus Texten
+10. `learningHelp` - Lernhilfe mit Mnemonics, Eselsbrücken & Karteikarten
+11. `factCheck` - Faktencheck & Logikprüfung für News & Artikel
+12. `legalCheck` - Rechtslage, AGB- & Gesetzes-Analyse (BGB, DSGVO etc.)
+13. `createDiagram` - Mermaid.js Prozess- & Daten-Diagramme
+14. `deepResearch` - Tiefgehende Recherche & Hintergrundanalyse
+15. `recipeCheck` - Rezept-TÜV (Garzeiten, Skalierung, Fehler)
+16. `recipeDevice` - Rezeptanpassung für Küchengeräte (Airfryer, Thermomix etc.)
+17. `translate` - Übersetzen fremdsprachiger Seiten
+18. `seoAudit` - Technisches SEO-Audit (Keywords, H-Tags, Lesbarkeit)
+19. `seoContentAnalyzer` - Content-SEO Analyse & Search Intent
+20. `socialPost` - Posts & Hooks für Social Media generieren
+21. `socialComment` - Schlagfertige Kommentare verfassen
+22. `socialFacebook` - Facebook Posts mit CTA und Hook
+23. `socialInstagram` - Instagram Content-Ideen (Feed, Story, Reels)
+24. `financeStockAnalysis` - Aktien- & Finanzkennzahlen-Analyse
+25. `financeMakeMoney` - Monetarisierungs-Check (Geld sparen/verdienen)
+26. `codeReview` - Quelltextanalyse & Security-Check
+27. `vacationPlan` - Reise- & Urlaubsplanung mit Packliste
+28. `pageSherlock` - Detaillierte Trust- & Website-Analyse
+29. `extractQuotes` - Markante Zitate für Social Media extrahieren
+30. `createPresentation` - Präsentations-Gliederung mit 6-10 Folien
+31. `contextCollector` - Kontext für Notion/Obsidian strukturieren
+32. `accessibility` - Barrierefreiheits-Check (WCAG, ARIA, Kontraste)
+33. `grammarCheck` - Grammatik-, Rechtschreib- und Stilprüfung
+34. `reusePage` - Content-Recycling für verschiedene Formate
+35. `checklist` - Strukturierte To-Do Checkliste mit Zeitplan
+36. `tellJoke` - Kontextbezogener Retro-Witz
+37. `summaryNormal` - Standard Zusammenfassung (Fallback)
+38. `summarySuperShort` - TL;DR Zusammenfassung (max. 3 Sätze)
+39. `socialBio` - Profil-Bio für LinkedIn, X, Insta
 
 ### Offline- & Keyword-Fallbacks (`CLIPPY_FALLBACK_RULES`)
-Sollte kein API-Key hinterlegt sein oder die Netzwerkanfrage fehlschlagen, nutzt Clippy heuristische URL- & Keyword-Regeln zur automatischen Wahl von Spezial-Aktionen.
+Sollte kein API-Key hinterlegt sein oder die Netzwerkanfrage fehlschlagen, nutzt Clippy einen **Eignung-vor-Zufall-Pool**:
+- Alle zutreffenden Kategorien werden in einen Pool gesammelt.
+- Eine Kategorie wird zufällig gewählt.
+- Jede Regel enthält **4-6 verschiedene, kreative Sprüche**, aus denen per Zufall einer gewählt wird.
+- Für unbekannte Seiten gibt es einen Pool von **8 abwechslungsreichen Universal-Sprüchen**.
+
+### 11 Animations-Posen & Interaktions-Engine
+Clippy wechselt dynamisch alle 3-7 Sekunden organisch zwischen folgenden 11 SVG-Posen:
+1. `pose-float` - Klassisches Schweben & Blinzeln
+2. `pose-think` - Nachdenklich geneigter Kopf mit hochgezogener Braue
+3. `pose-bounce` - Fröhlich-aufgeregtes Hüpfen
+4. `pose-wink` - Augenzwinkern & freches Neigen
+5. `pose-wave` - Freundliches Winken/Schwingen
+6. `pose-surprised` - Überraschte, große Augen & Strecken
+7. `pose-nod` - Bestätigendes Nicken
+8. `pose-peek` - Neugieriges Hervorlugen zur Seite
+9. `pose-dizzy` - Leichtes Schwanken & Verwirrung
+10. `pose-celebrate` - Jubel-Animation (Bounce, Scale, Rotation)
+11. `pose-shy` - Schüchterner Blick nach unten
+- **Mund-Sprech-Animation**: Bewegt sich beim Öffnen der Sprechblase lebendig mit.
+- **Hover-Reaktion**: Clippy jubelt (`pose-celebrate`) beim Mouse-Over!
+- **Typewriter-Effekt**: Sanftes Erscheinen des Texts in der Sprechblase.
 
 ---
 
-*Aktualisiert am 27.07.2026*
+*Aktualisiert am 24.08.2026*
