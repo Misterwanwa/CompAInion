@@ -3353,7 +3353,7 @@ const CLIPPY_FALLBACK_RULES = [
     'Jede Menge Daten! 📊 Soll ich daraus ein Mermaid.js-Diagramm bauen?',
     'Zahlen-Tsunami! Lass mich das in ein übersichtliches Diagramm verwandeln.',
     'Data-Nerd Clippy! Ich visualisiere dir die Daten als schickes Chart.',
-    'Excel kann das? Clippy kann's besser! Diagramm gefällig?',
+    'Excel kann das? Clippy kann\'s besser! Diagramm gefällig?',
     'Daten-Chaos? Ich bringe Struktur rein — mit einem eleganten Diagramm!'
   ]},
   { keywords: ['finanz', 'aktie', 'börse', 'kurs', 'depot', 'etf', 'finanzen.net', 'tradingview', 'wallstreetbets'], action: 'financeStockAnalysis', speeches: [

@@ -10,6 +10,7 @@ Jede Version wird als **Git Tag** gespeichert. Das bedeutet: Der gesamte Code-St
 
 | Tag | Datum | Highlights |
 |-----|-------|------------|
+| `v2.8.0` | 2026-08-25 | Clippy Overhaul: 39 Aktionen, Eignung-vor-Zufall Pools, 8 kreative Sprech-Stile, 11 Posen, animierter Mund & Typewriter |
 | `v2.7.0` | 2026-07-28 | Animierter Clippy-Assistent repariert & erweitert (Variationen, Distortion-Fix), Gemini 3.5 & Flash, Kontext-Matrix, Prompt Enhancer & Timeline |
 | `v2.6.8` | 2026-06-15 | Performance Optimierungen, Local LLM Support, Deep Research Overlay |
 | `v2.3` | 2026-03-22 | TL;DR in Zusammenfassen-Submenü integriert, 4 neue Zusammenfassungs-Optionen |
@@ -29,20 +30,20 @@ Jede Version wird als **Git Tag** gespeichert. Das bedeutet: Der gesamte Code-St
 git tag -l
 
 # Checkout einer spezifischen Version
-git checkout v2.7.0
+git checkout v2.8.0
 
 # Zeige PROMPTS.md einer alten Version
-git show v2.7.0:PROMPTS.md
+git show v2.8.0:PROMPTS.md
 
 # Vergleiche zwei Versionen
-git diff v2.3..v2.7.0 -- PROMPTS.md
+git diff v2.7.0..v2.8.0 -- PROMPTS.md
 ```
 
 ### Option C: Permalink (Direkt-Link)
 Jede Datei hat einen permanenten Link pro Version:
 ```
+https://github.com/Misterwanwa/CompAInion/blob/v2.8.0/PROMPTS.md
 https://github.com/Misterwanwa/CompAInion/blob/v2.7.0/PROMPTS.md
-https://github.com/Misterwanwa/CompAInion/blob/v2.3/PROMPTS.md
 ```
 
 ## 🔄 Workflow: Neue Version erstellen
@@ -65,7 +66,24 @@ git push origin vX.Y
 
 ## 📋 Changelog
 
-### v2.7.0 (aktuell)
+### v2.8.0 (aktuell)
+- **Clippy Prompt-Vielfalt & Eignung-vor-Zufall:**
+  - 39 Candidate Actions für das LLM (14 neue Aktionen wie `shoppingAssistant`, `createPresentation`, `extractQuotes`, `accessibility`, `grammarCheck`, `checklist`, `socialBio`, etc.)
+  - Neuer Eignung-vor-Zufall Algorithmus für Offline- & Fallback-Nutzung: Alle passenden Regeln landen in einem Pool, daraus wird zufällig gewählt
+  - Über 110 handgeschriebene Fallback-Sprüche (4-6 pro Kategorie statt 1 fixer)
+  - 8 Universal-Sprüche für unbekannte Webseiten
+  - LLM Temperature auf `0.9` erhöht mit 8 distinkten Sprachstilen (🎭 Dramatisch, 🤓 Nerdig, 😏 Frech, 🎬 Pop-Kultur, 📢 Motivierend, 🕵️ Detektivisch, 🎲 Wortspiele, ❓ Rhetorisch)
+- **Clippy Animations-Engine Erweiterung:**
+  - 11 dynamische SVG-Posen: 5 brandneue Posen (`pose-nod`, `pose-peek`, `pose-dizzy`, `pose-celebrate`, `pose-shy`)
+  - Organischer Posen-Wechsel alle 3–7 Sekunden (randomisiert)
+  - Interaktiver Hover-Jubel (`pose-celebrate`) bei Mouse-Over
+  - Rhythmisches Mund-Sprechen beim Erscheinen der Sprechblase
+  - Typewriter-Einblendung für Text in der Sprechblase
+  - Flüssigeres Eye-Tracking mit 6 Blickpositionen
+- **Bugfixes:**
+  - Syntaxfehler in Fallback-String behoben
+
+### v2.7.0
 - **Clippy Assistent Animation-Engine & Variationen:**
   - Verzerrungsfreie SVG-Struktur: Parent-Transformationen (`<g transform="translate(...)">`) von animierten Elementen entkoppelt
   - Exakte `transform-box: fill-box; transform-origin: center;` Einbindung verhindert das Springen von Augen, Pupillen und Augenbrauen
