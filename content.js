@@ -959,8 +959,58 @@ async function showResponseModal(responseText, type = 'modal') {
 
 // Local LLM request is handled by the shared function in local_llm_helpers.js
 
-function showDeepResearchPopup() {
-  alert('Deep Research Popup (Platzhalter)');
+function showDeepResearchPopup(context, clipboardOnly = false) {
+  const ctx = context || getPageContext();
+  const selectedText = window.getSelection()?.toString()?.trim();
+  const defaultTopic = selectedText || ctx?.title || document.title || '';
+  const topic = prompt('Zu welchem Thema möchtest du eine Deep Research durchführen?', defaultTopic);
+  if (!topic) return;
+
+  let urlContext = '';
+  if (ctx && ctx.url && !ctx.url.startsWith('chrome://') && !ctx.url.startsWith('about:')) {
+    urlContext = `\nURL: ${ctx.url}\n`;
+  }
+
+  const promptText = `Bevor du antwortest, stelle mir so viele Rückfragen, bis du zu mindestens 95 % sicher bist, dass du die folgende Aufgabe erfolgreich und vollständig erfüllen kannst.
+
+Aufgabe: ${topic}
+${urlContext}
+Recherchiere dieses Thema tiefgründig und umfassend nach folgenden Regeln:
+
+1. **Quellen:** Verwende ausschließlich verifizierbare, glaubwürdige Quellen: offizielle Dokumentationen, Regierungs- oder Herstellerdatenbanken, peer-reviewte Publikationen oder anerkannte Fachmedien. Keine Blogs, Foren oder nicht verifizierbaren Seiten.
+
+2. **Keine Spekulation:** Spekuliere nicht und erfinde keine Inhalte. Wenn eine Antwort nicht verifiziert werden kann, formuliere das explizit: „Diese Information konnte nicht verifiziert werden."
+
+3. **Struktur der Ausgabe:**
+   - Executive Summary (3–5 Sätze)
+   - Hauptbefunde (gegliedert nach Themenbereichen)
+   - Kritische Gegenargumente oder offene Fragen in der Forschung
+   - Quellenverzeichnis mit Angabe von Autor, Titel, Jahr und URL (falls verfügbar)
+
+4. **Transparenz:** Kennzeichne klar, was gesichertes Wissen ist, was aktuelle Forschungslage ist und was noch unklar oder umstritten ist.
+
+Beginne mit deinen Rückfragen.`;
+
+  if (clipboardOnly) {
+    navigator.clipboard.writeText(promptText).then(() => showToast('Prompt kopiert!'));
+    return;
+  }
+
+  chrome.storage.sync.get(['toneMimic'], (result) => {
+    const toneMimic = result.toneMimic || '';
+    const fullPrompt = toneMimic.trim() ? `${promptText}\n\nTon: ${toneMimic.trim()}` : promptText;
+    getAiConfig((config) => {
+      if (config.type === 'local') {
+        sendToLocalLlm(config, fullPrompt, 'silent').then(response => {
+          showResponseModal(response);
+        });
+      } else {
+        chrome.storage.local.set({ pendingPrompt: fullPrompt }, () => {
+          window.open(config.url, '_blank');
+        });
+      }
+    });
+  });
 }
 
 function showMotivationPopup() {
@@ -1092,7 +1142,7 @@ Präzise juristische Analyse der vorliegenden Sachverhalte.
 }
 
 function handleGeminiAction(action, summaryType = 'normal', ytSummaryType = 'nested', clipboardOnly = false) {
-  if (action === 'deepResearch') { showDeepResearchPopup(); return; }
+  if (action === 'deepResearch') { showDeepResearchPopup(getPageContext(), clipboardOnly); return; }
   if (action === 'motivation') { showMotivationPopup(); return; }
   if (action === 'legalCheck') { showLegalCheckPopup(getPageContext()); return; }
 
