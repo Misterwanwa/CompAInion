@@ -169,6 +169,40 @@
                 <span class="select-arrow">&#9660;</span>
               </div>
             </div>
+
+            <!-- Ausnahmen / Blacklist -->
+            <div style="margin-top: 16px; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 12px;">
+              <label class="field-label" style="font-weight: 600; margin-bottom: 8px;">🚫 Clippy-Ausnahmen (Keine Vorschläge)</label>
+              <div style="font-size: 11px; opacity: 0.7; margin-bottom: 12px;">
+                Verhindert, dass Clippy auf diesen Seiten automatisch Ratschläge oder Vorschläge macht.
+              </div>
+
+              <div class="toggle-row" style="margin-bottom: 8px;">
+                <span class="toggle-label">Suchmaschinen ausschließen (Google, Bing, DuckDuckGo etc.)</span>
+                <label class="toggle-switch" for="toggle-clippy-exclude-search">
+                  <input type="checkbox" id="toggle-clippy-exclude-search" checked>
+                  <span class="toggle-track"></span>
+                  <span class="toggle-knob"></span>
+                </label>
+              </div>
+
+              <div class="toggle-row" style="margin-bottom: 12px;">
+                <span class="toggle-label">KI-Anbieter ausschließen (Gemini, ChatGPT, Claude etc.)</span>
+                <label class="toggle-switch" for="toggle-clippy-exclude-ai">
+                  <input type="checkbox" id="toggle-clippy-exclude-ai" checked>
+                  <span class="toggle-track"></span>
+                  <span class="toggle-knob"></span>
+                </label>
+              </div>
+
+              <div>
+                <label class="field-label">Zusätzliche Domains ausschließen</label>
+                <input class="glass-input" type="text" id="clippy-custom-exceptions" placeholder="z. B. reddit.com, internal.example.com">
+                <div style="font-size: 11px; opacity: 0.6; margin-top: 4px;">
+                  Mehrere Domains durch Komma trennen.
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 

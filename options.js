@@ -548,6 +548,21 @@ function renderGeminiSettings(savedState) {
     modeSelect.value = savedState.clippyMode || 'animation';
   }
 
+  const clippyExcludeSearch = document.getElementById('toggle-clippy-exclude-search');
+  if (clippyExcludeSearch) {
+    clippyExcludeSearch.checked = savedState.clippyExcludeSearchEngines !== false;
+  }
+
+  const clippyExcludeAI = document.getElementById('toggle-clippy-exclude-ai');
+  if (clippyExcludeAI) {
+    clippyExcludeAI.checked = savedState.clippyExcludeAI !== false;
+  }
+
+  const clippyCustomExceptions = document.getElementById('clippy-custom-exceptions');
+  if (clippyCustomExceptions) {
+    clippyCustomExceptions.value = savedState.clippyCustomExceptions || '';
+  }
+
   apiKeyInput.addEventListener('input', debounce(() => {
     chrome.storage.sync.set({ geminiApiKey: apiKeyInput.value.trim() });
   }, 500));
@@ -584,6 +599,24 @@ function renderGeminiSettings(savedState) {
     modeSelect.addEventListener('change', () => {
       chrome.storage.sync.set({ clippyMode: modeSelect.value });
     });
+  }
+
+  if (clippyExcludeSearch) {
+    clippyExcludeSearch.addEventListener('change', () => {
+      chrome.storage.sync.set({ clippyExcludeSearchEngines: clippyExcludeSearch.checked });
+    });
+  }
+
+  if (clippyExcludeAI) {
+    clippyExcludeAI.addEventListener('change', () => {
+      chrome.storage.sync.set({ clippyExcludeAI: clippyExcludeAI.checked });
+    });
+  }
+
+  if (clippyCustomExceptions) {
+    clippyCustomExceptions.addEventListener('input', debounce(() => {
+      chrome.storage.sync.set({ clippyCustomExceptions: clippyCustomExceptions.value.trim() });
+    }, 500));
   }
 
   if (testBtn) {
@@ -675,7 +708,7 @@ function loadSavedState() {
   // Collect all storage keys we care about
   const toggleKeys = CONFIG.aiChat.toggles.map(t => t.id);
   const localLlmKeys = Object.values(CONFIG.localLlm.storageKeys);
-  const geminiKeys = ['geminiApiKey', 'geminiAuthToken', 'geminiApiModel', 'enableClippy', 'clippyDwellTime', 'clippyChance', 'clippyMode'];
+  const geminiKeys = ['geminiApiKey', 'geminiAuthToken', 'geminiApiModel', 'enableClippy', 'clippyDwellTime', 'clippyChance', 'clippyMode', 'clippyExcludeSearchEngines', 'clippyExcludeAI', 'clippyCustomExceptions'];
   const allKeys = ['theme', 'uiLanguage', 'aiLanguage', 'userFacts', 'toneMimic', CONFIG.models.storageKey, ...toggleKeys, ...localLlmKeys, ...geminiKeys];
 
   if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.sync) {

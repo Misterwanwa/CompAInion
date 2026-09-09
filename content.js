@@ -3276,12 +3276,122 @@ Sei ausführlich und hilfreich.`;
 
 let clippyShownInSession = false;
 
+// Excluded search engines and AI providers where Clippy should not make suggestions
+const CLIPPY_EXCLUDED_SEARCH_PATTERNS = [
+  /^([a-z0-9-]+\.)?google\.(com|de|at|ch|co\.[a-z]{2}|[a-z]{2,4})$/i,
+  /^([a-z0-9-]+\.)?bing\.com$/i,
+  /^([a-z0-9-]+\.)?duckduckgo\.com$/i,
+  /^([a-z0-9-]+\.)?ecosia\.org$/i,
+  /^([a-z0-9-]+\.)?yahoo\.com$/i,
+  /^([a-z0-9-]+\.)?startpage\.com$/i,
+  /^([a-z0-9-]+\.)?search\.brave\.com$/i,
+  /^([a-z0-9-]+\.)?qwant\.com$/i,
+  /^([a-z0-9-]+\.)?baidu\.com$/i,
+  /^([a-z0-9-]+\.)?yandex\.(com|ru)$/i,
+  /^([a-z0-9-]+\.)?ya\.ru$/i,
+  /^([a-z0-9-]+\.)?kagi\.com$/i,
+  /^([a-z0-9-]+\.)?metager\.(de|org)$/i,
+  /^([a-z0-9-]+\.)?swisscows\.com$/i,
+  /^([a-z0-9-]+\.)?searx\./i
+];
+
+const GOOGLE_PRODUCTIVITY_HOSTS = [
+  'mail.google.com',
+  'docs.google.com',
+  'drive.google.com',
+  'calendar.google.com',
+  'keep.google.com',
+  'translate.google.com'
+];
+
+const CLIPPY_EXCLUDED_AI_PATTERNS = [
+  /^([a-z0-9-]+\.)?chatgpt\.com$/i,
+  /^([a-z0-9-]+\.)?openai\.com$/i,
+  /^([a-z0-9-]+\.)?gemini\.google\.com$/i,
+  /^([a-z0-9-]+\.)?aistudio\.google\.com$/i,
+  /^([a-z0-9-]+\.)?notebooklm\.google\.com$/i,
+  /^([a-z0-9-]+\.)?claude\.ai$/i,
+  /^([a-z0-9-]+\.)?anthropic\.com$/i,
+  /^([a-z0-9-]+\.)?claude\.site$/i,
+  /^([a-z0-9-]+\.)?perplexity\.ai$/i,
+  /^([a-z0-9-]+\.)?deepseek\.com$/i,
+  /^([a-z0-9-]+\.)?copilot\.microsoft\.com$/i,
+  /^([a-z0-9-]+\.)?mistral\.ai$/i,
+  /^([a-z0-9-]+\.)?grok\.com$/i,
+  /^([a-z0-9-]+\.)?x\.ai$/i,
+  /^([a-z0-9-]+\.)?poe\.com$/i,
+  /^([a-z0-9-]+\.)?character\.ai$/i,
+  /^([a-z0-9-]+\.)?meta\.ai$/i,
+  /^([a-z0-9-]+\.)?phind\.com$/i,
+  /^([a-z0-9-]+\.)?you\.com$/i,
+  /^([a-z0-9-]+\.)?pi\.ai$/i,
+  /^([a-z0-9-]+\.)?blackbox\.ai$/i,
+  /^([a-z0-9-]+\.)?groq\.com$/i,
+  /^([a-z0-9-]+\.)?cohere\.com$/i,
+  /^([a-z0-9-]+\.)?cursor\.(com|sh)$/i,
+  /^([a-z0-9-]+\.)?v0\.dev$/i
+];
+
+function isClippyExcludedOnCurrentPage(settings) {
+  if (!settings) return false;
+  try {
+    const hostname = (window.location && window.location.hostname ? window.location.hostname : '').toLowerCase();
+    const href = (window.location && window.location.href ? window.location.href : '').toLowerCase();
+    const pathname = (window.location && window.location.pathname ? window.location.pathname : '').toLowerCase();
+
+    const excludeSearch = settings.clippyExcludeSearchEngines !== false;
+    const excludeAI = settings.clippyExcludeAI !== false;
+    const customExceptions = (settings.clippyCustomExceptions || '')
+      .split(/[,;\n\s]+/)
+      .map(s => s.trim().toLowerCase())
+      .filter(Boolean);
+
+    // Check custom blacklist
+    for (const ex of customExceptions) {
+      if (hostname === ex || hostname.endsWith('.' + ex) || href.includes(ex)) {
+        return true;
+      }
+    }
+
+    // Check AI providers
+    if (excludeAI) {
+      for (const pat of CLIPPY_EXCLUDED_AI_PATTERNS) {
+        if (pat.test(hostname)) return true;
+      }
+      if (hostname === 'huggingface.co' && pathname.startsWith('/chat')) {
+        return true;
+      }
+    }
+
+    // Check search engines
+    if (excludeSearch) {
+      const isGoogleProd = GOOGLE_PRODUCTIVITY_HOSTS.some(h => hostname === h || hostname.endsWith('.' + h));
+      if (!isGoogleProd) {
+        for (const pat of CLIPPY_EXCLUDED_SEARCH_PATTERNS) {
+          if (pat.test(hostname)) return true;
+        }
+      }
+    }
+  } catch (err) {
+    console.error('Error checking Clippy exclusions:', err);
+  }
+
+  return false;
+}
+
 function initClippyDwellTimer() {
   if (typeof chrome === 'undefined' || !chrome.storage || !chrome.storage.sync) return;
 
-  chrome.storage.sync.get(['enableClippy', 'clippyDwellTime', 'clippyChance', 'geminiApiKey', 'geminiAuthToken', 'geminiApiModel', 'clippyMode'], (result) => {
+  chrome.storage.sync.get([
+    'enableClippy', 'clippyDwellTime', 'clippyChance',
+    'geminiApiKey', 'geminiAuthToken', 'geminiApiModel', 'clippyMode',
+    'clippyExcludeSearchEngines', 'clippyExcludeAI', 'clippyCustomExceptions'
+  ], (result) => {
     const isEnabled = result.enableClippy !== false;
     if (!isEnabled || clippyShownInSession) return;
+
+    // Do not show suggestions on excluded search engines, AI providers, or custom sites
+    if (isClippyExcludedOnCurrentPage(result)) return;
 
     const dwellSeconds = result.clippyDwellTime || 60;
     const chance = result.clippyChance !== undefined ? result.clippyChance : 0.2;
@@ -3289,6 +3399,7 @@ function initClippyDwellTimer() {
 
     setTimeout(() => {
       if (clippyShownInSession) return;
+      if (isClippyExcludedOnCurrentPage(result)) return;
       if (Math.random() <= chance) {
         triggerClippyAssistant(result.geminiApiKey, result.geminiApiModel || 'gemini-3.5-flash', result.geminiAuthToken, clippyMode);
       }
@@ -3474,6 +3585,15 @@ const CLIPPY_FALLBACK_RULES = [
 
 async function triggerClippyAssistant(apiKey, apiModel, authToken, clippyMode) {
   clippyShownInSession = true;
+
+  if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.sync) {
+    try {
+      const exclusionCheck = await new Promise(res => {
+        chrome.storage.sync.get(['clippyExcludeSearchEngines', 'clippyExcludeAI', 'clippyCustomExceptions'], res);
+      });
+      if (isClippyExcludedOnCurrentPage(exclusionCheck)) return;
+    } catch (_) {}
+  }
 
   // Generic fallback speeches for when nothing specific matches
   const GENERIC_FALLBACK_SPEECHES = [
