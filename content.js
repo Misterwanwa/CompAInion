@@ -1286,16 +1286,81 @@ ${context.text.substring(0, 3000)}
 """`;
       break;
     }
-    case 'summaryChapter':
-      promptText = `{ "token_bundle": { "bundle_name": "Study Pack: CoT + Guardian", "shortcut": "🌿", "version": "1.0.0", "portability_check": "✅", "tokens": [ { "token_type": "Method Token", "token_name": "chain.of.thought.method", "token_id": "cot-101", "description": "Stepwise study workflow that extracts arguments, evidence, and takeaways before summarizing.", "instructions": [ "1) Read the chapter. List 3–5 core arguments as bullets.", "2) For each argument, add 1–2 concrete pieces of evidence or examples from the text.", "3) Distill a concise study summary (150–250 words). No filler. No metaphors. Keep author's intent.", "4) Output a glossary of key terms (definitions in 1 line each).", "5) Create 5 flashcards: (Q) and (A) pairs covering the highest-yield points.", "Formatting: Use clear headings: Arguments, Evidence, Summary, Glossary, Flashcards." ], "constraints": { "no_filler": true, "quote_marking": "If quoting, use short quotes with page/section when available.", "audience": "grad student", "style": "precise, neutral, test-ready" }, "status": "active" }, { "token_type": "Guardian Token v2", "token_name": "guardian.token.v2", "token_id": "gtv2-101", "description": "Prevents drift into fluff, enforces structure and checks for contradictions.", "guardian_hooks": [ "schema_validation", "contradiction_scan", "tone_clarity_check", "portability_check" ], "schema": { "sections_required": ["Arguments", "Evidence", "Summary", "Glossary", "Flashcards"], "summary_word_limit": {"min": 150, "max": 250}, "flashcards_count": 5 }, "status": "active" } ] } }
+    case 'summaryChapter': {
+      const isYouTube = /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+/i.test(context.url);
+      if (isYouTube) {
+        promptText = `Analysiere und fasse dieses YouTube-Video in präzisen Zeitkapiteln zusammen.
+
+Video-URL: ${context.url}
+${context.title ? `Titel: ${context.title}\n` : ''}
+Kontext / Beschreibung:
+"""
+${context.text.substring(0, 4000)}
+"""
+
+ANWEISUNGEN:
+1. Transkribiere bzw. erfasse den Inhalt des Videos vollständig von Anfang bis Ende, um alle Aussagen und den genauen Verlauf zu verstehen.
+2. Gliedere das gesamte Video lückenlos in präzise Zeitkapitel ([Start-Zeit] - [End-Zeit]: [Kapitel-Titel]).
+   - Die Kapitel dürfen NICHT starr oder fest vorgegeben sein, sondern müssen sich dynamisch aus dem tatsächlichen inhaltlichen Ablauf des Videos ergeben.
+   - Sponsoring / Werbung (z. B. für NordVPN oder andere Produkte/Dienstleistungen) MUSS zwingend als eigenständiges Kapitel erfasst und ausgewiesen werden.
+3. Fasse jedes Kapitel mit prägnanten Stichpunkten zusammen (wichtigste Argumente, Fakten und Geschehnisse).
+4. Besondere Aussagen oder markante Zitate bei bestimmten Zeitpunkten können und sollen gezielt hervorgehoben werden, wenn dies von Relevanz ist.
+5. Keine separate "Summary" / Gesamtzusammenfassung (die Kapitelzusammenfassungen decken den Inhalt vollständig ab). Kein Glossar, keine Flashcards.
+
+AUFBAU / FORMAT (streng einhalten):
+[00:00] - [12:10]: Was ist das Problem?
+- Die Störerhaftung weicht direkter Täterhaftung
+- Unzulänglichkeit der Hersteller
+> [08:42] Kernaussage: "[Besonders relevantes Zitat oder wichtige Aussage]"
+
+[12:10] - [16:43]: Kritik an der Wirtschaft
+- Auskunftspflicht der Firmen A, B und C fehlt
+
+[16:43] - [20:05]: Werbung für NordVPN
+- Der YouTuber macht einen Werbeblock für das Produkt NordVPN
+
+[20:05] - [21:20]: Fehlende Schutzwirkung des Verfahrens
+- ...
+
+[21:20] - [28:19]: Umsatzrelevanz der Werbung
+- ...`;
+      } else {
+        promptText = `Erstelle eine strukturierte Kapitel-Zusammenfassung des folgenden Inhalts (Beitrag / Artikel / Website).
 
 URL: ${context.url}
-
-Text:
+${context.title ? `Titel: ${context.title}\n` : ''}
+Inhalt:
 """
 ${context.text.substring(0, 6000)}
-"""`;
+"""
+
+ANWEISUNGEN:
+1. Dynamische Kapitel-Gliederung:
+   - Gliedere den Inhalt in logische, thematisch passende Kapitel.
+   - WICHTIG: Die Kapitel dürfen NICHT fest oder starr vorgegeben sein, sondern müssen sich dynamisch und organisch aus dem konkreten Inhalt ergeben (z. B. bei einem Nachrichtenartikel Kapitel wie: "Worum geht's?", "Was ist geplant?", "Aktuelle Rechtslage", "Aussagen von Experten" etc.).
+2. Kapitel-Zusammenfassung:
+   - Fasse jedes Kapitel mit 2-4 prägnanten Stichpunkten zusammen (Kernaussagen, Fakten, Entwicklungen).
+3. Besondere Aussagen hervorheben:
+   - Hebe besonders wichtige Kernaussagen, markante Zitate oder Schlüsselzahlen gezielt hervor, wenn dies von Relevanz ist.
+4. Reduktion auf das Wesentliche:
+   - Keine separate "Summary" / Gesamtzusammenfassung (die Kapitelzusammenfassungen decken den Inhalt vollständig ab).
+   - Kein Glossar und keine Flashcards.
+5. Sonderfall YouTube-Video / Videoinhalt:
+   - Falls der gegebene Inhalt ein YouTube-Video oder Video ist: Zuerst vollständig transkribieren, lückenlos in Zeitkapitel ([00:00] - [12:10]: [Thema]) gliedern, Sponsoring/Werbeblöcke separat ausweisen und relevante Zitate mit Zeitstempel hervorheben.
+
+FORMAT:
+### [Dynamische Kapitel-Überschrift 1]
+- [Kernaussage / Punkt 1]
+- [Kernaussage / Punkt 2]
+> (Optional) Hervorhebung / Zitat: "[Relevante Aussage oder Kernbeobachtung]"
+
+### [Dynamische Kapitel-Überschrift 2]
+- [Kernaussage / Punkt 1]
+- [Kernaussage / Punkt 2]
+...`;
+      }
       break;
+    }
     case 'summaryNormal':
       promptText = `Lies diese Seite und gib Folgendes an:
 – 3 wichtigste Erkenntnisse in Stichpunkten

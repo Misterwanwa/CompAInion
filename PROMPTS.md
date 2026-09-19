@@ -31,7 +31,7 @@ Generiert 3 prägnante Prompts für überraschende Erkenntnisse über die Websit
 **Key:** `summary`  
 **Optionen:**
 - 🌐 **Zusammenfassen (URL crawlen)** - Crawlt eine URL, extrahiert alle Fakten als Emoji-Aufzählungspunkte mit 3-sätziger Zusammenfassung
-- 📚 **Kapitel Zusammenfassung** - Study Pack mit Chain of Thought + Guardian Token (Arguments, Evidence, Summary, Glossary, Flashcards)
+- 📚 **Kapitel Zusammenfassung** - Gliedert Artikel/Websites in dynamische Kapitel (Kernaussagen & Zitate) bzw. YouTube-Videos in Zeitkapitel mit Timestamps & Sponsoring-Erfassung (ohne Summary/Glossar/Flashcards)
 - 📝 **Normale Zusammenfassung** - 3 Erkenntnisse, Statistiken, Zitat, Warum wichtig (<100 Wörter)
 - ⚡ **Super kurze Zusammenfassung** - Extrem komprimiert: max 3 Sätze, max 20 Wörter
 
