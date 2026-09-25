@@ -231,7 +231,6 @@
   class ActionExecutor {
     constructor() {
       this.overlay = null;
-      this.createOverlay();
     }
 
     createOverlay() {
@@ -239,6 +238,9 @@
         this.overlay = document.getElementById('compainion-agent-highlight');
         return;
       }
+      const parent = document.body || document.documentElement;
+      if (!parent) return;
+
       const el = document.createElement('div');
       el.id = 'compainion-agent-highlight';
       el.style.position = 'absolute';
@@ -264,7 +266,7 @@
       label.style.borderRadius = '4px';
 
       el.appendChild(label);
-      document.body.appendChild(el);
+      parent.appendChild(el);
       this.overlay = el;
     }
 
@@ -467,8 +469,6 @@
     }
   }
 
-  // ------------------ CHAT SIDEBAR UI ------------------
-
   class ChatSidebarUI {
     constructor(callbacks) {
       this.callbacks = callbacks;
@@ -476,11 +476,26 @@
       this.isSettingsOpen = false;
       this.selectedModel = 'anthropic/claude-3.5-sonnet';
       this.apiKey = '';
-      this.create();
+      if (document.body) {
+        this.create();
+      } else {
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', () => this.create());
+        } else {
+          const check = setInterval(() => {
+            if (document.body) {
+              clearInterval(check);
+              this.create();
+            }
+          }, 30);
+        }
+      }
     }
 
     create() {
       if (document.getElementById('compainion-agent-sidebar')) return;
+      const parent = document.body || document.documentElement;
+      if (!parent) return;
 
       const sidebar = document.createElement('div');
       sidebar.id = 'compainion-agent-sidebar';
@@ -544,7 +559,7 @@
         </div>
       `;
 
-      document.body.appendChild(sidebar);
+      parent.appendChild(sidebar);
       this.bindEvents(sidebar);
       this.loadConfig();
     }
@@ -619,7 +634,11 @@
     }
 
     show() {
-      const el = document.getElementById('compainion-agent-sidebar');
+      let el = document.getElementById('compainion-agent-sidebar');
+      if (!el) {
+        this.create();
+        el = document.getElementById('compainion-agent-sidebar');
+      }
       if (el) {
         el.classList.remove('is-hidden');
         el.querySelector('#compainion-prompt-input')?.focus();
@@ -632,7 +651,11 @@
     }
 
     toggle() {
-      const el = document.getElementById('compainion-agent-sidebar');
+      let el = document.getElementById('compainion-agent-sidebar');
+      if (!el) {
+        this.create();
+        el = document.getElementById('compainion-agent-sidebar');
+      }
       if (el) {
         if (el.classList.contains('is-hidden')) this.show();
         else this.hide();

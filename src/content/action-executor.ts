@@ -20,7 +20,7 @@ export class ActionExecutor {
   private highlightOverlay: HTMLElement | null = null;
 
   constructor() {
-    this.createHighlightOverlay();
+    // Lazy creation in highlightElement to ensure document.body exists
   }
 
   /**
@@ -155,8 +155,11 @@ export class ActionExecutor {
     label.style.whiteSpace = 'nowrap';
     label.style.boxShadow = '0 2px 4px rgba(0,0,0,0.3)';
 
+    const parent = document.body || document.documentElement;
+    if (!parent) return;
+
     overlay.appendChild(label);
-    document.body.appendChild(overlay);
+    parent.appendChild(overlay);
     this.highlightOverlay = overlay;
   }
 

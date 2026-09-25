@@ -38,11 +38,26 @@ export class ChatSidebar {
 
   constructor(callbacks: SidebarCallbacks) {
     this.callbacks = callbacks;
-    this.init();
+    if (document.body) {
+      this.init();
+    } else {
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => this.init());
+      } else {
+        const check = setInterval(() => {
+          if (document.body) {
+            clearInterval(check);
+            this.init();
+          }
+        }, 30);
+      }
+    }
   }
 
   private init(): void {
     if (document.getElementById('compainion-agent-sidebar')) return;
+    const parent = document.body || document.documentElement;
+    if (!parent) return;
 
     this.container = document.createElement('div');
     this.container.id = 'compainion-agent-sidebar';
@@ -113,7 +128,7 @@ export class ChatSidebar {
       </div>
     `;
 
-    document.body.appendChild(this.container);
+    parent.appendChild(this.container);
     this.bindEvents();
     this.loadInitialSettings();
   }
@@ -209,6 +224,9 @@ export class ChatSidebar {
   // ------------------ PUBLIC CONTROLS ------------------
 
   public show(): void {
+    if (!this.container) {
+      this.init();
+    }
     if (!this.container) return;
     this.container.classList.remove('is-hidden');
     const promptInput = this.container.querySelector('#compainion-prompt-input') as HTMLTextAreaElement;
@@ -221,6 +239,9 @@ export class ChatSidebar {
   }
 
   public toggle(): void {
+    if (!this.container) {
+      this.init();
+    }
     if (!this.container) return;
     if (this.container.classList.contains('is-hidden')) {
       this.show();
