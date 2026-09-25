@@ -469,13 +469,56 @@
     }
   }
 
+  // ------------------ PROMPT POOL & CHAT SIDEBAR UI ------------------
+
+  const ALL_AVAILABLE_PROMPTS = [
+    { label: '📖 Zusammenfassen', prompt: 'Fasse die wichtigsten Kernaussagen dieser Seite prägnant zusammen.' },
+    { label: '🔍 Deep Research', prompt: 'Führe eine tiefgehende Recherche zu den Themen auf dieser Seite durch.' },
+    { label: '✅ Checkliste', prompt: 'Erstelle eine praktische Schritt-für-Schritt Checkliste aus dem Inhalt.' },
+    { label: '⚖️ Vor- & Nachteile', prompt: 'Analysiere die Vor- und Nachteile der Optionen auf dieser Seite.' },
+    { label: '❓ FAQ erstellen', prompt: 'Erstelle die wichtigsten FAQs mit präzisen Antworten basierend auf dieser Seite.' },
+    { label: '🕵️ Seite analysieren', prompt: 'Analysiere den Aufbau, die Botschaft und den Nutzen dieser Webseite.' },
+    { label: '🌐 Übersetzen', prompt: 'Übersetze die wesentlichen Inhalte dieser Seite ins Deutsche.' },
+    { label: '✉️ E-Mail Entwurf', prompt: 'Formuliere einen professionellen E-Mail-Entwurf zum Thema dieser Seite.' },
+    { label: '📝 Grammatik prüfen', prompt: 'Prüfe den Text auf dieser Seite auf Grammatik, Rechtschreibung und Stil.' },
+    { label: '💡 3 Prompts finden', prompt: 'Schlage 3 intelligente Folgeprompts für dieses Thema vor.' },
+    { label: '♿ Barrierefreiheit', prompt: 'Prüfe Barrierefreiheit, Lesbarkeit und Kontraste dieser Seite.' },
+    { label: '🎯 Fakten-Check', prompt: 'Überprüfe die zentralen Aussagen und Zahlen dieser Seite auf Plausibilität.' },
+    { label: '💬 Zitate extrahieren', prompt: 'Extrahiere die prägnantesten Zitate und Kernaussagen.' },
+    { label: '🧠 Quiz erstellen', prompt: 'Erstelle ein 5-Fragen-Quiz zum Verständnis dieser Seite.' },
+    { label: '🎯 Kernaussagen', prompt: 'Extrahiere die 3 wichtigsten Takeaways dieser Seite.' }
+  ];
+
+  function getThreeRandomPrompts() {
+    const shuffled = [...ALL_AVAILABLE_PROMPTS].sort(() => 0.5 - Math.random());
+    return shuffled.slice(0, 3);
+  }
+
   class ChatSidebarUI {
     constructor(callbacks) {
       this.callbacks = callbacks;
       this.isMinimized = false;
       this.isSettingsOpen = false;
-      this.selectedModel = 'anthropic/claude-3.5-sonnet';
+      this.selectedModel = 'anthropic/claude-3.5-haiku';
       this.apiKey = '';
+      this.currentTheme = 'aero';
+
+      // Theme mit der Haupterweiterung synchronisieren
+      try {
+        if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.sync) {
+          chrome.storage.sync.get(['theme'], (res) => {
+            if (res && res.theme) {
+              this.setTheme(res.theme);
+            }
+          });
+          chrome.storage.onChanged.addListener((changes, area) => {
+            if (area === 'sync' && changes.theme) {
+              this.setTheme(changes.theme.newValue);
+            }
+          });
+        }
+      } catch (e) {}
+
       if (document.body) {
         this.create();
       } else {
@@ -492,14 +535,28 @@
       }
     }
 
+    setTheme(theme) {
+      this.currentTheme = theme || 'aero';
+      const el = document.getElementById('compainion-agent-sidebar');
+      if (el) {
+        el.classList.remove('theme-aero', 'theme-retro', 'theme-apple');
+        el.classList.add('theme-' + this.currentTheme);
+      }
+    }
+
     create() {
       if (document.getElementById('compainion-agent-sidebar')) return;
       const parent = document.body || document.documentElement;
       if (!parent) return;
 
+      const randomChips = getThreeRandomPrompts();
+      const chipsHtml = randomChips.map(c => 
+        `<span class="compainion-suggestion-chip" data-prompt="${this.escape(c.prompt)}">${this.escape(c.label)}</span>`
+      ).join('');
+
       const sidebar = document.createElement('div');
       sidebar.id = 'compainion-agent-sidebar';
-      sidebar.className = 'is-hidden';
+      sidebar.className = 'is-hidden theme-' + this.currentTheme;
       sidebar.innerHTML = `
         <div class="compainion-sidebar-header">
           <div class="compainion-header-brand">
@@ -529,11 +586,13 @@
           <span class="compainion-model-label">Modell:</span>
           <div class="compainion-model-select-wrapper">
             <select id="compainion-model-select" class="compainion-model-select">
-              <option value="anthropic/claude-3.5-sonnet">Claude 3.5 Sonnet (Empfohlen)</option>
-              <option value="openai/gpt-4o">OpenAI GPT-4o</option>
-              <option value="openai/gpt-4o-mini">OpenAI GPT-4o Mini</option>
-              <option value="google/gemini-2.5-flash">Google Gemini 2.5 Flash</option>
-              <option value="meta-llama/llama-3.3-70b-instruct">Llama 3.3 70B</option>
+              <option value="anthropic/claude-3.5-haiku">Claude 3.5 Haiku (Tokensparend & Pfeilschnell)</option>
+              <option value="openai/gpt-4o-mini">GPT-4o Mini (Tokensparend & Effizient)</option>
+              <option value="deepseek/deepseek-chat">DeepSeek V3 (Top-Intelligenz, Sparpreis)</option>
+              <option value="google/gemini-2.5-flash">Gemini 2.5 Flash (Astra / Multimodal)</option>
+              <option value="moonshotai/kimi-k1.5">Kimi K1.5 / K3 (Ultra-Long Context)</option>
+              <option value="anthropic/claude-3.5-sonnet">Claude 3.5 Sonnet / Opus (Agenten-Präzision)</option>
+              <option value="openai/gpt-4o">OpenAI GPT-4o / Luna (Reasoning-Flaggschiff)</option>
             </select>
           </div>
         </div>
@@ -541,21 +600,19 @@
         <div class="compainion-chat-history" id="compainion-chat-history">
           <div class="compainion-msg-card step">
             <div class="compainion-observation">
-              👋 <strong>Autopilot aktiviert!</strong><br>
+              👋 <strong>Agent aktiv</strong><br>
               Halte das ✨ Icon 500ms gedrückt, um mich jederzeit ein- oder auszublenden.
             </div>
           </div>
         </div>
 
         <div class="compainion-suggestions-bar">
-          <span class="compainion-suggestion-chip" data-prompt="Finde die wichtigsten Kernaussagen dieser Seite">📖 Zusammenfassen</span>
-          <span class="compainion-suggestion-chip" data-prompt="Suche nach dem Kontaktformular und navigiere dorthin">📩 Kontakt suchen</span>
-          <span class="compainion-suggestion-chip" data-prompt="Vergleiche die Angebote und zeige die beste Option">⚖️ Vergleichen</span>
+          ${chipsHtml}
         </div>
 
         <div class="compainion-input-bar">
           <textarea id="compainion-prompt-input" class="compainion-prompt-textarea" placeholder="Ziel für den Autopiloten eingeben..."></textarea>
-          <button id="compainion-btn-action" class="compainion-btn-action" title="Starten">🚀</button>
+          <button id="compainion-btn-action" class="compainion-btn-action" title="Starten (Enter)">▶</button>
         </div>
       `;
 
@@ -633,6 +690,25 @@
       });
     }
 
+    renderRandomChips() {
+      const bar = document.querySelector('#compainion-agent-sidebar .compainion-suggestions-bar');
+      if (!bar) return;
+      const randomChips = getThreeRandomPrompts();
+      bar.innerHTML = randomChips.map(c => 
+        `<span class="compainion-suggestion-chip" data-prompt="${this.escape(c.prompt)}">${this.escape(c.label)}</span>`
+      ).join('');
+
+      bar.querySelectorAll('.compainion-suggestion-chip').forEach((chip) => {
+        chip.addEventListener('click', () => {
+          const input = document.getElementById('compainion-prompt-input');
+          if (input) {
+            input.value = chip.getAttribute('data-prompt');
+            input.focus();
+          }
+        });
+      });
+    }
+
     show() {
       let el = document.getElementById('compainion-agent-sidebar');
       if (!el) {
@@ -640,6 +716,7 @@
         el = document.getElementById('compainion-agent-sidebar');
       }
       if (el) {
+        this.renderRandomChips();
         el.classList.remove('is-hidden');
         el.querySelector('#compainion-prompt-input')?.focus();
       }
@@ -657,8 +734,12 @@
         el = document.getElementById('compainion-agent-sidebar');
       }
       if (el) {
-        if (el.classList.contains('is-hidden')) this.show();
-        else this.hide();
+        if (el.classList.contains('is-hidden')) {
+          this.renderRandomChips();
+          this.show();
+        } else {
+          this.hide();
+        }
       }
     }
 
@@ -671,16 +752,19 @@
 
       if (status === 'running') {
         badge.textContent = `Schritt ${step}/${maxSteps}`;
-        btn.textContent = '⏹️';
+        btn.textContent = '⏹';
         btn.classList.add('compainion-btn-stop');
+        btn.title = 'Anhalten';
       } else if (status === 'waiting_confirmation') {
         badge.textContent = 'Bestätigung!';
-        btn.textContent = '⏸️';
+        btn.textContent = '⏸';
         btn.classList.remove('compainion-btn-stop');
+        btn.title = 'Warte auf Bestätigung';
       } else {
         badge.textContent = status === 'completed' ? 'Fertig' : 'Bereit';
-        btn.textContent = '🚀';
+        btn.textContent = '▶';
         btn.classList.remove('compainion-btn-stop');
+        btn.title = 'Starten (Enter)';
       }
     }
 

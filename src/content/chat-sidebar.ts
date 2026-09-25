@@ -18,6 +18,29 @@ import {
   TaskStep,
 } from '../types/agent';
 
+export const ALL_AVAILABLE_PROMPTS = [
+  { label: '📖 Zusammenfassen', prompt: 'Fasse die wichtigsten Kernaussagen dieser Seite prägnant zusammen.' },
+  { label: '🔍 Deep Research', prompt: 'Führe eine tiefgehende Recherche zu den Themen auf dieser Seite durch.' },
+  { label: '✅ Checkliste', prompt: 'Erstelle eine praktische Schritt-für-Schritt Checkliste aus dem Inhalt.' },
+  { label: '⚖️ Vor- & Nachteile', prompt: 'Analysiere die Vor- und Nachteile der Optionen auf dieser Seite.' },
+  { label: '❓ FAQ erstellen', prompt: 'Erstelle die wichtigsten FAQs mit präzisen Antworten basierend auf dieser Seite.' },
+  { label: '🕵️ Seite analysieren', prompt: 'Analysiere den Aufbau, die Botschaft und den Nutzen dieser Webseite.' },
+  { label: '🌐 Übersetzen', prompt: 'Übersetze die wesentlichen Inhalte dieser Seite ins Deutsche.' },
+  { label: '✉️ E-Mail Entwurf', prompt: 'Formuliere einen professionellen E-Mail-Entwurf zum Thema dieser Seite.' },
+  { label: '📝 Grammatik prüfen', prompt: 'Prüfe den Text auf dieser Seite auf Grammatik, Rechtschreibung und Stil.' },
+  { label: '💡 3 Prompts finden', prompt: 'Schlage 3 intelligente Folgeprompts für dieses Thema vor.' },
+  { label: '♿ Barrierefreiheit', prompt: 'Prüfe Barrierefreiheit, Lesbarkeit und Kontraste dieser Seite.' },
+  { label: '🎯 Fakten-Check', prompt: 'Überprüfe die zentralen Aussagen und Zahlen dieser Seite auf Plausibilität.' },
+  { label: '💬 Zitate extrahieren', prompt: 'Extrahiere die prägnantesten Zitate und Kernaussagen.' },
+  { label: '🧠 Quiz erstellen', prompt: 'Erstelle ein 5-Fragen-Quiz zum Verständnis dieser Seite.' },
+  { label: '🎯 Kernaussagen', prompt: 'Extrahiere die 3 wichtigsten Takeaways dieser Seite.' }
+];
+
+export function getThreeRandomPrompts() {
+  const shuffled = [...ALL_AVAILABLE_PROMPTS].sort(() => 0.5 - Math.random());
+  return shuffled.slice(0, 3);
+}
+
 export interface SidebarCallbacks {
   onStartTask: (goal: string, model: string) => void;
   onStopTask: () => void;
@@ -33,11 +56,29 @@ export class ChatSidebar {
   private isMinimized = false;
   private isSettingsOpen = false;
   private availableModels: OpenRouterModel[] = [];
-  private selectedModel = 'anthropic/claude-3.5-sonnet';
+  private selectedModel = 'anthropic/claude-3.5-haiku';
   private apiKey = '';
+  private currentTheme = 'aero';
 
   constructor(callbacks: SidebarCallbacks) {
     this.callbacks = callbacks;
+
+    // Theme mit der Haupterweiterung synchronisieren
+    try {
+      if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.sync) {
+        chrome.storage.sync.get(['theme'], (res) => {
+          if (res && (res as any).theme) {
+            this.setTheme((res as any).theme);
+          }
+        });
+        chrome.storage.onChanged.addListener((changes, area) => {
+          if (area === 'sync' && changes.theme && typeof changes.theme.newValue === 'string') {
+            this.setTheme(changes.theme.newValue);
+          }
+        });
+      }
+    } catch (e) {}
+
     if (document.body) {
       this.init();
     } else {
@@ -54,6 +95,14 @@ export class ChatSidebar {
     }
   }
 
+  public setTheme(theme: string): void {
+    this.currentTheme = theme || 'aero';
+    if (this.container) {
+      this.container.classList.remove('theme-aero', 'theme-retro', 'theme-apple');
+      this.container.classList.add('theme-' + this.currentTheme);
+    }
+  }
+
   private init(): void {
     if (document.getElementById('compainion-agent-sidebar')) return;
     const parent = document.body || document.documentElement;
@@ -61,7 +110,15 @@ export class ChatSidebar {
 
     this.container = document.createElement('div');
     this.container.id = 'compainion-agent-sidebar';
-    this.container.className = 'is-hidden'; // Initial versteckt
+    this.container.className = 'is-hidden theme-' + this.currentTheme;
+
+    const randomChips = getThreeRandomPrompts();
+    const chipsHtml = randomChips
+      .map(
+        (c) =>
+          `<span class="compainion-suggestion-chip" data-prompt="${this.escapeHtml(c.prompt)}">${this.escapeHtml(c.label)}</span>`
+      )
+      .join('');
 
     this.container.innerHTML = `
       <!-- Header -->
@@ -95,10 +152,13 @@ export class ChatSidebar {
         <span class="compainion-model-label">Modell:</span>
         <div class="compainion-model-select-wrapper">
           <select id="compainion-model-select" class="compainion-model-select">
-            <option value="anthropic/claude-3.5-sonnet">Claude 3.5 Sonnet (Empfohlen)</option>
-            <option value="openai/gpt-4o">OpenAI GPT-4o</option>
-            <option value="openai/gpt-4o-mini">OpenAI GPT-4o Mini</option>
-            <option value="google/gemini-2.5-flash">Google Gemini 2.5 Flash</option>
+            <option value="anthropic/claude-3.5-haiku">Claude 3.5 Haiku (Tokensparend & Pfeilschnell)</option>
+            <option value="openai/gpt-4o-mini">GPT-4o Mini (Tokensparend & Effizient)</option>
+            <option value="deepseek/deepseek-chat">DeepSeek V3 (Top-Intelligenz, Sparpreis)</option>
+            <option value="google/gemini-2.5-flash">Gemini 2.5 Flash (Astra / Multimodal)</option>
+            <option value="moonshotai/kimi-k1.5">Kimi K1.5 / K3 (Ultra-Long Context)</option>
+            <option value="anthropic/claude-3.5-sonnet">Claude 3.5 Sonnet / Opus (Agenten-Präzision)</option>
+            <option value="openai/gpt-4o">OpenAI GPT-4o / Luna (Reasoning-Flaggschiff)</option>
           </select>
         </div>
       </div>
@@ -107,30 +167,52 @@ export class ChatSidebar {
       <div class="compainion-chat-history" id="compainion-chat-history">
         <div class="compainion-msg-card step">
           <div class="compainion-observation">
-            👋 <strong>Willkommen beim CompAInion Autopilot!</strong><br>
-            Gib ein Ziel ein (z.B. "Suche nach Produkt X und lege es in den Warenkorb" oder "Fülle das Kontaktformular aus").
+            👋 <strong>Agent aktiv</strong><br>
+            Gib ein Ziel ein (z.B. "Finde die Kontaktdaten" oder "Fülle das Formular aus").
           </div>
         </div>
       </div>
 
       <!-- Suggestions Bar -->
       <div class="compainion-suggestions-bar">
-        <span class="compainion-suggestion-chip" data-prompt="Finde die wichtigsten Kernaussagen dieser Seite">📖 Zusammenfassen</span>
-        <span class="compainion-suggestion-chip" data-prompt="Suche nach dem Kontaktformular und öffne es">📩 Kontakt suchen</span>
-        <span class="compainion-suggestion-chip" data-prompt="Vergleiche die Angebote und zeige die beste Option">⚖️ Vergleichen</span>
-        <span class="compainion-suggestion-chip" data-prompt="Klicke auf den nächsten Button in der Navigation">➡️ Weiterblättern</span>
+        ${chipsHtml}
       </div>
 
       <!-- Input Bar -->
       <div class="compainion-input-bar">
         <textarea id="compainion-prompt-input" class="compainion-prompt-textarea" placeholder="Was soll der Agent tun? (Enter zum Senden)" rows="1"></textarea>
-        <button id="compainion-btn-action" class="compainion-btn-action" title="Starten">🚀</button>
+        <button id="compainion-btn-action" class="compainion-btn-action" title="Starten">▶</button>
       </div>
     `;
 
     parent.appendChild(this.container);
     this.bindEvents();
     this.loadInitialSettings();
+  }
+
+  public renderRandomChips(): void {
+    if (!this.container) return;
+    const bar = this.container.querySelector('.compainion-suggestions-bar');
+    if (!bar) return;
+
+    const randomChips = getThreeRandomPrompts();
+    bar.innerHTML = randomChips
+      .map(
+        (c) =>
+          `<span class="compainion-suggestion-chip" data-prompt="${this.escapeHtml(c.prompt)}">${this.escapeHtml(c.label)}</span>`
+      )
+      .join('');
+
+    bar.querySelectorAll('.compainion-suggestion-chip').forEach((chip) => {
+      chip.addEventListener('click', () => {
+        const prompt = chip.getAttribute('data-prompt');
+        const textarea = this.container?.querySelector('#compainion-prompt-input') as HTMLTextAreaElement;
+        if (textarea && prompt) {
+          textarea.value = prompt;
+          textarea.focus();
+        }
+      });
+    });
   }
 
   private bindEvents(): void {
@@ -228,6 +310,7 @@ export class ChatSidebar {
       this.init();
     }
     if (!this.container) return;
+    this.renderRandomChips();
     this.container.classList.remove('is-hidden');
     const promptInput = this.container.querySelector('#compainion-prompt-input') as HTMLTextAreaElement;
     promptInput?.focus();
@@ -282,38 +365,38 @@ export class ChatSidebar {
     switch (state.status) {
       case 'running':
         badge.textContent = `Schritt ${state.currentStep}/${state.maxSteps}`;
-        actionBtn.textContent = '⏹️';
+        actionBtn.textContent = '⏹';
         actionBtn.title = 'Task anhalten';
         actionBtn.classList.add('compainion-btn-stop');
         break;
 
       case 'waiting_confirmation':
         badge.textContent = 'Bestätigung!';
-        actionBtn.textContent = '⏸️';
+        actionBtn.textContent = '⏸';
         actionBtn.classList.remove('compainion-btn-stop');
         break;
 
       case 'paused':
         badge.textContent = 'Pausiert';
-        actionBtn.textContent = '▶️';
+        actionBtn.textContent = '▶';
         actionBtn.classList.remove('compainion-btn-stop');
         break;
 
       case 'completed':
         badge.textContent = 'Fertig';
-        actionBtn.textContent = '🚀';
+        actionBtn.textContent = '▶';
         actionBtn.classList.remove('compainion-btn-stop');
         break;
 
       case 'error':
         badge.textContent = 'Fehler';
-        actionBtn.textContent = '🚀';
+        actionBtn.textContent = '▶';
         actionBtn.classList.remove('compainion-btn-stop');
         break;
 
       default:
         badge.textContent = 'Bereit';
-        actionBtn.textContent = '🚀';
+        actionBtn.textContent = '▶';
         actionBtn.classList.remove('compainion-btn-stop');
         break;
     }

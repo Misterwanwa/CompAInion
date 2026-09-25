@@ -7,7 +7,7 @@
 'use strict';
 
 const OPENROUTER_API_BASE = 'https://openrouter.ai/api/v1';
-const DEFAULT_MODEL = 'anthropic/claude-3.5-sonnet';
+const DEFAULT_MODEL = 'anthropic/claude-3.5-haiku';
 
 const AGENT_SYSTEM_PROMPT = `Du bist CompAInion Autopilot, ein hochpräziser autonomer Web-Agent.
 Deine Aufgabe ist es, Benutzeranweisungen auf der aktuellen Webseite Schritt für Schritt durch Browser-Aktionen zu erfüllen.
@@ -294,10 +294,13 @@ Antworte ausschließlich im definierten JSON-Format.`;
       return (data.data || []).map(m => ({ id: m.id, name: m.name || m.id })).slice(0, 30);
     } catch (e) {
       return [
-        { id: 'anthropic/claude-3.5-sonnet', name: 'Claude 3.5 Sonnet (Empfohlen)' },
-        { id: 'openai/gpt-4o', name: 'OpenAI GPT-4o' },
-        { id: 'openai/gpt-4o-mini', name: 'OpenAI GPT-4o Mini' },
-        { id: 'google/gemini-2.5-flash', name: 'Google Gemini 2.5 Flash' },
+        { id: 'anthropic/claude-3.5-haiku', name: 'Claude 3.5 Haiku (Tokensparend & Pfeilschnell)' },
+        { id: 'openai/gpt-4o-mini', name: 'GPT-4o Mini (Tokensparend & Effizient)' },
+        { id: 'deepseek/deepseek-chat', name: 'DeepSeek V3 (Top-Intelligenz, Sparpreis)' },
+        { id: 'google/gemini-2.5-flash', name: 'Gemini 2.5 Flash (Astra / Multimodal)' },
+        { id: 'moonshotai/kimi-k1.5', name: 'Kimi K1.5 / K3 (Ultra-Long Context)' },
+        { id: 'anthropic/claude-3.5-sonnet', name: 'Claude 3.5 Sonnet / Opus (Agenten-Präzision)' },
+        { id: 'openai/gpt-4o', name: 'OpenAI GPT-4o / Luna (Reasoning-Flaggschiff)' },
       ];
     }
   }

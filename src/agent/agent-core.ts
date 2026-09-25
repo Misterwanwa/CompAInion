@@ -17,7 +17,7 @@ import {
 } from '../types/agent';
 import { AGENT_SYSTEM_PROMPT, buildUserPrompt } from './prompt-template';
 
-const DEFAULT_MODEL = 'anthropic/claude-3.5-sonnet';
+const DEFAULT_MODEL = 'anthropic/claude-3.5-haiku';
 const MAX_DEFAULT_STEPS = 30;
 const OPENROUTER_API_BASE = 'https://openrouter.ai/api/v1';
 
@@ -169,12 +169,13 @@ export class AgentCore {
       console.error('[AgentCore] Error fetching models:', err);
       // Fallback-Modelle falls Offline oder kein Key
       return [
-        { id: 'anthropic/claude-3.5-sonnet', name: 'Claude 3.5 Sonnet (Empfohlen)' },
-        { id: 'openai/gpt-4o', name: 'OpenAI GPT-4o' },
-        { id: 'openai/gpt-4o-mini', name: 'OpenAI GPT-4o Mini (Schnell)' },
-        { id: 'google/gemini-2.5-flash', name: 'Google Gemini 2.5 Flash' },
-        { id: 'meta-llama/llama-3.3-70b-instruct', name: 'Llama 3.3 70B' },
-        { id: 'deepseek/deepseek-chat', name: 'DeepSeek V3' },
+        { id: 'anthropic/claude-3.5-haiku', name: 'Claude 3.5 Haiku (Tokensparend & Pfeilschnell)' },
+        { id: 'openai/gpt-4o-mini', name: 'GPT-4o Mini (Tokensparend & Effizient)' },
+        { id: 'deepseek/deepseek-chat', name: 'DeepSeek V3 (Top-Intelligenz, Sparpreis)' },
+        { id: 'google/gemini-2.5-flash', name: 'Gemini 2.5 Flash (Astra / Multimodal)' },
+        { id: 'moonshotai/kimi-k1.5', name: 'Kimi K1.5 / K3 (Ultra-Long Context)' },
+        { id: 'anthropic/claude-3.5-sonnet', name: 'Claude 3.5 Sonnet / Opus (Agenten-Präzision)' },
+        { id: 'openai/gpt-4o', name: 'OpenAI GPT-4o / Luna (Reasoning-Flaggschiff)' },
       ];
     }
   }
