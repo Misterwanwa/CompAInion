@@ -99,8 +99,59 @@ function createContextMenus() {
   });
 }
 
+try {
+  importScripts('background-agent.js');
+} catch (e) {
+  console.warn('background-agent.js could not be loaded via importScripts:', e);
+}
+
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    if (request.action === 'summarizeWithCloud') {
+    // ── Autopilot Agent Actions ──
+    if (request.action === 'AGENT_START_TASK') {
+        if (typeof backgroundAgent !== 'undefined') {
+            backgroundAgent.startTask(request.goal, request.url, request.model)
+                .then(state => sendResponse({ success: true, state }))
+                .catch(err => sendResponse({ success: false, error: err.message }));
+            return true;
+        }
+        sendResponse({ success: false, error: 'Agent manager unavailable' });
+        return false;
+    } else if (request.action === 'AGENT_GET_NEXT_STEP') {
+        if (typeof backgroundAgent !== 'undefined') {
+            backgroundAgent.getNextStep(request.snapshot, request.lastObservation)
+                .then(res => sendResponse({ success: true, ...res, state: backgroundAgent.currentState }))
+                .catch(err => sendResponse({ success: false, error: err.message }));
+            return true;
+        }
+        sendResponse({ success: false, error: 'Agent manager unavailable' });
+        return false;
+    } else if (request.action === 'AGENT_RECORD_STEP') {
+        if (typeof backgroundAgent !== 'undefined') {
+            backgroundAgent.recordStep(request.step)
+                .then(state => sendResponse({ success: true, state }))
+                .catch(err => sendResponse({ success: false, error: err.message }));
+            return true;
+        }
+        sendResponse({ success: false, error: 'Agent manager unavailable' });
+        return false;
+    } else if (request.action === 'AGENT_STOP_TASK') {
+        if (typeof backgroundAgent !== 'undefined') {
+            backgroundAgent.stopTask()
+                .then(state => sendResponse({ success: true, state }));
+            return true;
+        }
+        sendResponse({ success: true });
+        return false;
+    } else if (request.action === 'AGENT_GET_MODELS') {
+        if (typeof backgroundAgent !== 'undefined') {
+            backgroundAgent.fetchModels()
+                .then(models => sendResponse({ success: true, models }))
+                .catch(err => sendResponse({ success: false, error: err.message }));
+            return true;
+        }
+        sendResponse({ success: false, error: 'Agent manager unavailable' });
+        return false;
+    } else if (request.action === 'summarizeWithCloud') {
         const { prompt, config } = request;
         chrome.storage.local.set({ pendingPrompt: prompt }, () => {
             chrome.tabs.create({ url: config.url });

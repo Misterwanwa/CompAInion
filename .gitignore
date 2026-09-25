@@ -1,5 +1,6 @@
-# Node modules
+# Node modules & build
 node_modules/
+dist/
 
 # Chrome Extension Packaging
 *.zip

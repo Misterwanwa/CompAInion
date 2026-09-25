@@ -200,6 +200,7 @@ function initializeGeminiLogo() {
   }
   
   document.body.appendChild(logo);
+  window.showContextMenu = showContextMenu;
   logo.addEventListener('mousedown', startDrag);
   logo.addEventListener('click', showContextMenu);
 }
@@ -428,8 +429,12 @@ function detectBackgroundBrightness() {
 }
 
 function showContextMenu(e) {
-  e.stopPropagation();
+  if (e && typeof e.stopPropagation === 'function') e.stopPropagation();
   if (isDragging) return;
+  if (window.__compainionLongPressActive) {
+    window.__compainionLongPressActive = false;
+    return;
+  }
   const oldMenu = document.getElementById('gemini-context-menu');
   if (oldMenu) oldMenu.remove();
 

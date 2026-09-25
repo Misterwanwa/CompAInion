@@ -19,7 +19,9 @@
     "https://chat.deepseek.com/*",
     "https://grok.com/*",
     "https://www.perplexity.ai/*",
-    "https://generativelanguage.googleapis.com/*"
+    "https://generativelanguage.googleapis.com/*",
+    "https://openrouter.ai/*",
+    "<all_urls>"
   ],
   "web_accessible_resources": [
     {
@@ -40,8 +42,8 @@
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
-      "js": ["marked.min.js", "local_llm_helpers.js", "content.js"],
-      "css": ["styles.css"],
+      "js": ["marked.min.js", "local_llm_helpers.js", "content.js", "content-agent.js"],
+      "css": ["styles.css", "chat-sidebar.css"],
       "run_at": "document_start"
     },
     {

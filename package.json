@@ -1,0 +1,26 @@
+{
+  "name": "compainion",
+  "version": "1.0.0",
+  "description": "Eine Chrome Extension, die KI-gestützte Analyse-Tools direkt auf jeder Website bereitstellt.",
+  "main": "background.js",
+  "scripts": {
+    "build": "tsc",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Misterwanwa/CompAInion.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Misterwanwa/CompAInion/issues"
+  },
+  "homepage": "https://github.com/Misterwanwa/CompAInion#readme",
+  "devDependencies": {
+    "@types/chrome": "^0.3.0",
+    "typescript": "^7.0.2"
+  }
+}
