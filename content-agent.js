@@ -61,7 +61,6 @@
           }
         } else {
           e.preventDefault();
-          e.stopPropagation();
         }
       });
     }
@@ -339,26 +338,64 @@
       await this.sleep(150);
 
       const rect = el.getBoundingClientRect();
-      const opts = {
+      const clientX = rect.left + rect.width / 2;
+      const clientY = rect.top + rect.height / 2;
+
+      const downOpts = {
         bubbles: true,
         cancelable: true,
         view: window,
-        clientX: rect.left + rect.width / 2,
-        clientY: rect.top + rect.height / 2,
+        clientX,
+        clientY,
         button: 0,
         buttons: 1,
+        pointerId: 1,
+        pointerType: 'mouse',
+        isPrimary: true,
       };
 
-      el.dispatchEvent(new PointerEvent('pointerdown', opts));
-      el.dispatchEvent(new MouseEvent('mousedown', opts));
-      if (typeof el.focus === 'function') el.focus();
-      await this.sleep(40);
-      el.dispatchEvent(new PointerEvent('pointerup', opts));
-      el.dispatchEvent(new MouseEvent('mouseup', opts));
-      el.dispatchEvent(new MouseEvent('click', opts));
-      if (el instanceof HTMLAnchorElement || el instanceof HTMLButtonElement) {
-        el.click();
+      const upOpts = {
+        bubbles: true,
+        cancelable: true,
+        view: window,
+        clientX,
+        clientY,
+        button: 0,
+        buttons: 0, // Wichtig: buttons muss 0 sein
+        pointerId: 1,
+        pointerType: 'mouse',
+        isPrimary: true,
+      };
+
+      el.dispatchEvent(new PointerEvent('pointerdown', downOpts));
+      el.dispatchEvent(new MouseEvent('mousedown', downOpts));
+      if (typeof el.focus === 'function') {
+        try { el.focus(); } catch (e) {}
       }
+      await this.sleep(40);
+      el.dispatchEvent(new PointerEvent('pointerup', upOpts));
+      el.dispatchEvent(new MouseEvent('mouseup', upOpts));
+
+      // Pointer-Capture explizit freigeben
+      try {
+        if (typeof el.releasePointerCapture === 'function' && el.hasPointerCapture && el.hasPointerCapture(1)) {
+          el.releasePointerCapture(1);
+        }
+      } catch (e) {}
+
+      // Klick ausführen
+      if (typeof el.click === 'function') {
+        try {
+          el.click();
+        } catch (e) {
+          el.dispatchEvent(new MouseEvent('click', upOpts));
+        }
+      } else {
+        el.dispatchEvent(new MouseEvent('click', upOpts));
+      }
+
+      // Globale Maustasten-Sicherheit gegen OS-Desktop-Lock
+      window.dispatchEvent(new MouseEvent('mouseup', { bubbles: true, cancelable: true, clientX: 0, clientY: 0, button: 0, buttons: 0 }));
 
       await this.sleep(400);
       return { success: true, observation: `Auf "${(el.innerText || el.getAttribute('aria-label') || el.tagName).substring(0, 40)}" geklickt.` };
@@ -768,18 +805,147 @@
       }
     }
 
-    addStepMsg(stepNumber, thought, action, observation) {
+    addStepMsg(stepNumber, action, observation) {
+      const hist = document.getElementById('compainion-chat-history');
+      if (!hist) return;
+
+      const actionIcons = {
+        click: '🖱️ Klick',
+        type: '⌨️ Eingabe',
+        scroll: '📜 Scrollen',
+        navigate: '🧭 Navigation',
+        wait: '⏳ Warten',
+        finish: '🏁 Abschluss',
+        ask_user: '❓ Frage',
+      };
+
+      const iconLabel = actionIcons[action.type] || '⚡ Aktion';
+      const targetLabel = action.selector || action.url || action.text || action.message || '';
+
+      const details = document.createElement('details');
+      details.className = 'compainion-step-details';
+      details.innerHTML = `
+        <summary class="compainion-step-summary">
+          <span class="compainion-step-badge">Schritt ${stepNumber}</span>
+          <span class="compainion-step-action-desc">${iconLabel}: ${this.escape(targetLabel)}</span>
+          <span class="compainion-step-toggle-icon">▾</span>
+        </summary>
+        <div class="compainion-step-code-box">
+          <pre class="compainion-step-code"><code>// Aktion
+Typ:         ${this.escape(action.type)}
+Ziel/Wert:   ${this.escape(action.selector || action.url || '')}
+${action.text ? `Eingabe:     "${this.escape(action.text)}"\n` : ''}${action.durationMs ? `Dauer:       ${action.durationMs}ms\n` : ''}
+// Ergebnis
+Beobachtung: ${this.escape(observation || 'Erfolgreich ausgeführt')}</code></pre>
+        </div>
+      `;
+
+      hist.appendChild(details);
+      hist.scrollTop = hist.scrollHeight;
+    }
+
+    addFinalAnswerMsg(message) {
       const hist = document.getElementById('compainion-chat-history');
       if (!hist) return;
 
       const card = document.createElement('div');
-      card.className = 'compainion-msg-card step';
+      card.className = 'compainion-msg-card agent-answer';
       card.innerHTML = `
-        <div class="compainion-step-header"><span>Schritt ${stepNumber}</span></div>
-        <div class="compainion-thought-bubble">${this.escape(thought)}</div>
-        <div class="compainion-action-badge">⚡ ${action.type}: ${this.escape(action.selector || action.url || action.message || '')}</div>
-        ${observation ? `<div class="compainion-observation">${this.escape(observation)}</div>` : ''}
+        <div class="compainion-answer-header">
+          <span class="compainion-answer-title">💡 Ergebnis</span>
+        </div>
+        <div class="compainion-answer-body">
+          ${this.formatStructuredAnswer(message)}
+        </div>
       `;
+
+      hist.appendChild(card);
+      hist.scrollTop = hist.scrollHeight;
+    }
+
+    formatStructuredAnswer(rawText) {
+      if (!rawText) return '<p>Task abgeschlossen.</p>';
+      // Entferne etwaige interne Gedankenspuren ("thought:", "gedanke:")
+      let cleaned = String(rawText)
+        .replace(/^(thought|gedanke|analyse):\s*/i, '')
+        .replace(/<thought>[\s\S]*?<\/thought>/gi, '')
+        .trim();
+
+      // 1. Code-Blöcke (```)
+      cleaned = cleaned.replace(/```([a-z]*)\n([\s\S]*?)```/g, (_, lang, code) => {
+        return `<pre class="compainion-step-code"><code>${this.escape(code.trim())}</code></pre>`;
+      });
+
+      // 2. Inline-Code (`...`)
+      cleaned = cleaned.replace(/`([^`]+)`/g, (_, code) => `<code>${this.escape(code)}</code>`);
+
+      // 3. Fett / Kursiv
+      cleaned = cleaned.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+      cleaned = cleaned.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+
+      // 4. Überschriften
+      cleaned = cleaned.replace(/^### (.*$)/gim, '<h4 style="margin: 8px 0 4px 0; font-size: 13px; font-weight: 700; color: inherit;">$1</h4>');
+      cleaned = cleaned.replace(/^## (.*$)/gim, '<h3 style="margin: 10px 0 6px 0; font-size: 14px; font-weight: 700; color: inherit;">$1</h3>');
+
+      // 5. Listenaufzählungen
+      const lines = cleaned.split('\n');
+      let inList = false;
+      const formattedLines = [];
+
+      for (const line of lines) {
+        const trimmed = line.trim();
+        const isBullet = trimmed.startsWith('- ') || trimmed.startsWith('* ');
+        const isNumbered = /^\d+\.\s/.test(trimmed);
+
+        if (isBullet || isNumbered) {
+          if (!inList) {
+            formattedLines.push('<ul>');
+            inList = true;
+          }
+          const itemText = isBullet ? trimmed.substring(2) : trimmed.replace(/^\d+\.\s/, '');
+          formattedLines.push(`<li>${itemText}</li>`);
+        } else {
+          if (inList) {
+            formattedLines.push('</ul>');
+            inList = false;
+          }
+          if (trimmed.length > 0) {
+            formattedLines.push(`<p>${trimmed}</p>`);
+          }
+        }
+      }
+      if (inList) formattedLines.push('</ul>');
+
+      return formattedLines.join('');
+    }
+
+    showBatchLimitConfirmation(limit, onContinue, onStop) {
+      const hist = document.getElementById('compainion-chat-history');
+      if (!hist) return;
+
+      const card = document.createElement('div');
+      card.className = 'compainion-confirmation-card';
+      card.innerHTML = `
+        <div class="compainion-confirmation-title">⏱️ ${limit} Schritte erreicht</div>
+        <div class="compainion-confirmation-reason">
+          Der Autopilot hat ${limit} Schritte ausgeführt. Möchtest du weitere 100 Schritte freigeben oder den Task beenden?
+        </div>
+        <div class="compainion-confirmation-actions">
+          <button class="compainion-btn-confirm" id="btn-batch-continue">Weitere 100 Schritte freigeben</button>
+          <button class="compainion-btn-reject" id="btn-batch-stop">Task beenden</button>
+        </div>
+      `;
+
+      card.querySelector('#btn-batch-continue').addEventListener('click', () => {
+        card.remove();
+        onContinue();
+      });
+
+      card.querySelector('#btn-batch-stop').addEventListener('click', () => {
+        card.remove();
+        onStop();
+      });
+
       hist.appendChild(card);
       hist.scrollTop = hist.scrollHeight;
     }
@@ -872,7 +1038,7 @@
   const snapshotExtractor = new DOMSnapshotExtractor();
   let isExecuting = false;
   let currentStep = 0;
-  const maxSteps = 30;
+  let maxSteps = 100;
 
   const sidebarUI = new ChatSidebarUI({
     onStartTask: (goal, model) => startTask(goal, model),
@@ -951,9 +1117,21 @@
     if (!isExecuting) return;
 
     if (currentStep >= maxSteps) {
-      sidebarUI.notify(`⚠️ Maximales Limit von ${maxSteps} Schritten erreicht. Autopilot gestoppt.`);
       isExecuting = false;
-      sidebarUI.updateState('idle');
+      sidebarUI.updateState('waiting_confirmation');
+      sidebarUI.showBatchLimitConfirmation(
+        maxSteps,
+        () => {
+          maxSteps += 100;
+          isExecuting = true;
+          sidebarUI.updateState('running', currentStep, maxSteps);
+          sidebarUI.notify(`▶️ Weitere 100 Schritte freigegeben (neues Limit: ${maxSteps}).`);
+          runLoop(lastObs);
+        },
+        () => {
+          stopTask();
+        }
+      );
       return;
     }
 
@@ -992,12 +1170,18 @@
 
       if (isFinal || action.type === 'finish') {
         currentStep++;
-        sidebarUI.addStepMsg(currentStep, thought, action, finalMessage || action.message);
+        const finalMsg = finalMessage || action.message || 'Task erfolgreich abgeschlossen.';
+        sidebarUI.addStepMsg(currentStep, action, 'Task beendet.');
+        sidebarUI.addFinalAnswerMsg(finalMsg);
         sidebarUI.updateState('completed');
         isExecuting = false;
+
+        // Sicherheits-Reset Maustasten
+        window.dispatchEvent(new MouseEvent('mouseup', { bubbles: true, cancelable: true, clientX: 0, clientY: 0, button: 0, buttons: 0 }));
+
         chrome.runtime.sendMessage({
           action: 'AGENT_RECORD_STEP',
-          step: { thought, action, observation: finalMessage || action.message },
+          step: { thought, action, observation: finalMsg },
         });
         return;
       }
@@ -1011,7 +1195,7 @@
     sidebarUI.updateState('running', currentStep, maxSteps);
 
     const result = await actionExecutor.execute(action);
-    sidebarUI.addStepMsg(currentStep, thought, action, result.observation);
+    sidebarUI.addStepMsg(currentStep, action, result.observation);
 
     chrome.runtime.sendMessage({
       action: 'AGENT_RECORD_STEP',

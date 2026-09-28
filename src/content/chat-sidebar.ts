@@ -408,33 +408,142 @@ export class ChatSidebar {
 
     const actionIcons: Record<string, string> = {
       click: '🖱️ Klick',
-      type: '⌨️ Tippen',
+      type: '⌨️ Eingabe',
       scroll: '📜 Scrollen',
       navigate: '🧭 Navigation',
       wait: '⏳ Warten',
       finish: '🏁 Abschluss',
-      ask_user: '❓ Nutzerfrage',
+      ask_user: '❓ Frage',
     };
 
     const actionText = this.formatActionDetails(step.action);
+    const iconLabel = actionIcons[step.action.type] || '⚡ Aktion';
 
-    const stepCard = document.createElement('div');
-    stepCard.className = 'compainion-msg-card step';
-    stepCard.innerHTML = `
-      <div class="compainion-step-header">
-        <span>Schritt ${step.stepNumber}</span>
+    const details = document.createElement('details');
+    details.className = 'compainion-step-details';
+    details.innerHTML = `
+      <summary class="compainion-step-summary">
+        <span class="compainion-step-badge">Schritt ${step.stepNumber}</span>
+        <span class="compainion-step-action-desc">${iconLabel}: ${this.escapeHtml(actionText)}</span>
+        <span class="compainion-step-toggle-icon">▾</span>
+      </summary>
+      <div class="compainion-step-code-box">
+        <pre class="compainion-step-code"><code>// Aktion
+Typ:         ${this.escapeHtml(step.action.type)}
+Ziel/Wert:   ${this.escapeHtml(actionText)}
+// Ergebnis
+Beobachtung: ${this.escapeHtml(step.observation || 'Erfolgreich ausgeführt')}</code></pre>
       </div>
-      <div class="compainion-thought-bubble">
-        ${this.escapeHtml(step.thought)}
-      </div>
-      <div class="compainion-action-badge">
-        ${actionIcons[step.action.type] || '⚡ Aktion'}: ${this.escapeHtml(actionText)}
-      </div>
-      ${step.observation ? `<div class="compainion-observation">${this.escapeHtml(step.observation)}</div>` : ''}
     `;
 
-    history.appendChild(stepCard);
+    history.appendChild(details);
     history.scrollTop = history.scrollHeight;
+  }
+
+  public addFinalAnswerMessage(message: string): void {
+    const history = this.container?.querySelector('#compainion-chat-history');
+    if (!history) return;
+
+    const card = document.createElement('div');
+    card.className = 'compainion-msg-card agent-answer';
+    card.innerHTML = `
+      <div class="compainion-answer-header">
+        <span class="compainion-answer-title">💡 Ergebnis</span>
+      </div>
+      <div class="compainion-answer-body">
+        ${this.formatStructuredAnswer(message)}
+      </div>
+    `;
+
+    history.appendChild(card);
+    history.scrollTop = history.scrollHeight;
+  }
+
+  public showBatchLimitConfirmation(limit: number, onContinue: () => void, onStop: () => void): void {
+    const history = this.container?.querySelector('#compainion-chat-history');
+    if (!history) return;
+
+    const card = document.createElement('div');
+    card.className = 'compainion-confirmation-card';
+    card.innerHTML = `
+      <div class="compainion-confirmation-title">⏱️ ${limit} Schritte erreicht</div>
+      <div class="compainion-confirmation-reason">
+        Der Autopilot hat ${limit} Schritte ausgeführt. Möchtest du weitere 100 Schritte freigeben oder den Task beenden?
+      </div>
+      <div class="compainion-confirmation-actions">
+        <button class="compainion-btn-confirm" id="btn-batch-continue">Weitere 100 Schritte freigeben</button>
+        <button class="compainion-btn-reject" id="btn-batch-stop">Task beenden</button>
+      </div>
+    `;
+
+    card.querySelector('#btn-batch-continue')?.addEventListener('click', () => {
+      card.remove();
+      onContinue();
+    });
+
+    card.querySelector('#btn-batch-stop')?.addEventListener('click', () => {
+      card.remove();
+      onStop();
+    });
+
+    history.appendChild(card);
+    history.scrollTop = history.scrollHeight;
+  }
+
+  public formatStructuredAnswer(rawText: string): string {
+    if (!rawText) return '<p>Task abgeschlossen.</p>';
+    // Entferne etwaige interne Gedankenspuren ("thought:", "gedanke:")
+    let cleaned = String(rawText)
+      .replace(/^(thought|gedanke|analyse):\s*/i, '')
+      .replace(/<thought>[\s\S]*?<\/thought>/gi, '')
+      .trim();
+
+    // 1. Code-Blöcke (```)
+    cleaned = cleaned.replace(/```([a-z]*)\n([\s\S]*?)```/g, (_, _lang, code) => {
+      return `<pre class="compainion-step-code"><code>${this.escapeHtml(code.trim())}</code></pre>`;
+    });
+
+    // 2. Inline-Code (`...`)
+    cleaned = cleaned.replace(/`([^`]+)`/g, (_, code) => `<code>${this.escapeHtml(code)}</code>`);
+
+    // 3. Fett / Kursiv
+    cleaned = cleaned.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+    cleaned = cleaned.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+
+    // 4. Überschriften
+    cleaned = cleaned.replace(/^### (.*$)/gim, '<h4 style="margin: 8px 0 4px 0; font-size: 13px; font-weight: 700; color: inherit;">$1</h4>');
+    cleaned = cleaned.replace(/^## (.*$)/gim, '<h3 style="margin: 10px 0 6px 0; font-size: 14px; font-weight: 700; color: inherit;">$1</h3>');
+
+    // 5. Listenaufzählungen
+    const lines = cleaned.split('\n');
+    let inList = false;
+    const formattedLines: string[] = [];
+
+    for (const line of lines) {
+      const trimmed = line.trim();
+      const isBullet = trimmed.startsWith('- ') || trimmed.startsWith('* ');
+      const isNumbered = /^\d+\.\s/.test(trimmed);
+
+      if (isBullet || isNumbered) {
+        if (!inList) {
+          formattedLines.push('<ul>');
+          inList = true;
+        }
+        const itemText = isBullet ? trimmed.substring(2) : trimmed.replace(/^\d+\.\s/, '');
+        formattedLines.push(`<li>${itemText}</li>`);
+      } else {
+        if (inList) {
+          formattedLines.push('</ul>');
+          inList = false;
+        }
+        if (trimmed.length > 0) {
+          formattedLines.push(`<p>${trimmed}</p>`);
+        }
+      }
+    }
+    if (inList) formattedLines.push('</ul>');
+
+    return formattedLines.join('');
   }
 
   public showConfirmationDialog(confirmation: PendingConfirmation): void {

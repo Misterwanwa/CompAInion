@@ -18,7 +18,7 @@ import {
 import { AGENT_SYSTEM_PROMPT, buildUserPrompt } from './prompt-template';
 
 const DEFAULT_MODEL = 'anthropic/claude-3.5-haiku';
-const MAX_DEFAULT_STEPS = 30;
+const MAX_DEFAULT_STEPS = 100;
 const OPENROUTER_API_BASE = 'https://openrouter.ai/api/v1';
 
 // Schlüsselwörter für destruktive Aktionen

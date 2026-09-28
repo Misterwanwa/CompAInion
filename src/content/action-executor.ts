@@ -178,12 +178,12 @@ export class ActionExecutor {
     this.highlightElement(el, 'Klick 🖱️');
     await this.wait(150);
 
-    // Vollständige Event-Kette für React/Angular/Vue Kompatibilität
+    // Vollständige saubere Event-Kette für React/Angular/Vue Kompatibilität
     const rect = el.getBoundingClientRect();
     const clientX = rect.left + rect.width / 2;
     const clientY = rect.top + rect.height / 2;
 
-    const eventOpts: MouseEventInit = {
+    const downOpts: PointerEventInit = {
       bubbles: true,
       cancelable: true,
       view: window,
@@ -191,28 +191,61 @@ export class ActionExecutor {
       clientY,
       button: 0,
       buttons: 1,
+      pointerId: 1,
+      pointerType: 'mouse',
+      isPrimary: true,
     };
 
-    // 1. Pointerdown & Mousedown
-    el.dispatchEvent(new PointerEvent('pointerdown', eventOpts));
-    el.dispatchEvent(new MouseEvent('mousedown', eventOpts));
+    const upOpts: PointerEventInit = {
+      bubbles: true,
+      cancelable: true,
+      view: window,
+      clientX,
+      clientY,
+      button: 0,
+      buttons: 0, // WICHTIG: buttons muss 0 sein, sonst bleibt der Mausklick im OS hängen
+      pointerId: 1,
+      pointerType: 'mouse',
+      isPrimary: true,
+    };
+
+    // 1. Pointerdown & Mousedown (Taste gedrückt)
+    el.dispatchEvent(new PointerEvent('pointerdown', downOpts));
+    el.dispatchEvent(new MouseEvent('mousedown', downOpts));
 
     // 2. Fokus setzen
     if (typeof el.focus === 'function') {
-      el.focus();
+      try {
+        el.focus();
+      } catch (e) {}
     }
 
     await this.wait(40);
 
-    // 3. Pointerup, Mouseup & Click
-    el.dispatchEvent(new PointerEvent('pointerup', eventOpts));
-    el.dispatchEvent(new MouseEvent('mouseup', eventOpts));
-    el.dispatchEvent(new MouseEvent('click', eventOpts));
+    // 3. Pointerup & Mouseup (Taste losgelassen mit buttons: 0)
+    el.dispatchEvent(new PointerEvent('pointerup', upOpts));
+    el.dispatchEvent(new MouseEvent('mouseup', upOpts));
 
-    // Falls es ein normaler Button/Link ist, ggf. nativen Klick nachreichen
-    if (el instanceof HTMLAnchorElement || el instanceof HTMLButtonElement) {
-      el.click();
+    // 4. Pointer-Capture sicherheitshalber explizit freigeben
+    try {
+      if (typeof (el as any).releasePointerCapture === 'function' && (el as any).hasPointerCapture && (el as any).hasPointerCapture(1)) {
+        (el as any).releasePointerCapture(1);
+      }
+    } catch (e) {}
+
+    // 5. Klick ausführen
+    if (typeof el.click === 'function') {
+      try {
+        el.click();
+      } catch (e) {
+        el.dispatchEvent(new MouseEvent('click', upOpts));
+      }
+    } else {
+      el.dispatchEvent(new MouseEvent('click', upOpts));
     }
+
+    // Globale Maustasten-Sicherheit: Verhindert, dass Windows/Chrome in einer Pointer-Capture festhängt
+    window.dispatchEvent(new MouseEvent('mouseup', { bubbles: true, cancelable: true, clientX: 0, clientY: 0, button: 0, buttons: 0 }));
 
     // Kurz warten auf asynchrone DOM-Reaktion
     await this.wait(400);

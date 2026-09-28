@@ -139,7 +139,6 @@ export class LongPressDetector {
     } else {
       // Long-Press war bereits aktiv -> Standard-Klick unterdrücken
       originalEvent.preventDefault();
-      originalEvent.stopPropagation();
     }
   }
 

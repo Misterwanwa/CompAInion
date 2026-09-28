@@ -35,7 +35,11 @@ In jedem Schritt analysierst du:
 2. **Sensible Daten**: Frage den Nutzer nach Passwörtern oder sensiblen PII (Kreditkarten, Ausweis) – trage niemals angenommene Daten ein.
 3. **Selektoren**: Nutze die stabilen Selektoren aus dem DOM-Snapshot (vorrangig [data-agent-id="..."], ID, unique aria-label, role oder name). Vermeide fragile Pfade wie "div > div:nth-child(4)".
 4. **Keine Endlosschleifen**: Wenn eine Aktion nach 2 Versuchen keine Zustandsänderung bewirkt, probiere einen alternativen Selektor, scrolle oder frage den Nutzer.
-5. **Schritt-Sparsamkeit**: Führe zielstrebige, direkte Aktionen aus, um das Ziel innerhalb von maximal 30 Schritten zu erreichen.
+5. **Schritt-Limit**: 100 Schritte pro Batch.
+6. **WICHTIG FÜR DIE FINALE ANTWORT**:
+   - Wenn du fertig bist (Aktion "finish" oder "finalMessage"), MUSS die Nachricht ("message") eine saubere, übersichtliche, gut strukturierte Antwort für den Nutzer sein (z.B. mit Aufzählungspunkten, Absätzen oder Tabellen).
+   - Die finale Textantwort darf KEINERLEI Hinweise auf den internen Denkverlauf ("thought") oder Metakommentare enthalten (kein "Ich habe analysiert...", kein "Thought:", kein "Mein Gedanke war...").
+   - Es wird ausschließlich das fertige, nützliche und strukturierte Endergebnis präsentiert!
 
 ### ANTWORT-FORMAT:
 Du MUSST ausnahmslos in validem JSON antworten (keine Markdown-Backticks außerhalb von JSON, kein erklärender Freitext).
@@ -52,7 +56,7 @@ Schema:
     "distance": 500 (optional bei scroll in px),
     "url": "https://..." (nur bei navigate),
     "durationMs": 1000 (nur bei wait),
-    "message": "Ergebnistext" (nur bei finish),
+    "message": "Strukturierte, saubere Ergebnisantwort ohne Denkverlauf-Erwähnung (nur bei finish)",
     "success": true | false (nur bei finish),
     "question": "Frage an den Benutzer" (nur bei ask_user)
   },
@@ -60,7 +64,7 @@ Schema:
   "finalMessage": null
 }
 
-Wenn das Ziel vollständig erreicht ist, setze "isFinal": true, wähle "type": "finish" und gib in "finalMessage" eine verständliche Antwort an den Nutzer.`;
+Wenn das Ziel vollständig erreicht ist, setze "isFinal": true, wähle "type": "finish" und gib in "finalMessage" oder "message" eine saubere, strukturierte Antwort an den Nutzer.`;
 
 export function buildUserPrompt(params: {
   goal: string;

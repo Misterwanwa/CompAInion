@@ -166,17 +166,22 @@ export class ContentAgentController {
 
       // 4. Ist der Task abgeschlossen?
       if (isFinal || action.type === 'finish') {
+        const finalMsg = finalMessage || (action.type === 'finish' ? action.message : 'Ziel erreicht.');
         this.sidebar.addStepMessage({
           stepNumber: (nextStepResp.state?.currentStep || 0) + 1,
           thought,
           action,
-          observation: finalMessage || (action.type === 'finish' ? action.message : 'Ziel erreicht.'),
+          observation: 'Task beendet.',
           timestamp: Date.now(),
         });
+        this.sidebar.addFinalAnswerMessage(finalMsg);
+
+        // Sicherheits-Reset Maustasten
+        window.dispatchEvent(new MouseEvent('mouseup', { bubbles: true, cancelable: true, clientX: 0, clientY: 0, button: 0, buttons: 0 }));
 
         await this.sendMessageAsync({
           action: 'AGENT_RECORD_STEP',
-          step: { thought, action, observation: finalMessage || 'Erfolgreich abgeschlossen' },
+          step: { thought, action, observation: finalMsg },
         });
 
         if (nextStepResp.state) {
