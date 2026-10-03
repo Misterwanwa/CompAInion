@@ -1,6 +1,6 @@
 {
   "name": "compainion",
-  "version": "1.0.0",
+  "version": "2.9.0",
   "description": "Eine Chrome Extension, die KI-gestützte Analyse-Tools direkt auf jeder Website bereitstellt.",
   "main": "background.js",
   "scripts": {

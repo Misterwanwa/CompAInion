@@ -10,6 +10,7 @@ Jede Version wird als **Git Tag** gespeichert. Das bedeutet: Der gesamte Code-St
 
 | Tag | Datum | Highlights |
 |-----|-------|------------|
+| `v2.9.0` | 2026-10-03 | Autopilot Agent Modus: Autonome Browser-Steuerung (ReAct-Loop), 100vh Sidebar mit Theme-Sync (Aero/Retro/Apple), 100-Schritte Batch-Limit, ausklappbare Code-Schritte, Password-Manager Schutz & Task Auto-Recovery |
 | `v2.8.0` | 2026-08-25 | Clippy Overhaul: 39 Aktionen, Eignung-vor-Zufall Pools, 8 kreative Sprech-Stile, 11 Posen, animierter Mund & Typewriter |
 | `v2.7.0` | 2026-07-28 | Animierter Clippy-Assistent repariert & erweitert (Variationen, Distortion-Fix), Gemini 3.5 & Flash, Kontext-Matrix, Prompt Enhancer & Timeline |
 | `v2.6.8` | 2026-06-15 | Performance Optimierungen, Local LLM Support, Deep Research Overlay |
@@ -66,7 +67,25 @@ git push origin vX.Y
 
 ## 📋 Changelog
 
-### v2.8.0 (aktuell)
+### v2.9.0 (aktuell)
+- **Autopilot Agent Modus:**
+  - Autonome Browser-Steuerung via OpenRouter (ReAct-Pattern: Thought -> Action -> Observation)
+  - DOM-Snapshot-Extraktor für interaktive Elemente mit stabilen Selektoren und Tokenspar-Begrenzung
+  - Aktions-Executor für Klicks, Tastatur-Eingaben, Scrollen, Warten und Navigation
+  - Sicherheitsprüfung bei destruktiven oder kostenpflichtigen Aktionen
+- **UI & UX Überarbeitung:**
+  - Sidebar über die gesamte Fensterhöhe (`100vh`)
+  - Volle Design-Integration mit Themes der Haupterweiterung (Frutiger Aero, Retro 95/98, Apple Glass)
+  - Dynamischer Prompt-Pool mit zufälligen Vorschlägen bei jedem Öffnen
+  - Schrittlimit auf 100 Schritte erhöht mit interaktiver Bestätigung für weitere +100 Schritte
+  - Ausklappbare Schritt-Details (`<details>`) mit formatierter Code-Schrift (`Consolas/Monospace`)
+  - Strukturierte, saubere finale Textantworten ohne interne Denkverlaufs-Spuren
+- **Stabilität & Browser-Integration:**
+  - Behebung des Maus-Capturing-Freezes unter Windows Chromium durch korrekte Event-Optionen (`buttons: 0` bei `pointerup`)
+  - Schutz vor Chromes Passwort-Manager: Maskiertes Textfeld (`-webkit-text-security`) ohne `type="password"`, DOM-Bereinigung bei geschlossenem Einstellungs-Panel
+  - Task Auto-Recovery: Nahtloses Fortführen laufender Tasks nach Seitenwechseln, Reloads oder Dialogunterbrechungen
+
+### v2.8.0
 - **Clippy Prompt-Vielfalt & Eignung-vor-Zufall:**
   - 39 Candidate Actions für das LLM (14 neue Aktionen wie `shoppingAssistant`, `createPresentation`, `extractQuotes`, `accessibility`, `grammarCheck`, `checklist`, `socialBio`, etc.)
   - Neuer Eignung-vor-Zufall Algorithmus für Offline- & Fallback-Nutzung: Alle passenden Regeln landen in einem Pool, daraus wird zufällig gewählt
