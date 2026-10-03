@@ -471,6 +471,11 @@
   font-family: inherit;
 }
 
+.compainion-masked-input {
+  -webkit-text-security: disc !important;
+  letter-spacing: 2px;
+}
+
 .compainion-btn-save {
   border: none;
   padding: 6px 12px;

@@ -91,6 +91,7 @@ class BackgroundAgentManager {
   }
 
   saveState(state) {
+    if (state) state.updatedAt = Date.now();
     this.currentState = state;
     chrome.storage.local.set({ agentTaskState: state });
   }
@@ -111,6 +112,7 @@ class BackgroundAgentManager {
       currentUrl: url,
       steps: [],
       createdAt: Date.now(),
+      updatedAt: Date.now(),
     };
 
     this.saveState(state);

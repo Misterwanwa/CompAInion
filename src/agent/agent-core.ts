@@ -127,6 +127,7 @@ export class AgentCore {
   }
 
   public async saveState(state: TaskState | null): Promise<void> {
+    if (state) state.updatedAt = Date.now();
     this.currentState = state;
     return new Promise((resolve) => {
       chrome.storage.local.set({ agentTaskState: state }, () => resolve());

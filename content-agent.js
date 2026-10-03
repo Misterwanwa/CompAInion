@@ -613,7 +613,21 @@
           <div class="compainion-input-group">
             <label class="compainion-input-label" for="compainion-api-key-input">OpenRouter API-Key</label>
             <div class="compainion-api-input-wrap">
-              <input type="password" id="compainion-api-key-input" class="compainion-text-input" placeholder="sk-or-v1-..." />
+              <input
+                type="text"
+                id="compainion-api-key-input"
+                name="compainion-token-field"
+                class="compainion-text-input compainion-masked-input"
+                placeholder="sk-or-v1-..."
+                autocomplete="off"
+                autocorrect="off"
+                autocapitalize="off"
+                spellcheck="false"
+                data-lpignore="true"
+                data-1p-ignore="true"
+                data-bwignore="true"
+                data-form-type="other"
+              />
               <button class="compainion-btn-save" id="compainion-btn-save-key">Speichern</button>
             </div>
           </div>
@@ -671,13 +685,25 @@
 
       sidebar.querySelector('#compainion-btn-settings').addEventListener('click', () => {
         this.isSettingsOpen = !this.isSettingsOpen;
-        sidebar.querySelector('#compainion-settings-panel').classList.toggle('is-open', this.isSettingsOpen);
+        const panel = sidebar.querySelector('#compainion-settings-panel');
+        panel.classList.toggle('is-open', this.isSettingsOpen);
+        const input = sidebar.querySelector('#compainion-api-key-input');
+        if (input) {
+          if (this.isSettingsOpen) {
+            input.value = this.apiKey;
+            input.focus();
+          } else {
+            input.value = '';
+          }
+        }
       });
 
       sidebar.querySelector('#compainion-btn-save-key').addEventListener('click', () => {
-        const val = sidebar.querySelector('#compainion-api-key-input').value.trim();
+        const input = sidebar.querySelector('#compainion-api-key-input');
+        const val = input.value.trim();
         this.apiKey = val;
         this.callbacks.onSaveConfig({ openRouterApiKey: val });
+        input.value = ''; // Sofort aus dem DOM entfernen
         sidebar.querySelector('#compainion-settings-panel').classList.remove('is-open');
         this.isSettingsOpen = false;
         this.notify('API-Key gespeichert.');
@@ -1003,8 +1029,7 @@ Beobachtung: ${this.escape(observation || 'Erfolgreich ausgeführt')}</code></pr
       chrome.storage.local.get(['agentOpenRouterApiKey', 'agentSelectedModel'], (items) => {
         if (items.agentOpenRouterApiKey) {
           this.apiKey = items.agentOpenRouterApiKey;
-          const input = document.getElementById('compainion-api-key-input');
-          if (input) input.value = this.apiKey;
+          // WICHTIG: Nicht direkt ins DOM schreiben, damit kein Password-Manager anspringt!
         }
         if (items.agentSelectedModel) {
           this.selectedModel = items.agentSelectedModel;
@@ -1145,9 +1170,9 @@ Beobachtung: ${this.escape(observation || 'Erfolgreich ausgeführt')}</code></pr
       if (!isExecuting) return;
 
       if (!resp || !resp.success || !resp.llmResponse) {
-        sidebarUI.notify(`❌ Fehler bei Modell-Antwort: ${resp?.error || 'Keine Antwort'}`);
+        sidebarUI.notify(`⚠️ Unterbrechung: ${resp?.error || 'Keine Antwort erhalten'}. Klicke ▶ zum Fortsetzen.`);
         isExecuting = false;
-        sidebarUI.updateState('idle');
+        sidebarUI.updateState('paused');
         return;
       }
 
@@ -1212,12 +1237,56 @@ Beobachtung: ${this.escape(observation || 'Erfolgreich ausgeführt')}</code></pr
     if (resp && resp.success && resp.models) {
       sidebarUI.setModels(resp.models);
     }
+    // Automatisch prüfen, ob ein aktiver Task läuft (z.B. nach Reload oder Navigation)
+    checkActiveTaskOnLoad();
   });
+
+  // Automatische Wiederaufnahme eines laufenden Tasks (z.B. nach Seitenwechsel oder Dialog)
+  function checkActiveTaskOnLoad() {
+    try {
+      chrome.storage.local.get(['agentTaskState'], (res) => {
+        const state = res && res.agentTaskState;
+        if (!state) return;
+
+        // Wenn der Task noch läuft und vor weniger als 10 Minuten aktualisiert wurde
+        const isFresh = Date.now() - (state.updatedAt || state.createdAt || 0) < 600000;
+        if (state.status === 'running' && isFresh) {
+          console.log('[CompAInion Autopilot] Laufender Task erkannt, nehme Ausführung wieder auf:', state.goal);
+          resumeActiveTask(state);
+        }
+      });
+    } catch (e) {}
+  }
+
+  function resumeActiveTask(state) {
+    isExecuting = true;
+    currentStep = state.currentStep || 0;
+    maxSteps = state.maxSteps || 100;
+
+    sidebarUI.show();
+    sidebarUI.updateState('running', currentStep, maxSteps);
+
+    // Bisherige Schritte im Chat anzeigen
+    if (Array.isArray(state.steps)) {
+      state.steps.forEach((s) => {
+        sidebarUI.addStepMsg(s.stepNumber, s.action, s.observation);
+      });
+    }
+
+    sidebarUI.notify(`🔄 Autopilot aktiv – setze Task fort: "${state.goal}"`);
+
+    // Letzte Observation ermitteln und Loop fortführen
+    const lastObs = state.steps && state.steps.length > 0 ? state.steps[state.steps.length - 1].observation : undefined;
+    setTimeout(() => {
+      runLoop(lastObs);
+    }, 1000);
+  }
 
   // Globale Referenz für Tastaturkürzel / Debugging
   window.compainionAutopilot = {
     toggle: () => sidebarUI.toggle(),
     show: () => sidebarUI.show(),
     hide: () => sidebarUI.hide(),
+    resume: () => checkActiveTaskOnLoad(),
   };
 })();

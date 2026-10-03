@@ -38,6 +38,7 @@ export class ContentAgentController {
     this.initMessageListeners();
     this.setupLogoIntegration();
     this.loadModels();
+    this.checkActiveTaskOnLoad();
   }
 
   // ------------------ LOGO INTEGRATION (LONG-PRESS) ------------------
@@ -147,8 +148,11 @@ export class ContentAgentController {
       });
 
       if (!nextStepResp.success || !nextStepResp.llmResponse) {
-        this.sidebar.addNotification(`❌ Fehler bei Modell-Anfrage: ${nextStepResp.error || 'Keine Antwort'}`);
+        this.sidebar.addNotification(`⚠️ Unterbrechung: ${nextStepResp.error || 'Keine Antwort erhalten'}. Klicke ▶ zum Fortsetzen.`);
         this.isExecutingLoop = false;
+        if (nextStepResp.state) {
+          this.sidebar.updateState({ ...nextStepResp.state, status: 'paused' });
+        }
         return;
       }
 
@@ -309,6 +313,44 @@ export class ContentAgentController {
     } catch (e) {
       console.warn('[ContentAgent] Could not fetch models:', e);
     }
+  }
+
+  // ------------------ ACTIVE TASK RECOVERY ------------------
+
+  private checkActiveTaskOnLoad(): void {
+    try {
+      chrome.storage.local.get(['agentTaskState'], (res) => {
+        const state = (res as Record<string, any>)?.agentTaskState as TaskState | undefined;
+        if (!state) return;
+
+        const isFresh = Date.now() - (state.updatedAt || state.createdAt || 0) < 600000;
+        if (state.status === 'running' && isFresh) {
+          console.log('[ContentAgent] Active task found on load, resuming:', state.goal);
+          this.resumeActiveTask(state);
+        }
+      });
+    } catch (e) {
+      console.warn('[ContentAgent] Error checking active task:', e);
+    }
+  }
+
+  private resumeActiveTask(state: TaskState): void {
+    this.isExecutingLoop = true;
+    this.sidebar.show();
+    this.sidebar.updateState(state);
+
+    if (Array.isArray(state.steps)) {
+      state.steps.forEach((s) => {
+        this.sidebar.addStepMessage(s);
+      });
+    }
+
+    this.sidebar.addNotification(`🔄 Task wird fortgesetzt: "${state.goal}"`);
+
+    const lastObs = state.steps && state.steps.length > 0 ? state.steps[state.steps.length - 1].observation : undefined;
+    window.setTimeout(() => {
+      this.runLoopCycle(lastObs);
+    }, 1000);
   }
 
   // ------------------ MESSAGING HELPER ------------------

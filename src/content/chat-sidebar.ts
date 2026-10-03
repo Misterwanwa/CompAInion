@@ -141,7 +141,21 @@ export class ChatSidebar {
         <div class="compainion-input-group">
           <label class="compainion-input-label" for="compainion-api-key-input">OpenRouter API-Key (sk-or-v1-...)</label>
           <div class="compainion-api-input-wrap">
-            <input type="password" id="compainion-api-key-input" class="compainion-text-input" placeholder="sk-or-v1-..." />
+            <input
+              type="text"
+              id="compainion-api-key-input"
+              name="compainion-token-field"
+              class="compainion-text-input compainion-masked-input"
+              placeholder="sk-or-v1-..."
+              autocomplete="off"
+              autocorrect="off"
+              autocapitalize="off"
+              spellcheck="false"
+              data-lpignore="true"
+              data-1p-ignore="true"
+              data-bwignore="true"
+              data-form-type="other"
+            />
             <button class="compainion-btn-save" id="compainion-btn-save-key">Speichern</button>
           </div>
         </div>
@@ -239,6 +253,7 @@ export class ChatSidebar {
       if (input) {
         this.apiKey = input.value.trim();
         this.callbacks.onSaveConfig({ openRouterApiKey: this.apiKey });
+        input.value = ''; // Sofort aus dem DOM entfernen
         this.toggleSettings(false);
         this.addNotification('API-Key erfolgreich gespeichert.');
       }
@@ -617,6 +632,17 @@ Beobachtung: ${this.escapeHtml(step.observation || 'Erfolgreich ausgeführt')}</
     if (!panel) return;
     this.isSettingsOpen = force !== undefined ? force : !this.isSettingsOpen;
     panel.classList.toggle('is-open', this.isSettingsOpen);
+
+    // API Key nur im DOM halten, solange das Einstellungs-Panel sichtbar ist
+    const input = this.container?.querySelector('#compainion-api-key-input') as HTMLInputElement;
+    if (input) {
+      if (this.isSettingsOpen) {
+        input.value = this.apiKey;
+        input.focus();
+      } else {
+        input.value = '';
+      }
+    }
   }
 
   private loadInitialSettings(): void {
@@ -624,8 +650,7 @@ Beobachtung: ${this.escapeHtml(step.observation || 'Erfolgreich ausgeführt')}</
       const res = items as Record<string, any>;
       if (typeof res.agentOpenRouterApiKey === 'string' && res.agentOpenRouterApiKey) {
         this.apiKey = res.agentOpenRouterApiKey;
-        const input = this.container?.querySelector('#compainion-api-key-input') as HTMLInputElement;
-        if (input) input.value = this.apiKey;
+        // WICHTIG: Nicht sofort ins DOM schreiben, damit kein Password-Manager anspringt!
       }
       if (typeof res.agentSelectedModel === 'string' && res.agentSelectedModel) {
         this.selectedModel = res.agentSelectedModel;
