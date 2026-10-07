@@ -3809,7 +3809,6 @@ WICHTIG: Antworte AUSSCHLIESSLICH im folgenden JSON-Format ohne Markdown-Codeblo
           contents: [{ parts: [{ text: prompt }] }],
           generationConfig: {
             responseMimeType: 'application/json',
-            temperature: 0.9,
             maxOutputTokens: 200
           }
         })

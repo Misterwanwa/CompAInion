@@ -10,6 +10,7 @@ Jede Version wird als **Git Tag** gespeichert. Das bedeutet: Der gesamte Code-St
 
 | Tag | Datum | Highlights |
 |-----|-------|------------|
+| `v2.9.1` | 2026-10-07 | Gemini API Vorbereitung: Veraltete Sampling-Parameter (`temperature`, `top_p`, `top_k`) vollständig entfernt, um HTTP 400 INVALID_ARGUMENT bei neuen Gemini- & Reasoning-Modellen zu verhindern |
 | `v2.9.0` | 2026-10-03 | Autopilot Agent Modus: Autonome Browser-Steuerung (ReAct-Loop), 100vh Sidebar mit Theme-Sync (Aero/Retro/Apple), 100-Schritte Batch-Limit, ausklappbare Code-Schritte, Password-Manager Schutz & Task Auto-Recovery |
 | `v2.8.0` | 2026-08-25 | Clippy Overhaul: 39 Aktionen, Eignung-vor-Zufall Pools, 8 kreative Sprech-Stile, 11 Posen, animierter Mund & Typewriter |
 | `v2.7.0` | 2026-07-28 | Animierter Clippy-Assistent repariert & erweitert (Variationen, Distortion-Fix), Gemini 3.5 & Flash, Kontext-Matrix, Prompt Enhancer & Timeline |
@@ -67,7 +68,14 @@ git push origin vX.Y
 
 ## 📋 Changelog
 
-### v2.9.0 (aktuell)
+### v2.9.1 (aktuell)
+- **Gemini API Breaking Changes Kompatibilität:**
+  - Veraltete Sampling-Parameter (`temperature: 0.9` in `content.js` für Clippy-Generierung) vollständig entfernt, damit die Standard-Sampling-Parameter des jeweiligen Gemini-Modells greifen.
+  - Veraltetes `temperature: 0.1` in `src/agent/agent-core.ts` und `background-agent.js` entfernt, um HTTP 400 `INVALID_ARGUMENT`-Fehler bei Reasoning- & Gemini-Modellen auf Provider-Ebene auszuschließen.
+  - Verifiziert, dass keine veralteten Parameter wie `top_p`, `top_k` oder `thinking_budget` in API-Payloads übergeben werden.
+  - Dokumentation in `PROMPTS.md` und `VERSIONS.md` aktualisiert.
+
+### v2.9.0
 - **Autopilot Agent Modus:**
   - Autonome Browser-Steuerung via OpenRouter (ReAct-Pattern: Thought -> Action -> Observation)
   - DOM-Snapshot-Extraktor für interaktive Elemente mit stabilen Selektoren und Tokenspar-Begrenzung

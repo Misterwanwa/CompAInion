@@ -411,7 +411,6 @@ export class AgentCore {
               { role: 'user', content: userPrompt },
             ],
             response_format: { type: 'json_object' },
-            temperature: 0.1,
             max_tokens: 1000,
           }),
           signal: this.abortController.signal,

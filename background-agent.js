@@ -255,7 +255,6 @@ Antworte ausschließlich im definierten JSON-Format.`;
               { role: 'user', content: userPrompt },
             ],
             response_format: { type: 'json_object' },
-            temperature: 0.1,
             max_tokens: 1000,
           }),
         });

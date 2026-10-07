@@ -434,7 +434,7 @@ Einfache Erklärung mit Analogien.
 Der Clippy-Assistent (`triggerClippyAssistant` in `content.js`) analysiert den Webseiten-Kontext (Titel, URL, Text-Vorschau) und wählt dynamisch aus 39 spezialisierten Erweiterungs-Aktionen den treffendsten Vorschlag aus (Eignung vor Zufall). Pauschale Standard-Zusammenfassungen (`summaryNormal`) werden durch strikte System-Prompt-Regeln zurückgehalten.
 
 ### System-Prompt & Verhaltens-Regeln
-Clippy verwendet folgenden generativen System-Prompt zur Aktions- und Spruch-Auswahl (`temperature: 0.9` für maximale sprachliche Kreativität):
+Clippy verwendet folgenden generativen System-Prompt zur Aktions- und Spruch-Auswahl (Standard-Sampling-Parameter des Modells für maximale Kompatibilität mit Gemini 2.5/3.x und Reasoning-Modellen):
 - **Tonalität**: Retro-Büroklammer-Assistent, sympathisch, abwechslungsreich (Dramatisch, Nerdig, Frech, Pop-Kultur, Motivierend, Detektivisch, Wortspiele, Rhetorisch), direkte Du-Form.
 - **Kontext-Priorisierung**:
   - `mail.google.com` / E-Mail -> `writeReply`, `emailDraft`
