@@ -2893,16 +2893,26 @@ Womit kann ich "${missingIngredient}" ersetzen? Gib 2-3 Alternativen an mit Meng
       break;
     }
     case 'recipeControlFreak':
-      promptText = `Ergänze dieses Rezept um die passenden Einstellungen für das Induktions-Kochgerät "The Control Freak" von Breville / Sage.
-
-WICHTIG: Der Originaltext wird 1:1 zu 100% genau beibehalten. Es erfolgt KEINE Textänderung, KEINE Übersetzung, KEINE Umformulierung, KEINE Kürzung. Der Text wird exakt so beibehalten wie im Original. Du fügst AUSSCHLIESSLICH die Control-Freak-Einstellungen hinzu.
+      promptText = `Extrahiere aus dem folgenden Seitentext NUR das eigentliche Rezept und ergänze es um die passenden Einstellungen für das Induktions-Kochgerät "The Control Freak" von Breville / Sage.
 
 URL: ${context.url}
 
-Originalrezept:
+Seitentext:
 """
-${context.text.substring(0, 5000)}
+${context.text.substring(0, 10000)}
 """
+
+SCHRITT 1 – REZEPT EXTRAHIEREN:
+Rezeptseiten (insbesondere Blogs) enthalten oft viel Drumherum. Übernimm AUSSCHLIESSLICH:
+- Rezepttitel
+- Portionen / Zubereitungszeit (falls angegeben)
+- Zutatenliste
+- Zubereitungsschritte
+
+Lass ALLES andere komplett weg, z.B.: Einleitungen, persönliche Geschichten, Anekdoten, SEO-Texte, Hintergrundwissen, Tipps-&-Tricks-Abschnitte, FAQ, Variationen, Werbung, Produktempfehlungen, Affiliate-Links, Newsletter-Hinweise, Kommentare, Bewertungen, Navigations- und Footer-Texte, Links zu weiteren Rezepten.
+Wenn das Rezept auf der Seite mehrfach vorkommt (z.B. Fließtext + Rezeptkarte), verwende nur die vollständigste Fassung (meist die Rezeptkarte) – keine Dopplungen.
+
+WICHTIG: Die übernommenen Rezeptteile (Titel, Zutaten, Schritte) bleiben 1:1 zu 100% wörtlich erhalten. KEINE Textänderung, KEINE Übersetzung, KEINE Umformulierung, KEINE Kürzung innerhalb des Rezepts. Du fügst AUSSCHLIESSLICH die Control-Freak-Einstellungen hinzu.
 
 HINTERGRUND ZUM GERÄT "THE CONTROL FREAK":
 - Präzise Temperaturregelung in °C (ca. 30 °C bis 250 °C, in 1-°C-Schritten)
@@ -2910,7 +2920,7 @@ HINTERGRUND ZUM GERÄT "THE CONTROL FREAK":
 - Einstellbare Aufheizintensität (Heat-up Intensity, Stufe 1 = sehr sanft bis 10 = maximal schnell)
 - Integrierter Timer
 
-AUFGABE:
+SCHRITT 2 – TEMPERATUREN ERGÄNZEN:
 1. Ermittle für JEDEN Schritt des Rezepts, bei dem Hitze im Spiel ist, die geeignete Einstellung für Pfanne bzw. Topf.
 2. Berücksichtige dabei das Kochgeschirr (Pfanne oder Topf), das Gargut und die Garmethode (z.B. Anbraten, Schmelzen, Karamellisieren, Köcheln, Simmern, Pochieren, Frittieren, Reduzieren, Warmhalten).
 3. Wenn ein Schritt eine Temperaturentwicklung erfordert (z.B. erst scharf anbraten, dann herunterregeln; langsam erhitzen; Temperatur stufenweise steigern), gib eine Temperaturkurve mit den einzelnen Phasen, Temperaturen und Dauern an.
@@ -2930,8 +2940,9 @@ Bei Temperaturkurven:
 Danach folgt der Originalschritt exakt wie im Original.
 
 REGELN:
-- Der Originaltext wird 1:1 beibehalten (inkl. Zutatenliste, Überschriften und Reihenfolge)
-- Nur die Control-Freak-Einstellungen werden ergänzt
+- Ausgabe besteht NUR aus: Titel, (Portionen/Zeit), Zutatenliste, Zubereitungsschritten mit eingefügten Control-Freak-Einstellungen
+- Kein Blog-Drumherum, keine Einleitung, kein Fazit, keine Schlussbemerkung
+- Rezeptinhalte werden wörtlich übernommen, nur die Control-Freak-Einstellungen werden ergänzt
 - Verwende realistische, für das Gerät geeignete Temperaturen
 - Keine zusätzlichen Erklärungen, keine Tipps, keine Variationen außerhalb der eingefügten Einstellungen`;
       break;

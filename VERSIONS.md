@@ -10,6 +10,7 @@ Jede Version wird als **Git Tag** gespeichert. Das bedeutet: Der gesamte Code-St
 
 | Tag | Datum | Highlights |
 |-----|-------|------------|
+| `v2.10.1` | 2026-10-14 | "The Control Freak": Extrahiert nur das eigentliche Rezept aus Blogs (ohne Drumherum), voller Seitenkontext |
 | `v2.10.0` | 2026-10-14 | Rezept-Menü: Neuer Prompt "The Control Freak" (Breville/Sage Temperaturen pro Schritt), One-Pot-Prompt entfernt |
 | `v2.9.1` | 2026-10-07 | Gemini API Vorbereitung: Veraltete Sampling-Parameter (`temperature`, `top_p`, `top_k`) vollständig entfernt, um HTTP 400 INVALID_ARGUMENT bei neuen Gemini- & Reasoning-Modellen zu verhindern |
 | `v2.9.0` | 2026-10-03 | Autopilot Agent Modus: Autonome Browser-Steuerung (ReAct-Loop), 100vh Sidebar mit Theme-Sync (Aero/Retro/Apple), 100-Schritte Batch-Limit, ausklappbare Code-Schritte, Password-Manager Schutz & Task Auto-Recovery |
@@ -69,7 +70,13 @@ git push origin vX.Y
 
 ## 📋 Changelog
 
-### v2.10.0 (aktuell)
+### v2.10.1 (aktuell)
+- **"The Control Freak" Prompt:**
+  - Extrahiert auf Rezeptseiten/Blogs nur das eigentliche Rezept (Titel, Portionen/Zeit, Zutaten, Schritte) und lässt Einleitungen, Geschichten, FAQ, Werbung, Kommentare etc. weg.
+  - Bei doppelt vorkommenden Rezepten wird nur die vollständigste Fassung (Rezeptkarte) verwendet.
+  - Seitenkontext von 5.000 auf 10.000 Zeichen erhöht, damit Rezeptkarten am Seitenende nicht abgeschnitten werden.
+
+### v2.10.0
 - **Rezept-Menü:**
   - Neuer Prompt **"The Control Freak"**: Ergänzt vor jedem Schritt die passenden Temperaturen bzw. Temperaturkurven (Modus, °C, Intensität, Timer) für Pfanne/Topf auf dem Breville/Sage "The Control Freak". Originalrezept bleibt 1:1 erhalten.
   - Prompt **"One-Pot"** entfernt.
