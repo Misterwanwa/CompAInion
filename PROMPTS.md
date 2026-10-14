@@ -348,6 +348,7 @@ Analyse der Stimmung, Themen, Kritik.
 - 👨‍🍳 **Für Küchengerät umwandeln** – Dropdown-Menü mit 39 Geräten (Apfelsschneider, Austernmesser, Backofen, Baconbräter, Brotbackautomat, Caipirinhastößel, Crepe-Gerät, Dampfgarer, Dörrautomat, Eismaschine, Entsafter, Filterkaffeemaschine, Fondue, Grill, Heißluftfritteuse, Joghurtbereiter, Kenwood Cooking Chef Gourmet, Kirschkernentferner, Kugelformer, Le Creuset, Löffelwaage, Marinierspritze, Mikrowelle, Milchaufschäumer, Mokkakanne, One-Pot, Optigrill, Pancakemaker, Pastamaschine, Popcornmaschine, Raclette, Sous-Vide, Sushireis, Teigschneider, Thermomix, Toaster, Waffeleisen, Wiegemesser, Zuckerwattemaschine)
 - 🍽️ **Wie hübsch anrichten** – Michelin-Stern Anleitung + KI-Bild-Prompt
 - 📊 **Kalorien & Nährwerte** – Tabelle mit Nährwerten pro Portion
+- 🌡️ **The Control Freak** – Ergänzt vor jedem Schritt die Temperaturen/Temperaturkurven für Breville/Sage „The Control Freak“ (Originalrezept bleibt 1:1 erhalten)
 
 ---
 

@@ -10,6 +10,7 @@ Jede Version wird als **Git Tag** gespeichert. Das bedeutet: Der gesamte Code-St
 
 | Tag | Datum | Highlights |
 |-----|-------|------------|
+| `v2.10.0` | 2026-10-14 | Rezept-Menü: Neuer Prompt "The Control Freak" (Breville/Sage Temperaturen pro Schritt), One-Pot-Prompt entfernt |
 | `v2.9.1` | 2026-10-07 | Gemini API Vorbereitung: Veraltete Sampling-Parameter (`temperature`, `top_p`, `top_k`) vollständig entfernt, um HTTP 400 INVALID_ARGUMENT bei neuen Gemini- & Reasoning-Modellen zu verhindern |
 | `v2.9.0` | 2026-10-03 | Autopilot Agent Modus: Autonome Browser-Steuerung (ReAct-Loop), 100vh Sidebar mit Theme-Sync (Aero/Retro/Apple), 100-Schritte Batch-Limit, ausklappbare Code-Schritte, Password-Manager Schutz & Task Auto-Recovery |
 | `v2.8.0` | 2026-08-25 | Clippy Overhaul: 39 Aktionen, Eignung-vor-Zufall Pools, 8 kreative Sprech-Stile, 11 Posen, animierter Mund & Typewriter |
@@ -68,7 +69,12 @@ git push origin vX.Y
 
 ## 📋 Changelog
 
-### v2.9.1 (aktuell)
+### v2.10.0 (aktuell)
+- **Rezept-Menü:**
+  - Neuer Prompt **"The Control Freak"**: Ergänzt vor jedem Schritt die passenden Temperaturen bzw. Temperaturkurven (Modus, °C, Intensität, Timer) für Pfanne/Topf auf dem Breville/Sage "The Control Freak". Originalrezept bleibt 1:1 erhalten.
+  - Prompt **"One-Pot"** entfernt.
+
+### v2.9.1
 - **Gemini API Breaking Changes Kompatibilität:**
   - Veraltete Sampling-Parameter (`temperature: 0.9` in `content.js` für Clippy-Generierung) vollständig entfernt, damit die Standard-Sampling-Parameter des jeweiligen Gemini-Modells greifen.
   - Veraltetes `temperature: 0.1` in `src/agent/agent-core.ts` und `background-agent.js` entfernt, um HTTP 400 `INVALID_ARGUMENT`-Fehler bei Reasoning- & Gemini-Modellen auf Provider-Ebene auszuschließen.

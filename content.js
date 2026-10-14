@@ -337,8 +337,8 @@ const SUBMENUS = {
     { label: 'Einfach Backen Format', key: 'recipeSimpleBake', implemented: true },
     { label: 'Für Küchengerät umwandeln...', key: 'recipeDevice', implemented: true },
     { label: 'Kalorien & Nährwerte', key: 'recipeNutrition', implemented: true },
-    { label: 'One-Pot', key: 'recipeOnePot', implemented: true },
     { label: 'Rezept prüfen', key: 'recipeCheck', implemented: true },
+    { label: 'The Control Freak', key: 'recipeControlFreak', implemented: true },
     { label: 'Wie hübsch anrichten', key: 'recipePlating', implemented: true },
     { label: 'Zutaten auflisten', key: 'recipeIngredients', implemented: true },
     { label: 'Zutat ersetzen...', key: 'recipeReplace', implemented: true }
@@ -756,8 +756,8 @@ function showRecipeSubmenu(menuItem) {
       <div class="submenu-item" data-action="recipeSimpleBake">Einfach Backen Format</div>
       <div class="submenu-item" data-action="recipeDevice">Für Küchengerät umwandeln... <span style="float: right; opacity: 0.5;">▶</span></div>
       <div class="submenu-item" data-action="recipeNutrition">Kalorien & Nährwerte</div>
-      <div class="submenu-item" data-action="recipeOnePot">One-Pot</div>
       <div class="submenu-item" data-action="recipeCheck">Rezept prüfen</div>
+      <div class="submenu-item" data-action="recipeControlFreak">The Control Freak</div>
       <div class="submenu-item" data-action="recipePlating">Wie hübsch anrichten</div>
       <div class="submenu-item" data-action="recipeIngredients">Zutaten auflisten</div>
       <div class="submenu-item" data-action="recipeReplace">Zutat ersetzen...</div>
@@ -2892,22 +2892,48 @@ ${context.text.substring(0, 4000)}
 Womit kann ich "${missingIngredient}" ersetzen? Gib 2-3 Alternativen an mit Mengenumrechnung.`;
       break;
     }
-    case 'recipeOnePot':
-      promptText = `Wandle dieses Rezept in ein One-Pot-Gericht um. Das bedeutet: Alles wird in einem einzigen Topf zubereitet.
+    case 'recipeControlFreak':
+      promptText = `Ergänze dieses Rezept um die passenden Einstellungen für das Induktions-Kochgerät "The Control Freak" von Breville / Sage.
+
+WICHTIG: Der Originaltext wird 1:1 zu 100% genau beibehalten. Es erfolgt KEINE Textänderung, KEINE Übersetzung, KEINE Umformulierung, KEINE Kürzung. Der Text wird exakt so beibehalten wie im Original. Du fügst AUSSCHLIESSLICH die Control-Freak-Einstellungen hinzu.
 
 URL: ${context.url}
 
 Originalrezept:
 """
-${context.text.substring(0, 4000)}
+${context.text.substring(0, 5000)}
 """
 
-ANFORDERUNGEN:
-- Alle Zutaten werden in einem Topf gekocht/gebraten
-- Passe die Reihenfolge an (härtere Zutaten zuerst)
-- Passe Flüssigkeitsmenge an (nicht zu viel, nicht zu wenig)
-- Garzeiten anpassen
-- Tipps zur Topfwahl geben`;
+HINTERGRUND ZUM GERÄT "THE CONTROL FREAK":
+- Präzise Temperaturregelung in °C (ca. 30 °C bis 250 °C, in 1-°C-Schritten)
+- Modus "Pan" (Temperatur am Pfannen-/Topfboden über Sensor) und Modus "Probe" (Temperatur des Garguts / der Flüssigkeit über externen Temperaturfühler)
+- Einstellbare Aufheizintensität (Heat-up Intensity, Stufe 1 = sehr sanft bis 10 = maximal schnell)
+- Integrierter Timer
+
+AUFGABE:
+1. Ermittle für JEDEN Schritt des Rezepts, bei dem Hitze im Spiel ist, die geeignete Einstellung für Pfanne bzw. Topf.
+2. Berücksichtige dabei das Kochgeschirr (Pfanne oder Topf), das Gargut und die Garmethode (z.B. Anbraten, Schmelzen, Karamellisieren, Köcheln, Simmern, Pochieren, Frittieren, Reduzieren, Warmhalten).
+3. Wenn ein Schritt eine Temperaturentwicklung erfordert (z.B. erst scharf anbraten, dann herunterregeln; langsam erhitzen; Temperatur stufenweise steigern), gib eine Temperaturkurve mit den einzelnen Phasen, Temperaturen und Dauern an.
+4. Füge diese Einstellungen jeweils DIREKT VOR dem zugehörigen Schritt ein.
+5. Schritte ohne Hitze (z.B. Schneiden, Mischen) bleiben unverändert und erhalten keine Einstellung.
+
+FORMAT DER EINGEFÜGTEN EINSTELLUNG (vor dem jeweiligen Schritt):
+
+> 🌡️ **Control Freak:** [Pfanne/Topf] · Modus [Pan/Probe] · **[Temperatur] °C** · Intensität [1–10] · Timer [Dauer, falls sinnvoll]
+
+Bei Temperaturkurven:
+
+> 🌡️ **Control Freak (Kurve):** [Pfanne/Topf] · Modus [Pan/Probe]
+> 1. **[Temperatur] °C** · Intensität [x] · [Dauer] – [kurzer Zweck, z.B. "anbraten"]
+> 2. **[Temperatur] °C** · Intensität [x] · [Dauer] – [kurzer Zweck, z.B. "köcheln lassen"]
+
+Danach folgt der Originalschritt exakt wie im Original.
+
+REGELN:
+- Der Originaltext wird 1:1 beibehalten (inkl. Zutatenliste, Überschriften und Reihenfolge)
+- Nur die Control-Freak-Einstellungen werden ergänzt
+- Verwende realistische, für das Gerät geeignete Temperaturen
+- Keine zusätzlichen Erklärungen, keine Tipps, keine Variationen außerhalb der eingefügten Einstellungen`;
       break;
     case 'recipeDevice': {
       const selectedDevice = summaryType;
