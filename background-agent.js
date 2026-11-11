@@ -34,15 +34,34 @@ In jedem Schritt analysierst du:
    {"type": "ask_user", "question": "Welche Option bevorzugst du?"}
 7. **finish**: Beendet den Task erfolgreich oder mit Begründung.
    {"type": "finish", "message": "Zusammenfassung des Ergebnisses", "success": true}
+8. **group_tabs**: Fasst Browser-Tabs in einer benannten, farbigen Chrome Tab-Gruppe zusammen.
+   {"type": "group_tabs", "tabIds": [101, 102], "groupTitle": "Recherche: Preisvergleich", "color": "blue"}
+9. **close_tabs**: Schließt redundante oder nicht mehr benötigte Tabs (erfordert Bestätigung).
+   {"type": "close_tabs", "tabIds": [105], "reason": "Redundante Quelle"}
+10. **switch_tab**: Wechselt den aktiven Tab zu einem anderen geöffneten Tab.
+   {"type": "switch_tab", "tabId": 102}
+11. **open_tab**: Öffnet eine neue URL in einem Hintergrund-Tab.
+   {"type": "open_tab", "url": "https://example.com/spec", "active": false}
 
 ### SICHERHEITS- & BETRIEBSREGELN:
 1. **Destruktive Aktionen**: Klicke NIEMALS unbedacht auf Kauf-, Bezahl- oder Löschbuttons ("Kaufen", "Bestellen", "Delete", "Confirm Payment").
 2. **Selektoren**: Nutze die stabilen Selektoren aus dem DOM-Snapshot (vorrangig [data-agent-id="..."], ID oder name).
 3. **Schritt-Limit**: 100 Schritte pro Batch.
-4. **WICHTIG FÜR DIE FINALE ANTWORT**:
-   - Wenn du fertig bist (Aktion "finish" oder "finalMessage"), MUSS die Nachricht ("message") eine saubere, übersichtliche, gut strukturierte Antwort für den Nutzer sein (z.B. mit Aufzählungspunkten, Absätzen oder Tabellen).
+4. **Tab-Gruppierung**: Beim Gruppieren von Tabs ("group_tabs") wähle prägnante Gruppentitel und Farben ("blue", "green", "purple", "cyan", "yellow", "orange", "red", "pink", "grey").
+5. **WICHTIG FÜR DIE FINALE ANTWORT**:
+   - Wenn du fertig bist (Aktion "finish" oder "finalMessage"), MUSS die Nachricht ("message") eine saubere, übersichtliche, gut strukturierte Antwort für den Nutzer sein (z.B. mit Aufzählungspunkten, Absätzen oder Markdown-Tabellen).
    - Die finale Textantwort darf KEINERLEI Hinweise auf den internen Denkverlauf ("thought") oder Metakommentare enthalten (kein "Ich habe analysiert...", kein "Thought:", kein "Mein Gedanke war...").
    - Es wird ausschließlich das fertige, nützliche und strukturierte Endergebnis präsentiert!
+
+### STRUKTURIERTE SYNTHESE-WORKFLOWS & AUSGABEFORMATE:
+- **Decision Brief**:
+  Wenn der Nutzer nach einem Vergleich, einer Kauf-/Auswahlempfehlung oder einem "Decision Brief" fragt, strukturiere deine finale "finish"-Nachricht ("message") zwingend wie folgt:
+  1. 🎯 **Executive Summary & Handlungsempfehlung**: Kernaussage & klare Kauf-/Auswahlempfehlung in 2-3 Sätzen.
+  2. 📊 **Entscheidungsmatrix**: Eine saubere Markdown-Tabelle (| Kriterium | Option A | Option B | ... | Bewertung / Sieger |) mit standardisierten Dimensionen.
+  3. ⚖️ **Trade-offs & Risiken**: Warum Option A gewählt werden sollte vs. wann Option B besser passt.
+  4. 📌 **Quellen-Referenzen**: Konkrete Zuordnung, welche Daten aus welchem Tab stammen.
+- **Tabellen-Vergleiche**:
+  Nutze saubere Markdown-Tabellen (| Spalte 1 | Spalte 2 |), wenn Produkte, Preise oder Spezifikationen gegenübergestellt werden.
 
 ### ANTWORT-FORMAT:
 Du MUSST ausnahmslos in validem JSON antworten (keine Markdown-Backticks außerhalb).
@@ -50,7 +69,7 @@ Schema:
 {
   "thought": "Prägnante Analyse und Begründung für die nächste Aktion.",
   "action": {
-    "type": "click" | "type" | "scroll" | "navigate" | "wait" | "finish" | "ask_user",
+    "type": "click" | "type" | "scroll" | "navigate" | "wait" | "finish" | "ask_user" | "group_tabs" | "close_tabs" | "switch_tab" | "open_tab",
     "selector": "CSS-Selektor",
     "text": "Eingabetext (nur bei type)",
     "pressEnter": true,
@@ -59,6 +78,11 @@ Schema:
     "distance": 500,
     "url": "https://...",
     "durationMs": 1000,
+    "tabIds": [101, 102],
+    "groupTitle": "Gruppentitel",
+    "color": "blue",
+    "tabId": 102,
+    "reason": "Begründung",
     "message": "Strukturierte, saubere Ergebnisantwort ohne Denkverlauf-Erwähnung (nur bei finish)",
     "success": true,
     "question": "Frage"
@@ -142,13 +166,13 @@ class BackgroundAgentManager {
     return this.currentState;
   }
 
-  async getNextStep(snapshot, lastObservation) {
+  async getNextStep(snapshot, lastObservation, crossTabSummaries, availableTabs) {
     if (!this.currentState) {
       throw new Error('Kein aktiver Task vorhanden.');
     }
 
     const config = await this.getConfig();
-    const prompt = this.buildPrompt(this.currentState, snapshot, lastObservation);
+    const prompt = this.buildPrompt(this.currentState, snapshot, lastObservation, crossTabSummaries, availableTabs);
 
     const llmResponse = await this.callOpenRouterWithRetry(config.apiKey, this.currentState.model, prompt);
     const requiresConfirmation = this.checkSafety(llmResponse.action, snapshot);
@@ -194,10 +218,19 @@ class BackgroundAgentManager {
       }
     }
 
+    if (action.type === 'close_tabs') {
+      const count = action.tabIds && action.tabIds.length ? action.tabIds.length : 1;
+      return {
+        action,
+        reason: `Der Autopilot möchte ${count} Tab(s) schließen (${action.reason || 'Bereinigung'}). Bestätigen?`,
+        riskLevel: 'medium',
+      };
+    }
+
     return null;
   }
 
-  buildPrompt(state, snapshot, lastObservation) {
+  buildPrompt(state, snapshot, lastObservation, crossTabSummaries, availableTabs) {
     const formattedElements = (snapshot.elements || []).map(el => {
       const parts = [
         el.tagName,
@@ -213,6 +246,22 @@ class BackgroundAgentManager {
       return `Schritt ${s.stepNumber}:\n  Gedanke: ${s.thought}\n  Aktion: ${JSON.stringify(s.action)}\n  Beobachtung: ${s.observation || 'OK'}`;
     }).join('\n\n');
 
+    let multiTabSection = '';
+    if (crossTabSummaries && crossTabSummaries.length > 0) {
+      multiTabSection = `\n### CROSS-TAB-KONTEXT (Inhalte aus ${crossTabSummaries.length} weiteren ausgewählten Tabs):\n`;
+      crossTabSummaries.forEach((tab, idx) => {
+        multiTabSection += `\n--- Tab [${idx + 1}] "${tab.title}" | ${tab.url} ---\n${tab.content.substring(0, 3000)}\n`;
+      });
+    }
+
+    let openTabsSection = '';
+    if (availableTabs && availableTabs.length > 0) {
+      openTabsSection = `\n### GEÖFFNETE BROWSER-TABS IM AKTUELLEN FENSTER:\n`;
+      availableTabs.forEach(t => {
+        openTabsSection += `- [Tab-ID: ${t.id}] "${t.title}" | ${t.url}${t.active ? ' [AKTIV]' : ''}\n`;
+      });
+    }
+
     return `### ZIEL DES NUTZERS:
 "${state.goal}"
 
@@ -223,14 +272,81 @@ class BackgroundAgentManager {
 ### BISHERIGER VERLAUF:
 ${historyText || 'Noch keine vorherigen Schritte.'}
 
-${lastObservation ? `### LETZTE BEOBACHTUNG:\n${lastObservation}\n` : ''}
-
-### INTERAKTIVE ELEMENTE AUF DER SEITE:
+${lastObservation ? `### LETZTE BEOBACHTUNG:\n${lastObservation}\n` : ''}${openTabsSection}${multiTabSection}
+### INTERAKTIVE ELEMENTE AUF DER AKTIVEN SEITE:
 ${formattedElements}
 
 ${snapshot.textSummary ? `### SEITENTEXT-AUSZUG:\n${snapshot.textSummary}\n` : ''}
 
 Antworte ausschließlich im definierten JSON-Format.`;
+  }
+
+  async executeBrowserAction(action) {
+    try {
+      switch (action.type) {
+        case 'group_tabs': {
+          let tabIds = action.tabIds && action.tabIds.length ? action.tabIds : [];
+          if (!tabIds.length) {
+            const currentTabs = await chrome.tabs.query({ currentWindow: true });
+            tabIds = currentTabs.filter(t => t.id !== undefined).map(t => t.id);
+          }
+          if (!tabIds.length) {
+            return { success: false, observation: 'Keine Tabs zum Gruppieren gefunden.' };
+          }
+          const groupId = await chrome.tabs.group({ tabIds });
+          if (action.groupTitle) {
+            await chrome.tabGroups.update(groupId, {
+              title: action.groupTitle,
+              color: action.color || 'blue',
+              collapsed: !!action.collapsed,
+            });
+          }
+          return {
+            success: true,
+            observation: `Erfolgreich ${tabIds.length} Tabs in Gruppe "${action.groupTitle || 'Gruppe'}" (${action.color || 'blue'}) zusammengefasst.`,
+          };
+        }
+
+        case 'close_tabs': {
+          if (!action.tabIds || !action.tabIds.length) {
+            return { success: false, observation: 'Keine Tab-IDs zum Schließen angegeben.' };
+          }
+          await chrome.tabs.remove(action.tabIds);
+          return {
+            success: true,
+            observation: `Erfolgreich ${action.tabIds.length} Tab(s) geschlossen.`,
+          };
+        }
+
+        case 'switch_tab': {
+          await chrome.tabs.update(action.tabId, { active: true });
+          return {
+            success: true,
+            observation: `Zu Tab #${action.tabId} gewechselt.`,
+          };
+        }
+
+        case 'open_tab': {
+          await chrome.tabs.create({ url: action.url, active: !!action.active });
+          return {
+            success: true,
+            observation: `Neuer Tab mit URL "${action.url}" geöffnet.`,
+          };
+        }
+
+        default:
+          return {
+            success: false,
+            observation: `Nicht unterstützte Browser-Aktion: ${action.type}`,
+          };
+      }
+    } catch (err) {
+      return {
+        success: false,
+        observation: `Fehler bei Browser-Aktion: ${err.message}`,
+        error: err.message,
+      };
+    }
   }
 
   async callOpenRouterWithRetry(apiKey, model, userPrompt, maxRetries = 3) {

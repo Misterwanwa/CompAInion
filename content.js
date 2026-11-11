@@ -273,7 +273,9 @@ const ACTION_LIST = [
   { label: 'Motivation', key: 'motivation', implemented: true },
   { label: 'Plagiatscheck', key: 'plagiarism', implemented: true },
   { label: 'Präsentation erstellen', key: 'createPresentation', implemented: true },
-  { label: '🚧 Preisvergleich', key: 'priceCompare', implemented: false },
+  { label: '📊 Decision Brief', key: 'decisionBrief', implemented: true },
+  { label: '⚖️ Tab- & Preisvergleich', key: 'priceCompare', implemented: true },
+  { label: '🗂️ Tabs organisieren', key: 'organizeTabs', implemented: true },
   { label: 'Vor- und Nachteile', key: 'productProsCons', implemented: true },
   { label: 'Quiz erstellen', key: 'createQuiz', implemented: true },
   { label: 'Rezept', key: 'recipe', hasSubmenu: true, implemented: true },
@@ -453,8 +455,41 @@ function showContextMenu(e) {
 
   const titlebar = document.createElement('div');
   titlebar.id = 'gemini-menu-titlebar';
-  titlebar.innerHTML = '<div id="gemini-menu-logo">✨</div><span id="gemini-menu-title">AI Befehlsmenue</span>';
+  const selectedTabs = window.__compainionSelectedTabIds || [];
+  const tabBtnText = selectedTabs.length > 1 ? `${selectedTabs.length} Tabs` : '1 Tab';
+  titlebar.innerHTML = `
+    <div id="gemini-menu-logo">✨</div>
+    <span id="gemini-menu-title">AI Befehlsmenue</span>
+    <button id="gemini-menu-tab-btn" class="gemini-menu-tab-btn ${selectedTabs.length > 1 ? 'has-multi' : ''}" title="Tabs für Multi-Tab Kontext & Vergleiche auswählen">📑 <span id="gemini-menu-tab-badge">${tabBtnText}</span></button>
+  `;
   menu.appendChild(titlebar);
+
+  // Tab-Auswahl-Panel im Menü
+  const tabPanel = document.createElement('div');
+  tabPanel.id = 'gemini-tab-panel';
+  tabPanel.className = 'gemini-tab-panel';
+  tabPanel.style.display = 'none';
+  tabPanel.innerHTML = `
+    <div class="gemini-tab-panel-header">
+      <span>Tabs für Kontext & Vergleich:</span>
+      <div style="display:flex;gap:4px;">
+        <button id="gemini-tabs-all" class="gemini-tab-mini-btn" type="button">Alle</button>
+        <button id="gemini-tabs-reset" class="gemini-tab-mini-btn" type="button">Reset</button>
+      </div>
+    </div>
+    <div id="gemini-tab-list" class="gemini-tab-list">Lade Tabs...</div>
+  `;
+  menu.appendChild(tabPanel);
+
+  const tabBtn = titlebar.querySelector('#gemini-menu-tab-btn');
+  tabBtn?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const isOpen = tabPanel.style.display === 'block';
+    tabPanel.style.display = isOpen ? 'none' : 'block';
+    if (!isOpen) {
+      loadTabsIntoMenuPanel(tabPanel);
+    }
+  });
 
   const searchWrap = document.createElement('div');
   searchWrap.id = 'gemini-menu-search-wrap';
@@ -590,6 +625,88 @@ function showContextMenu(e) {
   menu.style.top = top + 'px';
 
   setTimeout(() => document.addEventListener('click', closeMenu), 0);
+}
+
+function loadTabsIntoMenuPanel(panel) {
+  const listElem = panel.querySelector('#gemini-tab-list');
+  if (!listElem) return;
+
+  listElem.innerHTML = '<div style="padding: 10px; font-size: 11px; text-align: center; color: #64748b;">Lade Tabs...</div>';
+
+  chrome.runtime.sendMessage({ action: 'AGENT_GET_TABS' }, (resp) => {
+    if (!resp || !resp.success || !Array.isArray(resp.tabs)) {
+      listElem.innerHTML = '<div style="padding: 10px; font-size: 11px; color: #ef4444;">Tabs nicht erreichbar</div>';
+      return;
+    }
+
+    const tabs = resp.tabs;
+    if (!window.__compainionSelectedTabIds || window.__compainionSelectedTabIds.length === 0) {
+      const active = tabs.find(t => t.active);
+      window.__compainionSelectedTabIds = active ? [active.id] : (tabs[0] ? [tabs[0].id] : []);
+    }
+
+    const render = () => {
+      listElem.innerHTML = tabs.map(t => {
+        const isChecked = window.__compainionSelectedTabIds.includes(t.id);
+        const fav = t.favIconUrl ? `<img src="${t.favIconUrl}" style="width:13px;height:13px;border-radius:2px;flex-shrink:0;" onerror="this.style.display='none'" />` : '🌐';
+        let host = t.url;
+        try { host = new URL(t.url).hostname; } catch(e) {}
+        return `
+          <label style="display:flex;align-items:center;gap:6px;padding:4px 6px;border-radius:4px;font-size:11px;cursor:pointer;background:${isChecked ? 'rgba(16,185,129,0.12)' : 'transparent'};">
+            <input type="checkbox" class="gemini-tab-item-cb" value="${t.id}" ${isChecked ? 'checked' : ''} style="margin:0;" />
+            ${fav}
+            <div style="flex:1;min-width:0;display:flex;flex-direction:column;">
+              <span style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${t.title || 'Tab'}</span>
+              <span style="font-size:9px;color:#64748b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${host}</span>
+            </div>
+            ${t.active ? '<span style="font-size:9px;font-weight:700;color:#0284c7;background:rgba(37,140,251,0.15);padding:1px 3px;border-radius:3px;">Aktiv</span>' : ''}
+          </label>
+        `;
+      }).join('');
+
+      listElem.querySelectorAll('.gemini-tab-item-cb').forEach(cb => {
+        cb.addEventListener('change', (e) => {
+          const tid = parseInt(e.target.value, 10);
+          if (e.target.checked) {
+            if (!window.__compainionSelectedTabIds.includes(tid)) window.__compainionSelectedTabIds.push(tid);
+          } else {
+            window.__compainionSelectedTabIds = window.__compainionSelectedTabIds.filter(id => id !== tid);
+          }
+          updateMenuTabBadge();
+          render();
+        });
+      });
+    };
+
+    render();
+
+    panel.querySelector('#gemini-tabs-all')?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      window.__compainionSelectedTabIds = tabs.map(t => t.id);
+      updateMenuTabBadge();
+      render();
+    });
+
+    panel.querySelector('#gemini-tabs-reset')?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const active = tabs.find(t => t.active);
+      window.__compainionSelectedTabIds = active ? [active.id] : (tabs[0] ? [tabs[0].id] : []);
+      updateMenuTabBadge();
+      render();
+    });
+  });
+}
+
+function updateMenuTabBadge() {
+  const badge = document.getElementById('gemini-menu-tab-badge');
+  const btn = document.getElementById('gemini-menu-tab-btn');
+  const count = window.__compainionSelectedTabIds ? window.__compainionSelectedTabIds.length : 1;
+  if (badge) {
+    badge.textContent = count > 1 ? `${count} Tabs` : '1 Tab';
+  }
+  if (btn) {
+    btn.classList.toggle('has-multi', count > 1);
+  }
 }
 
 function attachMenuItemListeners(container, menu, isSubmenu = false) {
@@ -1858,7 +1975,52 @@ Erstelle eine Vergleichsübersicht mit:
    - Vor- und Nachteile-Übersicht`;
       break;
     case 'priceCompare':
-      promptText = `Preisvergleich fuer: ${context.url}\n\n${context.text.substring(0, 4000)}\n\nIst der Preis fair? Alternativen?`;
+      promptText = `Du bist ein professioneller Einkaufs- und Preisvergleichs-Experte.
+Führe einen präzisen, tabellenbasierten Preis- und Angebotsvergleich durch.
+
+Ziel:
+- Vergleiche die Produkte, Tarife oder Dienstleistungen auf dieser Seite (und etwaigen weiteren ausgewählten Tabs)
+- Stelle Preise, Zusatzkosten/Versand, Leistungsmerkmale und Konditionen strukturiert gegenüber
+- Ermittle das objektiv beste Preis-Leistungs-Verhältnis und gib eine klare Kaufempfehlung
+
+URL: ${context.url}
+
+Inhalt:
+"""
+${context.text.substring(0, 5000)}
+"""
+
+Format:
+1. 🎯 **Empfehlung**: Welches Angebot ist der Preis-Leistungs-Sieger? (2-3 Sätze)
+2. 📊 **Vergleichstabelle**:
+   | Anbieter / Option | Preis / Tarif | Kernfeatures / Umfang | Vorteile | Nachteile | Bewertung |
+   |---|---|---|---|---|---|
+3. 💡 **Spar-Tipps & Alternativen**: Gibt es Gutscheine, Rabattstufen oder günstigere Alternativen?
+4. ⚠️ **Versteckte Kosten & Haken**: Versand, Abos, Laufzeiten oder Einschränkungen.`;
+      break;
+
+    case 'decisionBrief':
+      promptText = `Erstelle einen hochprofessionellen "Decision Brief" (Entscheidungsvorlage) basierend auf den vorliegenden Inhalten und Tabs.
+
+URL: ${context.url}
+
+Inhalt:
+"""
+${context.text.substring(0, 5000)}
+"""
+
+Strukturiere deine Antwort streng wie folgt:
+1. 🎯 **Executive Summary & Handlungsempfehlung**: Prägnante Kernaussage und konkrete Handlungsempfehlung für Entscheider (max. 3 Sätze).
+2. 📊 **Entscheidungsmatrix**:
+   | Kriterium | Option A | Option B | ... | Bewertung / Sieger |
+   |---|---|---|---|---|
+3. ⚖️ **Trade-offs & Risiken**: Warum Option A gewählt werden sollte vs. wann Option B besser passt; Dealbreaker & Fallstricke.
+4. 📌 **Quellen-Referenzen & Fazit**: Konkrete Zuordnung, welche Fakten aus welchen Quellen stammen, und die nächsten Schritte.`;
+      break;
+
+    case 'organizeTabs':
+      promptText = `Analysiere alle vorliegenden Tabs und Recherche-Stränge.
+Schlage eine saubere, thematische Gruppierung für die Tabs vor (inklusive prägnanter Gruppen-Namen und Farben) und liste auf, welche Tabs in welche Tab-Gruppe gehören und welche redundanten Tabs geschlossen werden können.`;
       break;
     case 'productProsCons':
       promptText = `Analysiere den folgenden Text, die Website, das Produkt, die Nachricht oder den Artikel und erstelle eine Liste der Vor- und Nachteile.
@@ -3132,25 +3294,52 @@ FAZIT
   }
 
   if (promptText) {
-    if (clipboardOnly) {
-      navigator.clipboard.writeText(promptText).then(() => showToast('Prompt kopiert!'));
-      return;
-    }
-    chrome.storage.sync.get(['toneMimic'], (result) => {
-      const toneMimic = result.toneMimic || '';
-      const fullPrompt = toneMimic.trim() ? `${promptText}\n\nTon: ${toneMimic.trim()}` : promptText;
-      getAiConfig((config) => {
-        if (config.type === 'local') {
-          sendToLocalLlm(config, fullPrompt, 'silent').then(response => {
-            showResponseModal(response);
+    const executeSend = async () => {
+      let finalPromptText = promptText;
+      if (window.__compainionSelectedTabIds && window.__compainionSelectedTabIds.length > 1) {
+        try {
+          const extResp = await new Promise((resolve) => {
+            chrome.runtime.sendMessage(
+              {
+                action: 'AGENT_EXTRACT_MULTI_TAB_CONTENT',
+                tabIds: window.__compainionSelectedTabIds,
+              },
+              (res) => resolve(res)
+            );
           });
-        } else {
-          chrome.storage.local.set({ pendingPrompt: fullPrompt }, () => {
-            window.open(config.url, '_blank');
-          });
+          if (extResp && extResp.success && Array.isArray(extResp.summaries) && extResp.summaries.length > 0) {
+            let multiBlock = `\n\n### CROSS-TAB-KONTEXT (Inhalte aus ${extResp.summaries.length} weiteren ausgewählten Tabs):\n`;
+            extResp.summaries.forEach((t, i) => {
+              multiBlock += `\n--- Tab [${i + 1}] "${t.title}" (${t.url}) ---\n${t.content.substring(0, 3000)}\n`;
+            });
+            finalPromptText += multiBlock;
+          }
+        } catch (e) {
+          console.warn('Cross-tab extraction error in menu:', e);
         }
+      }
+
+      if (clipboardOnly) {
+        navigator.clipboard.writeText(finalPromptText).then(() => showToast('Prompt kopiert!'));
+        return;
+      }
+      chrome.storage.sync.get(['toneMimic'], (result) => {
+        const toneMimic = result.toneMimic || '';
+        const fullPrompt = toneMimic.trim() ? `${finalPromptText}\n\nTon: ${toneMimic.trim()}` : finalPromptText;
+        getAiConfig((config) => {
+          if (config.type === 'local') {
+            sendToLocalLlm(config, fullPrompt, 'silent').then((response) => {
+              showResponseModal(response);
+            });
+          } else {
+            chrome.storage.local.set({ pendingPrompt: fullPrompt }, () => {
+              window.open(config.url, '_blank');
+            });
+          }
+        });
       });
-    });
+    };
+    executeSend();
   }
 }
 

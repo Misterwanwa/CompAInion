@@ -12,6 +12,7 @@
 import {
   AgentAction,
   AgentConfig,
+  BrowserTabInfo,
   OpenRouterModel,
   PendingConfirmation,
   TaskState,
@@ -36,13 +37,22 @@ export const ALL_AVAILABLE_PROMPTS = [
   { label: '🎯 Kernaussagen', prompt: 'Extrahiere die 3 wichtigsten Takeaways dieser Seite.' }
 ];
 
-export function getThreeRandomPrompts() {
-  const shuffled = [...ALL_AVAILABLE_PROMPTS].sort(() => 0.5 - Math.random());
+export const MULTI_TAB_PROMPTS = [
+  { label: '📊 Decision Brief', prompt: 'Erstelle einen strukturierten Decision Brief mit Kernaussage, normierter Entscheidungsmatrix, Trade-offs und Empfehlung basierend auf den ausgewählten Tabs.' },
+  { label: '⚖️ Tabs vergleichen', prompt: 'Vergleiche die Inhalte, Preise, Funktionen und Spezifikationen der ausgewählten Tabs in einer detaillierten Vergleichstabelle.' },
+  { label: '🗂️ Tabs organisieren', prompt: 'Analysiere alle offenen Tabs und gruppiere sie thematisch in sinnvolle, farbige Chrome Tab-Gruppen (group_tabs).' },
+  { label: '🏷️ Preisvergleich', prompt: 'Führe einen tabübergreifenden Preis- und Konditionenvergleich durch und ermittle das beste Angebot.' },
+  { label: '📑 Multi-Zusammenfassung', prompt: 'Fasse die wichtigsten Erkenntnisse und Kernaussagen aus allen ausgewählten Tabs in einer gemeinsamen Übersicht zusammen.' },
+];
+
+export function getThreeRandomPrompts(isMultiTab = false) {
+  const pool = isMultiTab ? MULTI_TAB_PROMPTS : ALL_AVAILABLE_PROMPTS;
+  const shuffled = [...pool].sort(() => 0.5 - Math.random());
   return shuffled.slice(0, 3);
 }
 
 export interface SidebarCallbacks {
-  onStartTask: (goal: string, model: string) => void;
+  onStartTask: (goal: string, model: string, selectedTabIds?: number[]) => void;
   onStopTask: () => void;
   onPauseTask: () => void;
   onResumeTask: () => void;
@@ -59,6 +69,9 @@ export class ChatSidebar {
   private selectedModel = 'anthropic/claude-3.5-haiku';
   private apiKey = '';
   private currentTheme = 'aero';
+  private selectedTabIds: number[] = [];
+  private availableTabs: BrowserTabInfo[] = [];
+  private isTabPopoverOpen = false;
 
   constructor(callbacks: SidebarCallbacks) {
     this.callbacks = callbacks;
@@ -192,6 +205,36 @@ export class ChatSidebar {
         ${chipsHtml}
       </div>
 
+      <!-- Context & Tab Selection Bar -->
+      <div class="compainion-context-bar">
+        <div class="compainion-tab-picker-wrapper">
+          <button class="compainion-tab-picker-btn" id="compainion-tab-picker-btn" type="button" title="Geöffnete Tabs für Cross-Tab-Kontext & Vergleiche auswählen">
+            <span class="compainion-tab-picker-icon">📑</span>
+            <span class="compainion-tab-picker-label" id="compainion-tab-picker-label">1 Tab aktiv</span>
+            <span class="compainion-tab-picker-arrow">▾</span>
+          </button>
+          <button class="compainion-tab-reset-btn" id="compainion-tab-reset-btn" type="button" title="Auf aktiven Tab zurücksetzen" style="display: none;">✕</button>
+
+          <!-- Popover Dropdown -->
+          <div class="compainion-tab-popover" id="compainion-tab-popover" style="display: none;">
+            <div class="compainion-tab-popover-header">
+              <span class="compainion-tab-popover-title">Tabs für Kontext auswählen</span>
+              <div class="compainion-tab-popover-quick">
+                <button type="button" id="compainion-tab-select-all" class="compainion-tab-quick-btn">Alle</button>
+                <button type="button" id="compainion-tab-select-none" class="compainion-tab-quick-btn">Nur aktiv</button>
+              </div>
+            </div>
+            <div class="compainion-tab-list" id="compainion-tab-list">
+              <div class="compainion-tab-list-loading">Lade offene Tabs...</div>
+            </div>
+            <div class="compainion-tab-popover-footer">
+              <span class="compainion-tab-count-hint" id="compainion-tab-count-hint">1 Tab ausgewählt</span>
+              <button type="button" id="compainion-tab-popover-done" class="compainion-tab-btn-done">Fertig</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Input Bar -->
       <div class="compainion-input-bar">
         <textarea id="compainion-prompt-input" class="compainion-prompt-textarea" placeholder="Was soll der Agent tun? (Enter zum Senden)" rows="1"></textarea>
@@ -209,8 +252,9 @@ export class ChatSidebar {
     const bar = this.container.querySelector('.compainion-suggestions-bar');
     if (!bar) return;
 
-    const randomChips = getThreeRandomPrompts();
-    bar.innerHTML = randomChips
+    const isMultiTab = this.selectedTabIds.length > 1;
+    const chips = getThreeRandomPrompts(isMultiTab);
+    bar.innerHTML = chips
       .map(
         (c) =>
           `<span class="compainion-suggestion-chip" data-prompt="${this.escapeHtml(c.prompt)}">${this.escapeHtml(c.label)}</span>`
@@ -245,6 +289,32 @@ export class ChatSidebar {
     // Settings Toggle
     this.container.querySelector('#compainion-btn-settings')?.addEventListener('click', () => {
       this.toggleSettings();
+    });
+
+    // Tab Picker Popover Toggle
+    this.container.querySelector('#compainion-tab-picker-btn')?.addEventListener('click', () => {
+      this.toggleTabPopover();
+    });
+
+    // Tab Reset
+    this.container.querySelector('#compainion-tab-reset-btn')?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      this.resetTabSelection();
+    });
+
+    // Tab Popover Done
+    this.container.querySelector('#compainion-tab-popover-done')?.addEventListener('click', () => {
+      this.toggleTabPopover(false);
+    });
+
+    // Tab Select All
+    this.container.querySelector('#compainion-tab-select-all')?.addEventListener('click', () => {
+      this.selectAllTabs();
+    });
+
+    // Tab Select Active Only
+    this.container.querySelector('#compainion-tab-select-none')?.addEventListener('click', () => {
+      this.resetTabSelection();
     });
 
     // Save API Key
@@ -315,10 +385,166 @@ export class ChatSidebar {
 
     promptInput.value = '';
     this.addUserMessage(text);
-    this.callbacks.onStartTask(text, this.selectedModel);
+    this.callbacks.onStartTask(text, this.selectedModel, this.selectedTabIds);
   }
 
   // ------------------ PUBLIC CONTROLS ------------------
+
+  public getSelectedTabIds(): number[] {
+    return this.selectedTabIds;
+  }
+
+  public getAvailableTabs(): BrowserTabInfo[] {
+    return this.availableTabs;
+  }
+
+  public setSelectedTabIds(tabIds: number[]): void {
+    this.selectedTabIds = tabIds;
+    this.updateTabSelectionUI();
+  }
+
+  private toggleTabPopover(force?: boolean): void {
+    const popover = this.container?.querySelector('#compainion-tab-popover') as HTMLElement;
+    if (!popover) return;
+    this.isTabPopoverOpen = force !== undefined ? force : !this.isTabPopoverOpen;
+    popover.style.display = this.isTabPopoverOpen ? 'flex' : 'none';
+
+    if (this.isTabPopoverOpen) {
+      this.refreshTabList();
+    }
+  }
+
+  private async refreshTabList(): Promise<void> {
+    const listElem = this.container?.querySelector('#compainion-tab-list') as HTMLElement;
+    if (!listElem) return;
+
+    listElem.innerHTML = '<div class="compainion-tab-list-loading">Lade offene Tabs...</div>';
+
+    try {
+      chrome.runtime.sendMessage({ action: 'AGENT_GET_TABS' }, (resp) => {
+        if (!resp || !resp.success || !Array.isArray(resp.tabs)) {
+          listElem.innerHTML = '<div class="compainion-tab-list-loading">Tabs konnten nicht geladen werden.</div>';
+          return;
+        }
+
+        this.availableTabs = resp.tabs as BrowserTabInfo[];
+
+        // Wenn noch keine Tabs gewählt wurden, aktiven Tab als Standard setzen
+        if (this.selectedTabIds.length === 0) {
+          const active = this.availableTabs.find((t) => t.active);
+          if (active) {
+            this.selectedTabIds = [active.id];
+          } else if (this.availableTabs.length > 0) {
+            this.selectedTabIds = [this.availableTabs[0].id];
+          }
+        }
+
+        this.renderTabList();
+        this.updateTabSelectionUI();
+      });
+    } catch {
+      listElem.innerHTML = '<div class="compainion-tab-list-loading">Fehler beim Laden.</div>';
+    }
+  }
+
+  private renderTabList(): void {
+    const listElem = this.container?.querySelector('#compainion-tab-list') as HTMLElement;
+    if (!listElem) return;
+
+    if (!this.availableTabs.length) {
+      listElem.innerHTML = '<div class="compainion-tab-list-loading">Keine Web-Tabs geöffnet.</div>';
+      return;
+    }
+
+    listElem.innerHTML = this.availableTabs
+      .map((tab) => {
+        const isChecked = this.selectedTabIds.includes(tab.id);
+        const fav = tab.favIconUrl
+          ? `<img class="compainion-tab-fav" src="${this.escapeHtml(tab.favIconUrl)}" onerror="this.style.display='none'" />`
+          : '<span class="compainion-tab-fav-fallback">🌐</span>';
+        const hostname = this.getHostname(tab.url);
+
+        return `
+          <label class="compainion-tab-item ${isChecked ? 'is-selected' : ''}">
+            <input type="checkbox" class="compainion-tab-cb" value="${tab.id}" ${isChecked ? 'checked' : ''} />
+            ${fav}
+            <div class="compainion-tab-info">
+              <span class="compainion-tab-title" title="${this.escapeHtml(tab.title)}">${this.escapeHtml(tab.title || 'Tab')}</span>
+              <span class="compainion-tab-url">${this.escapeHtml(hostname)}</span>
+            </div>
+            ${tab.active ? '<span class="compainion-tab-active-tag">Aktiv</span>' : ''}
+          </label>
+        `;
+      })
+      .join('');
+
+    listElem.querySelectorAll('.compainion-tab-cb').forEach((cb) => {
+      cb.addEventListener('change', (e) => {
+        const target = e.target as HTMLInputElement;
+        const tabId = parseInt(target.value, 10);
+        if (target.checked) {
+          if (!this.selectedTabIds.includes(tabId)) {
+            this.selectedTabIds.push(tabId);
+          }
+        } else {
+          this.selectedTabIds = this.selectedTabIds.filter((id) => id !== tabId);
+        }
+        target.closest('.compainion-tab-item')?.classList.toggle('is-selected', target.checked);
+        this.updateTabSelectionUI();
+      });
+    });
+  }
+
+  private selectAllTabs(): void {
+    this.selectedTabIds = this.availableTabs.map((t) => t.id);
+    this.renderTabList();
+    this.updateTabSelectionUI();
+  }
+
+  private resetTabSelection(): void {
+    const active = this.availableTabs.find((t) => t.active);
+    this.selectedTabIds = active ? [active.id] : (this.availableTabs[0] ? [this.availableTabs[0].id] : []);
+    this.renderTabList();
+    this.updateTabSelectionUI();
+  }
+
+  private updateTabSelectionUI(): void {
+    const label = this.container?.querySelector('#compainion-tab-picker-label') as HTMLElement;
+    const btn = this.container?.querySelector('#compainion-tab-picker-btn') as HTMLElement;
+    const resetBtn = this.container?.querySelector('#compainion-tab-reset-btn') as HTMLElement;
+    const hint = this.container?.querySelector('#compainion-tab-count-hint') as HTMLElement;
+
+    const count = this.selectedTabIds.length;
+    if (label) {
+      if (count <= 1) {
+        label.textContent = '1 Tab aktiv';
+      } else {
+        label.textContent = `${count} Tabs aktiv (Multi-Tab)`;
+      }
+    }
+
+    if (btn) {
+      btn.classList.toggle('has-multi-tabs', count > 1);
+    }
+
+    if (resetBtn) {
+      resetBtn.style.display = count > 1 ? 'inline-flex' : 'none';
+    }
+
+    if (hint) {
+      hint.textContent = `${count} von ${this.availableTabs.length || count} Tabs gewählt`;
+    }
+
+    this.renderRandomChips();
+  }
+
+  private getHostname(url: string): string {
+    try {
+      return new URL(url).hostname;
+    } catch {
+      return url.substring(0, 30);
+    }
+  }
 
   public show(): void {
     if (!this.container) {
@@ -429,6 +655,10 @@ export class ChatSidebar {
       wait: '⏳ Warten',
       finish: '🏁 Abschluss',
       ask_user: '❓ Frage',
+      group_tabs: '🗂️ Gruppe',
+      close_tabs: '🗑️ Tabs schließen',
+      switch_tab: '🔀 Tab wechseln',
+      open_tab: '🌐 Tab öffnen',
     };
 
     const actionText = this.formatActionDetails(step.action);
@@ -464,11 +694,26 @@ Beobachtung: ${this.escapeHtml(step.observation || 'Erfolgreich ausgeführt')}</
     card.innerHTML = `
       <div class="compainion-answer-header">
         <span class="compainion-answer-title">💡 Ergebnis</span>
+        <button class="compainion-copy-answer-btn" title="Ergebnis als Markdown kopieren">📋 Kopieren</button>
       </div>
       <div class="compainion-answer-body">
         ${this.formatStructuredAnswer(message)}
       </div>
     `;
+
+    const copyBtn = card.querySelector('.compainion-copy-answer-btn') as HTMLButtonElement;
+    copyBtn?.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(message);
+        const originalText = copyBtn.textContent;
+        copyBtn.textContent = '✓ Kopiert!';
+        setTimeout(() => {
+          copyBtn.textContent = originalText;
+        }, 1800);
+      } catch (err) {
+        console.warn('Clipboard copy failed:', err);
+      }
+    });
 
     history.appendChild(card);
     history.scrollTop = history.scrollHeight;
@@ -513,6 +758,9 @@ Beobachtung: ${this.escapeHtml(step.observation || 'Erfolgreich ausgeführt')}</
       .replace(/<thought>[\s\S]*?<\/thought>/gi, '')
       .trim();
 
+    // 0. Markdown-Tabellen vorab rendern
+    cleaned = this.parseMarkdownTables(cleaned);
+
     // 1. Code-Blöcke (```)
     cleaned = cleaned.replace(/```([a-z]*)\n([\s\S]*?)```/g, (_, _lang, code) => {
       return `<pre class="compainion-step-code"><code>${this.escapeHtml(code.trim())}</code></pre>`;
@@ -536,6 +784,14 @@ Beobachtung: ${this.escapeHtml(step.observation || 'Erfolgreich ausgeführt')}</
 
     for (const line of lines) {
       const trimmed = line.trim();
+      if (trimmed.startsWith('<div class="compainion-table-wrapper">') || trimmed.includes('compainion-table')) {
+        if (inList) {
+          formattedLines.push('</ul>');
+          inList = false;
+        }
+        formattedLines.push(trimmed);
+        continue;
+      }
       const isBullet = trimmed.startsWith('- ') || trimmed.startsWith('* ');
       const isNumbered = /^\d+\.\s/.test(trimmed);
 
@@ -559,6 +815,49 @@ Beobachtung: ${this.escapeHtml(step.observation || 'Erfolgreich ausgeführt')}</
     if (inList) formattedLines.push('</ul>');
 
     return formattedLines.join('');
+  }
+
+  private parseMarkdownTables(text: string): string {
+    const tableRegex = /((?:^[ \t]*\|[^\n]+\|[ \t]*\r?\n){2,})/gm;
+    return text.replace(tableRegex, (match) => {
+      const rows = match
+        .trim()
+        .split(/\r?\n/)
+        .map((r) => r.trim())
+        .filter(Boolean);
+      if (rows.length < 2) return match;
+
+      // Header row
+      const headerCells = rows[0]
+        .split('|')
+        .slice(1, -1)
+        .map((c) => this.escapeHtml(c.trim()));
+
+      // Separator row (must contain dashes)
+      if (!rows[1].includes('-')) return match;
+
+      const bodyRows = rows.slice(2);
+      let tableHtml = '<div class="compainion-table-wrapper"><table class="compainion-table"><thead><tr>';
+      headerCells.forEach((h) => {
+        tableHtml += `<th>${h}</th>`;
+      });
+      tableHtml += '</tr></thead><tbody>';
+
+      bodyRows.forEach((row) => {
+        const cells = row
+          .split('|')
+          .slice(1, -1)
+          .map((c) => this.escapeHtml(c.trim()));
+        tableHtml += '<tr>';
+        cells.forEach((c) => {
+          tableHtml += `<td>${c}</td>`;
+        });
+        tableHtml += '</tr>';
+      });
+
+      tableHtml += '</tbody></table></div>';
+      return `\n${tableHtml}\n`;
+    });
   }
 
   public showConfirmationDialog(confirmation: PendingConfirmation): void {
@@ -676,6 +975,14 @@ Beobachtung: ${this.escapeHtml(step.observation || 'Erfolgreich ausgeführt')}</
         return action.message;
       case 'ask_user':
         return action.question;
+      case 'group_tabs':
+        return `Tab-Gruppe "${action.groupTitle}" (${(action.tabIds || []).length} Tabs)`;
+      case 'close_tabs':
+        return `${action.tabIds.length} Tab(s) schließen (${action.reason || 'Bereinigung'})`;
+      case 'switch_tab':
+        return `Wechsel zu Tab #${action.tabId}`;
+      case 'open_tab':
+        return `Öffne URL: ${action.url}`;
       default:
         return '';
     }

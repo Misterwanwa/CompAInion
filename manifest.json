@@ -1,14 +1,15 @@
 {
   "manifest_version": 3,
   "name": "Gemini Chat Overlay",
-  "version": "2.10.1",
+  "version": "2.11.0",
   "description": "Chat mit Gemini auf jeder Website",
   "permissions": [
     "activeTab",
     "scripting",
     "storage",
     "contextMenus",
-    "tabs"
+    "tabs",
+    "tabGroups"
   ],
   "host_permissions": [
     "http://localhost/*",

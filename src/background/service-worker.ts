@@ -5,7 +5,13 @@
  */
 
 import { AgentCore } from '../agent/agent-core';
-import { AgentConfig, DOMSnapshot } from '../types/agent';
+import {
+  AgentAction,
+  AgentConfig,
+  BrowserTabInfo,
+  DOMSnapshot,
+  TabContentSummary,
+} from '../types/agent';
 
 const agentCore = new AgentCore();
 
@@ -57,9 +63,11 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === 'AGENT_GET_NEXT_STEP') {
     const snapshot = request.snapshot as DOMSnapshot;
     const lastObservation = request.lastObservation as string | undefined;
+    const crossTabSummaries = request.crossTabSummaries as TabContentSummary[] | undefined;
+    const availableTabs = request.availableTabs as BrowserTabInfo[] | undefined;
 
     agentCore
-      .getNextStep(snapshot, lastObservation)
+      .getNextStep(snapshot, lastObservation, crossTabSummaries, availableTabs)
       .then(({ llmResponse, requiresConfirmation }) => {
         const state = agentCore.getState();
         if (requiresConfirmation) {
@@ -159,7 +167,120 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     return true;
   }
 
-  // 9. Kompatibilität mit bisherigen CompAInion Funktionen
+  // 9. Tab-Liste für Multi-Tab Kontext & Automatisierung
+  if (request.action === 'AGENT_GET_TABS') {
+    chrome.tabs.query({ currentWindow: true }, (tabs) => {
+      if (chrome.runtime.lastError) {
+        sendResponse({ success: false, error: chrome.runtime.lastError.message, tabs: [] });
+        return;
+      }
+      const valid: BrowserTabInfo[] = (tabs || [])
+        .filter(
+          (t) =>
+            t.id !== undefined &&
+            t.url &&
+            !t.url.startsWith('chrome://') &&
+            !t.url.startsWith('chrome-extension://') &&
+            !t.url.startsWith('edge://') &&
+            !t.url.startsWith('about:')
+        )
+        .map((t) => ({
+          id: t.id as number,
+          title: t.title || 'Tab',
+          url: t.url as string,
+          favIconUrl: t.favIconUrl,
+          active: !!t.active,
+          groupId: t.groupId,
+        }));
+      sendResponse({ success: true, tabs: valid });
+    });
+    return true; // async
+  }
+
+  // 10. Multi-Tab Inhalts-Extraktion (Text-Zusammenfassungen für Cross-Tab-Prompts)
+  if (request.action === 'AGENT_EXTRACT_MULTI_TAB_CONTENT') {
+    const tabIds = (request.tabIds || []) as number[];
+    if (!tabIds.length) {
+      sendResponse({ success: true, summaries: [] });
+      return false;
+    }
+
+    Promise.all(
+      tabIds.map(async (tabId) => {
+        try {
+          // 1. Erst versuchen Nachricht an existierendes Content-Script zu senden
+          const direct = await new Promise<TabContentSummary | null>((resolve) => {
+            chrome.tabs.sendMessage(tabId, { action: 'AGENT_GET_PAGE_SUMMARY' }, (resp) => {
+              if (chrome.runtime.lastError || !resp || !resp.content) {
+                resolve(null);
+              } else {
+                resolve({
+                  tabId,
+                  title: resp.title || 'Tab',
+                  url: resp.url || '',
+                  content: resp.content,
+                });
+              }
+            });
+          });
+          if (direct) return direct;
+
+          // 2. Fallback via scripting.executeScript
+          const executed = await chrome.scripting.executeScript({
+            target: { tabId },
+            func: () => {
+              const headings = Array.from(document.querySelectorAll('h1, h2, h3'))
+                .map((h) => (h.textContent || '').trim().replace(/\s+/g, ' '))
+                .filter((t) => t.length > 5)
+                .slice(0, 8);
+
+              const paras = Array.from(document.querySelectorAll('main p, article p, p'))
+                .map((p) => (p.textContent || '').trim().replace(/\s+/g, ' '))
+                .filter((t) => t.length > 20)
+                .slice(0, 8);
+
+              return {
+                title: document.title || 'Tab',
+                url: window.location.href,
+                content: [...headings, ...paras].join('\n\n').substring(0, 3000),
+              };
+            },
+          });
+
+          if (executed && executed[0] && executed[0].result) {
+            return {
+              tabId,
+              title: executed[0].result.title,
+              url: executed[0].result.url,
+              content: executed[0].result.content,
+            };
+          }
+        } catch (err) {
+          console.warn(`[ServiceWorker] Extraction failed for tab ${tabId}:`, err);
+        }
+        return null;
+      })
+    )
+      .then((results) => {
+        const summaries = results.filter((r): r is TabContentSummary => r !== null);
+        sendResponse({ success: true, summaries });
+      })
+      .catch((err: Error) => {
+        sendResponse({ success: false, error: err.message, summaries: [] });
+      });
+    return true; // async
+  }
+
+  // 11. Native Browser-Aktionen (Tab-Gruppierung, Schließen, Wechseln, Öffnen)
+  if (request.action === 'AGENT_EXECUTE_BROWSER_ACTION') {
+    const action = request.agentAction as AgentAction;
+    executeBrowserAction(action)
+      .then((res) => sendResponse(res))
+      .catch((err: Error) => sendResponse({ success: false, error: err.message }));
+    return true; // async
+  }
+
+  // 12. Kompatibilität mit bisherigen CompAInion Funktionen
   if (request.action === 'summarizeWithCloud') {
     const { prompt, config } = request;
     chrome.storage.local.set({ pendingPrompt: prompt }, () => {
@@ -197,5 +318,79 @@ function updateBadge(tabId: number | undefined, text: string): void {
     chrome.action.setBadgeBackgroundColor({ tabId, color: '#64748b' });
   } else if (text === 'DONE') {
     chrome.action.setBadgeBackgroundColor({ tabId, color: '#3b82f6' });
+  }
+}
+
+async function executeBrowserAction(
+  action: AgentAction
+): Promise<{ success: boolean; observation: string; error?: string }> {
+  try {
+    switch (action.type) {
+      case 'group_tabs': {
+        const rawIds = action.tabIds && action.tabIds.length ? action.tabIds : [];
+        let tabIds = rawIds;
+        if (!tabIds.length) {
+          const currentTabs = await chrome.tabs.query({ currentWindow: true });
+          tabIds = currentTabs
+            .filter((t) => t.id !== undefined)
+            .map((t) => t.id as number);
+        }
+        if (!tabIds.length) {
+          return { success: false, observation: 'Keine Tabs zum Gruppieren gefunden.' };
+        }
+        const groupId = await chrome.tabs.group({ tabIds: tabIds as [number, ...number[]] });
+        if (action.groupTitle) {
+          await chrome.tabGroups.update(groupId, {
+            title: action.groupTitle,
+            color: action.color || 'blue',
+            collapsed: !!action.collapsed,
+          });
+        }
+        return {
+          success: true,
+          observation: `Erfolgreich ${tabIds.length} Tabs in Gruppe "${action.groupTitle || 'Gruppe'}" (${action.color || 'blue'}) zusammengefasst.`,
+        };
+      }
+
+      case 'close_tabs': {
+        if (!action.tabIds || !action.tabIds.length) {
+          return { success: false, observation: 'Keine Tab-IDs zum Schließen angegeben.' };
+        }
+        await chrome.tabs.remove(action.tabIds);
+        return {
+          success: true,
+          observation: `Erfolgreich ${action.tabIds.length} Tab(s) geschlossen.`,
+        };
+      }
+
+      case 'switch_tab': {
+        await chrome.tabs.update(action.tabId, { active: true });
+        return {
+          success: true,
+          observation: `Zu Tab #${action.tabId} gewechselt.`,
+        };
+      }
+
+      case 'open_tab': {
+        await chrome.tabs.create({ url: action.url, active: !!action.active });
+        return {
+          success: true,
+          observation: `Neuer Tab mit URL "${action.url}" geöffnet.`,
+        };
+      }
+
+      default:
+        return {
+          success: false,
+          observation: `Nicht unterstützte Browser-Aktion: ${(action as any).type}`,
+        };
+    }
+  } catch (err: unknown) {
+    const error = err as Error;
+    return {
+      success: false,
+      observation: `Fehler bei Browser-Aktion: ${error.message}`,
+      error: error.message,
+    };
   }
 }

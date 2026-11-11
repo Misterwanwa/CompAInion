@@ -7,11 +7,13 @@
 import {
   AgentAction,
   AgentConfig,
+  BrowserTabInfo,
   DOMSnapshot,
   isLLMResponse,
   LLMResponse,
   OpenRouterModel,
   PendingConfirmation,
+  TabContentSummary,
   TaskState,
   TaskStep,
 } from '../types/agent';
@@ -248,7 +250,9 @@ export class AgentCore {
    */
   public async getNextStep(
     snapshot: DOMSnapshot,
-    lastObservation?: string
+    lastObservation?: string,
+    crossTabSummaries?: TabContentSummary[],
+    availableTabs?: BrowserTabInfo[]
   ): Promise<{ llmResponse: LLMResponse; requiresConfirmation?: PendingConfirmation }> {
     if (!this.currentState) {
       throw new Error('Kein aktiver Task vorhanden.');
@@ -280,6 +284,8 @@ export class AgentCore {
       historySummary,
       domSnapshotText: formattedSnapshot,
       lastObservation,
+      crossTabSummaries,
+      availableTabs,
     });
 
     // LLM Anfrage mit Retry-Mechanismus
@@ -376,6 +382,16 @@ export class AgentCore {
           riskLevel: 'high',
         };
       }
+    }
+
+    // 4. Tabs schließen (Browser-Level Schutz)
+    if (action.type === 'close_tabs') {
+      const tabCount = action.tabIds && action.tabIds.length ? action.tabIds.length : 1;
+      return {
+        action,
+        reason: `Der Autopilot möchte ${tabCount} geöffnete(n) Tab(s) schließen (${action.reason || 'Bereinigung'}). Bestätigen?`,
+        riskLevel: 'medium',
+      };
     }
 
     return null;

@@ -118,7 +118,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         return false;
     } else if (request.action === 'AGENT_GET_NEXT_STEP') {
         if (typeof backgroundAgent !== 'undefined') {
-            backgroundAgent.getNextStep(request.snapshot, request.lastObservation)
+            backgroundAgent.getNextStep(request.snapshot, request.lastObservation, request.crossTabSummaries, request.availableTabs)
                 .then(res => sendResponse({ success: true, ...res, state: backgroundAgent.currentState }))
                 .catch(err => sendResponse({ success: false, error: err.message }));
             return true;
@@ -146,6 +146,79 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         if (typeof backgroundAgent !== 'undefined') {
             backgroundAgent.fetchModels()
                 .then(models => sendResponse({ success: true, models }))
+                .catch(err => sendResponse({ success: false, error: err.message }));
+            return true;
+        }
+        sendResponse({ success: false, error: 'Agent manager unavailable' });
+        return false;
+    } else if (request.action === 'AGENT_GET_TABS') {
+        chrome.tabs.query({ currentWindow: true }, (tabs) => {
+            if (chrome.runtime.lastError) {
+                sendResponse({ success: false, error: chrome.runtime.lastError.message, tabs: [] });
+                return;
+            }
+            const valid = (tabs || [])
+                .filter(t => t.id !== undefined && t.url && !t.url.startsWith('chrome://') && !t.url.startsWith('chrome-extension://') && !t.url.startsWith('edge://') && !t.url.startsWith('about:'))
+                .map(t => ({
+                    id: t.id,
+                    title: t.title || 'Tab',
+                    url: t.url,
+                    favIconUrl: t.favIconUrl,
+                    active: !!t.active,
+                    groupId: t.groupId,
+                }));
+            sendResponse({ success: true, tabs: valid });
+        });
+        return true;
+    } else if (request.action === 'AGENT_EXTRACT_MULTI_TAB_CONTENT') {
+        const tabIds = request.tabIds || [];
+        if (!tabIds.length) {
+            sendResponse({ success: true, summaries: [] });
+            return false;
+        }
+        Promise.all(tabIds.map(async (tabId) => {
+            try {
+                const direct = await new Promise((resolve) => {
+                    chrome.tabs.sendMessage(tabId, { action: 'AGENT_GET_PAGE_SUMMARY' }, (resp) => {
+                        if (chrome.runtime.lastError || !resp || !resp.content) resolve(null);
+                        else resolve({ tabId, title: resp.title || 'Tab', url: resp.url || '', content: resp.content });
+                    });
+                });
+                if (direct) return direct;
+
+                const executed = await chrome.scripting.executeScript({
+                    target: { tabId },
+                    func: () => {
+                        const headings = Array.from(document.querySelectorAll('h1, h2, h3'))
+                            .map(h => (h.textContent || '').trim().replace(/\s+/g, ' '))
+                            .filter(t => t.length > 5).slice(0, 8);
+                        const paras = Array.from(document.querySelectorAll('main p, article p, p'))
+                            .map(p => (p.textContent || '').trim().replace(/\s+/g, ' '))
+                            .filter(t => t.length > 20).slice(0, 8);
+                        return {
+                            title: document.title || 'Tab',
+                            url: window.location.href,
+                            content: [...headings, ...paras].join('\n\n').substring(0, 3000),
+                        };
+                    }
+                });
+                if (executed && executed[0] && executed[0].result) {
+                    return { tabId, title: executed[0].result.title, url: executed[0].result.url, content: executed[0].result.content };
+                }
+            } catch (e) {
+                console.warn('Extraction failed for tab ' + tabId, e);
+            }
+            return null;
+        })).then(results => {
+            sendResponse({ success: true, summaries: results.filter(Boolean) });
+        }).catch(err => {
+            sendResponse({ success: false, error: err.message, summaries: [] });
+        });
+        return true;
+    } else if (request.action === 'AGENT_EXECUTE_BROWSER_ACTION') {
+        if (typeof backgroundAgent !== 'undefined' && backgroundAgent.executeBrowserAction) {
+            backgroundAgent.executeBrowserAction(request.agentAction)
+                .then(res => sendResponse(res))
                 .catch(err => sendResponse({ success: false, error: err.message }));
             return true;
         }

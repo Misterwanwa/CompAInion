@@ -291,6 +291,75 @@
   border-radius: 10px 10px 0 0;
 }
 
+/* ── Tab Selector im AI Befehlsmenü ─────────────────── */
+.gemini-menu-tab-btn {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid rgba(115, 178, 228, 0.6);
+  background: rgba(255, 255, 255, 0.85);
+  color: #0b3664;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.gemini-menu-tab-btn:hover {
+  background: #ffffff;
+  border-color: #258cfb;
+}
+
+.gemini-menu-tab-btn.has-multi {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+  color: #ffffff !important;
+  border-color: #047857 !important;
+  box-shadow: 0 1px 6px rgba(16, 185, 129, 0.4);
+}
+
+.gemini-tab-panel {
+  padding: 6px 10px;
+  background: rgba(235, 246, 255, 0.95);
+  border-bottom: 1px solid rgba(115, 178, 228, 0.4);
+  font-size: 11px;
+}
+
+.gemini-tab-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+  font-weight: 700;
+  color: #0d3560;
+}
+
+.gemini-tab-mini-btn {
+  background: transparent;
+  border: 1px solid rgba(37, 140, 251, 0.4);
+  color: #0b57d0;
+  border-radius: 4px;
+  padding: 1px 6px;
+  font-size: 10px;
+  cursor: pointer;
+}
+
+.gemini-tab-mini-btn:hover {
+  background: rgba(37, 140, 251, 0.1);
+}
+
+.gemini-tab-list {
+  max-height: 140px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  scrollbar-width: thin;
+}
+
 #gemini-menu-logo {
   width: 26px;
   height: 26px;

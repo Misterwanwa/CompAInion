@@ -10,7 +10,11 @@ export type AgentActionType =
   | 'navigate'
   | 'wait'
   | 'finish'
-  | 'ask_user';
+  | 'ask_user'
+  | 'group_tabs'
+  | 'close_tabs'
+  | 'switch_tab'
+  | 'open_tab';
 
 export interface BaseAction {
   type: AgentActionType;
@@ -60,6 +64,42 @@ export interface AskUserAction extends BaseAction {
   question: string;
 }
 
+export type TabGroupColor =
+  | 'grey'
+  | 'blue'
+  | 'red'
+  | 'yellow'
+  | 'green'
+  | 'pink'
+  | 'purple'
+  | 'cyan'
+  | 'orange';
+
+export interface GroupTabsAction extends BaseAction {
+  type: 'group_tabs';
+  tabIds?: number[];
+  groupTitle: string;
+  color?: TabGroupColor;
+  collapsed?: boolean;
+}
+
+export interface CloseTabsAction extends BaseAction {
+  type: 'close_tabs';
+  tabIds: number[];
+  reason?: string;
+}
+
+export interface SwitchTabAction extends BaseAction {
+  type: 'switch_tab';
+  tabId: number;
+}
+
+export interface OpenTabAction extends BaseAction {
+  type: 'open_tab';
+  url: string;
+  active?: boolean;
+}
+
 export type AgentAction =
   | ClickAction
   | TypeAction
@@ -67,7 +107,11 @@ export type AgentAction =
   | NavigateAction
   | WaitAction
   | FinishAction
-  | AskUserAction;
+  | AskUserAction
+  | GroupTabsAction
+  | CloseTabsAction
+  | SwitchTabAction
+  | OpenTabAction;
 
 export interface LLMResponse {
   thought: string;
@@ -160,6 +204,22 @@ export interface OpenRouterModel {
   };
 }
 
+export interface BrowserTabInfo {
+  id: number;
+  title: string;
+  url: string;
+  favIconUrl?: string;
+  active: boolean;
+  groupId?: number;
+}
+
+export interface TabContentSummary {
+  tabId: number;
+  title: string;
+  url: string;
+  content: string;
+}
+
 // ----------------- TYPE GUARDS -----------------
 
 export function isRecord(val: unknown): val is Record<string, unknown> {
@@ -194,6 +254,20 @@ export function isAgentAction(val: unknown): val is AgentAction {
       return typeof val.message === 'string' && typeof val.success === 'boolean';
     case 'ask_user':
       return typeof val.question === 'string' && val.question.trim().length > 0;
+    case 'group_tabs':
+      return (
+        typeof (val as Record<string, unknown>).groupTitle === 'string' &&
+        ((val as Record<string, unknown>).tabIds === undefined || Array.isArray((val as Record<string, unknown>).tabIds))
+      );
+    case 'close_tabs':
+      return Array.isArray((val as Record<string, unknown>).tabIds) && ((val as Record<string, unknown>).tabIds as unknown[]).length > 0;
+    case 'switch_tab':
+      return typeof (val as Record<string, unknown>).tabId === 'number';
+    case 'open_tab':
+      return (
+        typeof (val as Record<string, unknown>).url === 'string' &&
+        ((val as Record<string, unknown>).url as string).trim().length > 0
+      );
     default:
       return false;
   }

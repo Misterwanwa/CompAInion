@@ -66,6 +66,12 @@ export class ActionExecutor {
               observation: `Frage an den Benutzer gestellt: "${action.question}"`,
             };
 
+          case 'group_tabs':
+          case 'close_tabs':
+          case 'switch_tab':
+          case 'open_tab':
+            return await this.executeBrowserAction(action);
+
           default:
             return {
               success: false,
@@ -440,6 +446,37 @@ export class ActionExecutor {
     } else {
       element.value = value;
     }
+  }
+
+  private executeBrowserAction(action: AgentAction): Promise<ActionResult> {
+    return new Promise((resolve) => {
+      chrome.runtime.sendMessage(
+        { action: 'AGENT_EXECUTE_BROWSER_ACTION', agentAction: action },
+        (resp) => {
+          if (chrome.runtime.lastError) {
+            resolve({
+              success: false,
+              observation: `Browser-Aktion fehlgeschlagen: ${chrome.runtime.lastError.message}`,
+              error: chrome.runtime.lastError.message,
+            });
+          } else if (!resp || !resp.success) {
+            resolve({
+              success: false,
+              observation:
+                resp?.observation ||
+                resp?.error ||
+                'Browser-Aktion konnte nicht ausgeführt werden.',
+              error: resp?.error,
+            });
+          } else {
+            resolve({
+              success: true,
+              observation: resp.observation || 'Browser-Aktion erfolgreich ausgeführt.',
+            });
+          }
+        }
+      );
+    });
   }
 
   private wait(ms: number): Promise<void> {

@@ -10,6 +10,7 @@ Jede Version wird als **Git Tag** gespeichert. Das bedeutet: Der gesamte Code-St
 
 | Tag | Datum | Highlights |
 |-----|-------|------------|
+| `v2.11.0` | 2026-11-11 | Cross-Tab-Kontext & Vergleiche, Browser-Tab-Automatisierung (Tab-Gruppen & Bereinigung) & Strukturierte Synthese-Workflows (Decision Brief / Matrix) |
 | `v2.10.1` | 2026-10-14 | "The Control Freak": Extrahiert nur das eigentliche Rezept aus Blogs (ohne Drumherum), voller Seitenkontext |
 | `v2.10.0` | 2026-10-14 | Rezept-Menü: Neuer Prompt "The Control Freak" (Breville/Sage Temperaturen pro Schritt), One-Pot-Prompt entfernt |
 | `v2.9.1` | 2026-10-07 | Gemini API Vorbereitung: Veraltete Sampling-Parameter (`temperature`, `top_p`, `top_k`) vollständig entfernt, um HTTP 400 INVALID_ARGUMENT bei neuen Gemini- & Reasoning-Modellen zu verhindern |
@@ -70,7 +71,21 @@ git push origin vX.Y
 
 ## 📋 Changelog
 
-### v2.10.1 (aktuell)
+### v2.11.0 (aktuell)
+- **Cross-Tab-Kontext & Vergleiche (Multi-Tab Context):**
+  - Gezieltes Abgreifen und Zusammenfassen von Inhalten aus mehreren geöffneten Browser-Tabs ohne manuelles Kopieren.
+  - Dynamischer `+ Tabs`-Context-Pill-Button in der Autopilot-Sidebar und im AI-Befehlsmenü zum bequemen Auswählen der gewünschten Tabs.
+  - Automatisches Token-Budgeting über alle ausgewählten Tabs zur Schonung des Modell-Context-Windows.
+- **Browser-Automatisierung & Tab-Management:**
+  - Erweiterung der Agenten-Aktionen auf native Browser-APIs: Automatisches Gruppieren von Recherche-Quellen via `chrome.tabGroups` (`group_tabs`).
+  - Bereinigung redundanter Tabs (`close_tabs`) mit Bestätigungsschutz in der Sidebar.
+  - Tab-Wechsel (`switch_tab`) und Öffnen neuer Recherche-Links (`open_tab`).
+- **Strukturierte Synthese-Workflows (Decision Brief & Entscheidungsmatrizen):**
+  - Neue Vorlagen für "Decision Brief" (Executive Summary, standardisierte Vergleichsmatrix, Trade-offs & Risiken, Quellen-Referenzen).
+  - Aktivierung des Tab- & Preisvergleichs (`priceCompare`) und tabübergreifender Recherche-Organisation (`organizeTabs`).
+  - Vollständiges Markdown-Tabellen-Rendering in der Sidebar mit horizontalem Scroll-Support und 1-Click "Ergebnis kopieren"-Button.
+
+### v2.10.1
 - **"The Control Freak" Prompt:**
   - Extrahiert auf Rezeptseiten/Blogs nur das eigentliche Rezept (Titel, Portionen/Zeit, Zutaten, Schritte) und lässt Einleitungen, Geschichten, FAQ, Werbung, Kommentare etc. weg.
   - Bei doppelt vorkommenden Rezepten wird nur die vollständigste Fassung (Rezeptkarte) verwendet.

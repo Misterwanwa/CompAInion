@@ -313,6 +313,11 @@
               return { success: action.success, observation: action.message };
             case 'ask_user':
               return { success: true, observation: `Frage: ${action.question}` };
+            case 'group_tabs':
+            case 'close_tabs':
+            case 'switch_tab':
+            case 'open_tab':
+              return await this.executeBrowserAction(action);
             default:
               return { success: false, observation: `Unbekannter Typ: ${action.type}` };
           }
@@ -501,6 +506,37 @@
       }
     }
 
+    executeBrowserAction(action) {
+      return new Promise((resolve) => {
+        chrome.runtime.sendMessage(
+          { action: 'AGENT_EXECUTE_BROWSER_ACTION', agentAction: action },
+          (resp) => {
+            if (chrome.runtime.lastError) {
+              resolve({
+                success: false,
+                observation: `Browser-Aktion fehlgeschlagen: ${chrome.runtime.lastError.message}`,
+                error: chrome.runtime.lastError.message,
+              });
+            } else if (!resp || !resp.success) {
+              resolve({
+                success: false,
+                observation:
+                  resp?.observation ||
+                  resp?.error ||
+                  'Browser-Aktion konnte nicht ausgeführt werden.',
+                error: resp?.error,
+              });
+            } else {
+              resolve({
+                success: true,
+                observation: resp.observation || 'Browser-Aktion erfolgreich ausgeführt.',
+              });
+            }
+          }
+        );
+      });
+    }
+
     sleep(ms) {
       return new Promise((r) => setTimeout(r, ms));
     }
@@ -526,8 +562,17 @@
     { label: '🎯 Kernaussagen', prompt: 'Extrahiere die 3 wichtigsten Takeaways dieser Seite.' }
   ];
 
-  function getThreeRandomPrompts() {
-    const shuffled = [...ALL_AVAILABLE_PROMPTS].sort(() => 0.5 - Math.random());
+  const MULTI_TAB_PROMPTS = [
+    { label: '📊 Decision Brief', prompt: 'Erstelle einen strukturierten Decision Brief mit Kernaussage, normierter Entscheidungsmatrix, Trade-offs und Empfehlung basierend auf den ausgewählten Tabs.' },
+    { label: '⚖️ Tabs vergleichen', prompt: 'Vergleiche die Inhalte, Preise, Funktionen und Spezifikationen der ausgewählten Tabs in einer detaillierten Vergleichstabelle.' },
+    { label: '🗂️ Tabs organisieren', prompt: 'Analysiere alle offenen Tabs und gruppiere sie thematisch in sinnvolle, farbige Chrome Tab-Gruppen (group_tabs).' },
+    { label: '🏷️ Preisvergleich', prompt: 'Führe einen tabübergreifenden Preis- und Konditionenvergleich durch und ermittle das beste Angebot.' },
+    { label: '📑 Multi-Zusammenfassung', prompt: 'Fasse die wichtigsten Erkenntnisse und Kernaussagen aus allen ausgewählten Tabs in einer gemeinsamen Übersicht zusammen.' },
+  ];
+
+  function getThreeRandomPrompts(isMultiTab = false) {
+    const pool = isMultiTab ? MULTI_TAB_PROMPTS : ALL_AVAILABLE_PROMPTS;
+    const shuffled = [...pool].sort(() => 0.5 - Math.random());
     return shuffled.slice(0, 3);
   }
 
@@ -539,6 +584,9 @@
       this.selectedModel = 'anthropic/claude-3.5-haiku';
       this.apiKey = '';
       this.currentTheme = 'aero';
+      this.selectedTabIds = [];
+      this.availableTabs = [];
+      this.isTabPopoverOpen = false;
 
       // Theme mit der Haupterweiterung synchronisieren
       try {
@@ -661,6 +709,36 @@
           ${chipsHtml}
         </div>
 
+        <!-- Context & Tab Selection Bar -->
+        <div class="compainion-context-bar">
+          <div class="compainion-tab-picker-wrapper">
+            <button class="compainion-tab-picker-btn" id="compainion-tab-picker-btn" type="button" title="Geöffnete Tabs für Cross-Tab-Kontext & Vergleiche auswählen">
+              <span class="compainion-tab-picker-icon">📑</span>
+              <span class="compainion-tab-picker-label" id="compainion-tab-picker-label">1 Tab aktiv</span>
+              <span class="compainion-tab-picker-arrow">▾</span>
+            </button>
+            <button class="compainion-tab-reset-btn" id="compainion-tab-reset-btn" type="button" title="Auf aktiven Tab zurücksetzen" style="display: none;">✕</button>
+
+            <!-- Popover Dropdown -->
+            <div class="compainion-tab-popover" id="compainion-tab-popover" style="display: none;">
+              <div class="compainion-tab-popover-header">
+                <span class="compainion-tab-popover-title">Tabs für Kontext auswählen</span>
+                <div class="compainion-tab-popover-quick">
+                  <button type="button" id="compainion-tab-select-all" class="compainion-tab-quick-btn">Alle</button>
+                  <button type="button" id="compainion-tab-select-none" class="compainion-tab-quick-btn">Nur aktiv</button>
+                </div>
+              </div>
+              <div class="compainion-tab-list" id="compainion-tab-list">
+                <div class="compainion-tab-list-loading">Lade offene Tabs...</div>
+              </div>
+              <div class="compainion-tab-popover-footer">
+                <span class="compainion-tab-count-hint" id="compainion-tab-count-hint">1 Tab ausgewählt</span>
+                <button type="button" id="compainion-tab-popover-done" class="compainion-tab-btn-done">Fertig</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div class="compainion-input-bar">
           <textarea id="compainion-prompt-input" class="compainion-prompt-textarea" placeholder="Ziel für den Autopiloten eingeben..."></textarea>
           <button id="compainion-btn-action" class="compainion-btn-action" title="Starten (Enter)">▶</button>
@@ -714,6 +792,43 @@
         this.callbacks.onSaveConfig({ selectedModel: this.selectedModel });
       });
 
+      // Tab Picker Popover Toggle
+      sidebar.querySelector('#compainion-tab-picker-btn')?.addEventListener('click', () => {
+        this.toggleTabPopover();
+      });
+
+      // Tab Reset
+      sidebar.querySelector('#compainion-tab-reset-btn')?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.resetTabSelection();
+      });
+
+      // Tab Popover Done
+      sidebar.querySelector('#compainion-tab-popover-done')?.addEventListener('click', () => {
+        this.toggleTabPopover(false);
+      });
+
+      // Tab Select All
+      sidebar.querySelector('#compainion-tab-select-all')?.addEventListener('click', () => {
+        this.selectAllTabs();
+      });
+
+      // Tab Select Active Only
+      sidebar.querySelector('#compainion-tab-select-none')?.addEventListener('click', () => {
+        this.resetTabSelection();
+      });
+
+      // Schließen des Popovers bei Klick außerhalb
+      document.addEventListener('click', (e) => {
+        if (!this.isTabPopoverOpen) return;
+        const pop = sidebar.querySelector('#compainion-tab-popover');
+        const btn = sidebar.querySelector('#compainion-tab-picker-btn');
+        const target = e.target;
+        if (pop && btn && !pop.contains(target) && !btn.contains(target)) {
+          this.toggleTabPopover(false);
+        }
+      });
+
       sidebar.querySelectorAll('.compainion-suggestion-chip').forEach((chip) => {
         chip.addEventListener('click', () => {
           sidebar.querySelector('#compainion-prompt-input').value = chip.getAttribute('data-prompt');
@@ -741,7 +856,7 @@
 
         input.value = '';
         this.addUserMsg(text);
-        this.callbacks.onStartTask(text, this.selectedModel);
+        this.callbacks.onStartTask(text, this.selectedModel, this.selectedTabIds);
       };
 
       sidebar.querySelector('#compainion-btn-action').addEventListener('click', send);
@@ -756,7 +871,8 @@
     renderRandomChips() {
       const bar = document.querySelector('#compainion-agent-sidebar .compainion-suggestions-bar');
       if (!bar) return;
-      const randomChips = getThreeRandomPrompts();
+      const isMultiTab = this.selectedTabIds && this.selectedTabIds.length > 1;
+      const randomChips = getThreeRandomPrompts(isMultiTab);
       bar.innerHTML = randomChips.map(c => 
         `<span class="compainion-suggestion-chip" data-prompt="${this.escape(c.prompt)}">${this.escape(c.label)}</span>`
       ).join('');
@@ -779,9 +895,177 @@
         el = document.getElementById('compainion-agent-sidebar');
       }
       if (el) {
+        this.refreshTabList();
         this.renderRandomChips();
         el.classList.remove('is-hidden');
         el.querySelector('#compainion-prompt-input')?.focus();
+      }
+    }
+
+    getSelectedTabIds() {
+      return this.selectedTabIds;
+    }
+
+    getAvailableTabs() {
+      return this.availableTabs;
+    }
+
+    setSelectedTabIds(tabIds) {
+      this.selectedTabIds = tabIds;
+      this.updateTabSelectionUI();
+    }
+
+    toggleTabPopover(force) {
+      const popover = document.getElementById('compainion-tab-popover');
+      if (!popover) return;
+      this.isTabPopoverOpen = force !== undefined ? force : !this.isTabPopoverOpen;
+      popover.style.display = this.isTabPopoverOpen ? 'flex' : 'none';
+
+      if (this.isTabPopoverOpen) {
+        this.refreshTabList();
+      }
+    }
+
+    refreshTabList() {
+      const listElem = document.getElementById('compainion-tab-list');
+      if (!listElem) return;
+
+      listElem.innerHTML = '<div class="compainion-tab-list-loading">Lade offene Tabs...</div>';
+
+      try {
+        chrome.runtime.sendMessage({ action: 'AGENT_GET_TABS' }, (resp) => {
+          if (!resp || !resp.success || !Array.isArray(resp.tabs)) {
+            listElem.innerHTML = '<div class="compainion-tab-list-loading">Tabs konnten nicht geladen werden.</div>';
+            return;
+          }
+
+          this.availableTabs = resp.tabs;
+
+          // Wenn noch keine Tabs gewählt wurden, aktiven Tab als Standard setzen
+          if (this.selectedTabIds.length === 0) {
+            const active = this.availableTabs.find((t) => t.active);
+            if (active) {
+              this.selectedTabIds = [active.id];
+            } else if (this.availableTabs.length > 0) {
+              this.selectedTabIds = [this.availableTabs[0].id];
+            }
+          }
+
+          this.renderTabList();
+          this.updateTabSelectionUI();
+        });
+      } catch (err) {
+        listElem.innerHTML = '<div class="compainion-tab-list-loading">Fehler beim Laden.</div>';
+      }
+    }
+
+    renderTabList() {
+      const listElem = document.getElementById('compainion-tab-list');
+      if (!listElem) return;
+
+      if (!this.availableTabs.length) {
+        listElem.innerHTML = '<div class="compainion-tab-list-loading">Keine Web-Tabs geöffnet.</div>';
+        return;
+      }
+
+      listElem.innerHTML = this.availableTabs
+        .map((tab) => {
+          const isChecked = this.selectedTabIds.includes(tab.id);
+          const fav = tab.favIconUrl
+            ? `<img class="compainion-tab-fav" src="${this.escape(tab.favIconUrl)}" onerror="this.style.display='none'" />`
+            : '<span class="compainion-tab-fav-fallback">🌐</span>';
+          const hostname = this.getHostname(tab.url);
+
+          return `
+            <label class="compainion-tab-item ${isChecked ? 'is-selected' : ''}">
+              <input type="checkbox" class="compainion-tab-cb" value="${tab.id}" ${isChecked ? 'checked' : ''} />
+              ${fav}
+              <div class="compainion-tab-info">
+                <span class="compainion-tab-title" title="${this.escape(tab.title)}">${this.escape(tab.title || 'Tab')}</span>
+                <span class="compainion-tab-url">${this.escape(hostname)}</span>
+              </div>
+              ${tab.active ? '<span class="compainion-tab-active-tag">Aktiv</span>' : ''}
+            </label>
+          `;
+        })
+        .join('');
+
+      listElem.querySelectorAll('.compainion-tab-cb').forEach((cb) => {
+        cb.addEventListener('change', (e) => {
+          const tabId = parseInt(e.target.value, 10);
+          if (e.target.checked) {
+            if (!this.selectedTabIds.includes(tabId)) {
+              this.selectedTabIds.push(tabId);
+            }
+          } else {
+            this.selectedTabIds = this.selectedTabIds.filter((id) => id !== tabId);
+          }
+          e.target.closest('.compainion-tab-item')?.classList.toggle('is-selected', e.target.checked);
+          this.updateTabSelectionUI();
+        });
+      });
+    }
+
+    selectAllTabs() {
+      this.selectedTabIds = this.availableTabs.map((t) => t.id);
+      this.renderTabList();
+      this.updateTabSelectionUI();
+    }
+
+    resetTabSelection() {
+      const active = this.availableTabs.find((t) => t.active);
+      this.selectedTabIds = active ? [active.id] : (this.availableTabs[0] ? [this.availableTabs[0].id] : []);
+      this.renderTabList();
+      this.updateTabSelectionUI();
+    }
+
+    updateTabSelectionUI() {
+      const label = document.getElementById('compainion-tab-picker-label');
+      const btn = document.getElementById('compainion-tab-picker-btn');
+      const resetBtn = document.getElementById('compainion-tab-reset-btn');
+      const hint = document.getElementById('compainion-tab-count-hint');
+
+      const count = this.selectedTabIds.length;
+      if (label) {
+        if (count <= 1) {
+          label.textContent = '1 Tab aktiv';
+        } else {
+          label.textContent = `${count} Tabs aktiv (Multi-Tab)`;
+        }
+      }
+
+      if (btn) {
+        btn.classList.toggle('has-multi-tabs', count > 1);
+      }
+
+      if (resetBtn) {
+        resetBtn.style.display = count > 1 ? 'inline-flex' : 'none';
+      }
+
+      if (hint) {
+        hint.textContent = `${count} von ${this.availableTabs.length || count} Tabs gewählt`;
+      }
+
+      this.renderRandomChips();
+    }
+
+    getHostname(url) {
+      try {
+        return new URL(url).hostname;
+      } catch (e) {
+        return url ? url.substring(0, 30) : '';
+      }
+    }
+
+    openWithPrompt(promptText, options = {}) {
+      this.show();
+      if (options.selectedTabIds && Array.isArray(options.selectedTabIds)) {
+        this.setSelectedTabIds(options.selectedTabIds);
+      }
+      const input = document.getElementById('compainion-prompt-input');
+      if (input && promptText) {
+        input.value = promptText;
+        input.focus();
       }
     }
 
@@ -843,10 +1127,23 @@
         wait: '⏳ Warten',
         finish: '🏁 Abschluss',
         ask_user: '❓ Frage',
+        group_tabs: '🗂️ Gruppe',
+        close_tabs: '🗑️ Tabs schließen',
+        switch_tab: '🔀 Tab wechseln',
+        open_tab: '🌐 Tab öffnen',
       };
 
       const iconLabel = actionIcons[action.type] || '⚡ Aktion';
-      const targetLabel = action.selector || action.url || action.text || action.message || '';
+      let targetLabel = action.selector || action.url || action.text || action.message || '';
+      if (action.type === 'group_tabs') {
+        targetLabel = `"${action.groupTitle || 'Recherche'}" (${(action.tabIds || []).length} Tabs)`;
+      } else if (action.type === 'close_tabs') {
+        targetLabel = `${(action.tabIds || []).length} Tab(s) schließen (${action.reason || 'Bereinigung'})`;
+      } else if (action.type === 'switch_tab') {
+        targetLabel = `Wechsel zu Tab #${action.tabId}`;
+      } else if (action.type === 'open_tab') {
+        targetLabel = `Öffne URL: ${action.url}`;
+      }
 
       const details = document.createElement('details');
       details.className = 'compainion-step-details';
@@ -859,7 +1156,7 @@
         <div class="compainion-step-code-box">
           <pre class="compainion-step-code"><code>// Aktion
 Typ:         ${this.escape(action.type)}
-Ziel/Wert:   ${this.escape(action.selector || action.url || '')}
+Ziel/Wert:   ${this.escape(targetLabel)}
 ${action.text ? `Eingabe:     "${this.escape(action.text)}"\n` : ''}${action.durationMs ? `Dauer:       ${action.durationMs}ms\n` : ''}
 // Ergebnis
 Beobachtung: ${this.escape(observation || 'Erfolgreich ausgeführt')}</code></pre>
@@ -879,11 +1176,26 @@ Beobachtung: ${this.escape(observation || 'Erfolgreich ausgeführt')}</code></pr
       card.innerHTML = `
         <div class="compainion-answer-header">
           <span class="compainion-answer-title">💡 Ergebnis</span>
+          <button class="compainion-copy-answer-btn" title="Ergebnis als Markdown kopieren">📋 Kopieren</button>
         </div>
         <div class="compainion-answer-body">
           ${this.formatStructuredAnswer(message)}
         </div>
       `;
+
+      const copyBtn = card.querySelector('.compainion-copy-answer-btn');
+      copyBtn?.addEventListener('click', async () => {
+        try {
+          await navigator.clipboard.writeText(message);
+          const originalText = copyBtn.textContent;
+          copyBtn.textContent = '✓ Kopiert!';
+          setTimeout(() => {
+            copyBtn.textContent = originalText;
+          }, 1800);
+        } catch (err) {
+          console.warn('Clipboard copy failed:', err);
+        }
+      });
 
       hist.appendChild(card);
       hist.scrollTop = hist.scrollHeight;
@@ -896,6 +1208,9 @@ Beobachtung: ${this.escape(observation || 'Erfolgreich ausgeführt')}</code></pr
         .replace(/^(thought|gedanke|analyse):\s*/i, '')
         .replace(/<thought>[\s\S]*?<\/thought>/gi, '')
         .trim();
+
+      // 0. Markdown-Tabellen vorab rendern
+      cleaned = this.parseMarkdownTables(cleaned);
 
       // 1. Code-Blöcke (```)
       cleaned = cleaned.replace(/```([a-z]*)\n([\s\S]*?)```/g, (_, lang, code) => {
@@ -920,6 +1235,14 @@ Beobachtung: ${this.escape(observation || 'Erfolgreich ausgeführt')}</code></pr
 
       for (const line of lines) {
         const trimmed = line.trim();
+        if (trimmed.startsWith('<div class="compainion-table-wrapper">') || trimmed.includes('compainion-table')) {
+          if (inList) {
+            formattedLines.push('</ul>');
+            inList = false;
+          }
+          formattedLines.push(trimmed);
+          continue;
+        }
         const isBullet = trimmed.startsWith('- ') || trimmed.startsWith('* ');
         const isNumbered = /^\d+\.\s/.test(trimmed);
 
@@ -943,6 +1266,49 @@ Beobachtung: ${this.escape(observation || 'Erfolgreich ausgeführt')}</code></pr
       if (inList) formattedLines.push('</ul>');
 
       return formattedLines.join('');
+    }
+
+    parseMarkdownTables(text) {
+      const tableRegex = /((?:^[ \t]*\|[^\n]+\|[ \t]*\r?\n){2,})/gm;
+      return text.replace(tableRegex, (match) => {
+        const rows = match
+          .trim()
+          .split(/\r?\n/)
+          .map((r) => r.trim())
+          .filter(Boolean);
+        if (rows.length < 2) return match;
+
+        // Header row
+        const headerCells = rows[0]
+          .split('|')
+          .slice(1, -1)
+          .map((c) => this.escape(c.trim()));
+
+        // Separator row (must contain dashes)
+        if (!rows[1].includes('-')) return match;
+
+        const bodyRows = rows.slice(2);
+        let tableHtml = '<div class="compainion-table-wrapper"><table class="compainion-table"><thead><tr>';
+        headerCells.forEach((h) => {
+          tableHtml += `<th>${h}</th>`;
+        });
+        tableHtml += '</tr></thead><tbody>';
+
+        bodyRows.forEach((row) => {
+          const cells = row
+            .split('|')
+            .slice(1, -1)
+            .map((c) => this.escape(c.trim()));
+          tableHtml += '<tr>';
+          cells.forEach((c) => {
+            tableHtml += `<td>${c}</td>`;
+          });
+          tableHtml += '</tr>';
+        });
+
+        tableHtml += '</tbody></table></div>';
+        return `\n${tableHtml}\n`;
+      });
     }
 
     showBatchLimitConfirmation(limit, onContinue, onStop) {
@@ -1064,9 +1430,10 @@ Beobachtung: ${this.escape(observation || 'Erfolgreich ausgeführt')}</code></pr
   let isExecuting = false;
   let currentStep = 0;
   let maxSteps = 100;
+  let crossTabSummaries = [];
 
   const sidebarUI = new ChatSidebarUI({
-    onStartTask: (goal, model) => startTask(goal, model),
+    onStartTask: (goal, model, selectedTabIds) => startTask(goal, model, selectedTabIds),
     onStopTask: () => stopTask(),
     onPauseTask: () => { isExecuting = false; sidebarUI.updateState('paused'); },
     onResumeTask: () => { isExecuting = true; sidebarUI.updateState('running', currentStep, maxSteps); runLoop(); },
@@ -1110,10 +1477,30 @@ Beobachtung: ${this.escape(observation || 'Erfolgreich ausgeführt')}</code></pr
   attachToLogo();
 
   // Task ausführen
-  async function startTask(goal, model) {
+  async function startTask(goal, model, selectedTabIds = []) {
     isExecuting = true;
     currentStep = 0;
+    crossTabSummaries = [];
     sidebarUI.updateState('running', 0, maxSteps);
+
+    // Falls mehrere Tabs ausgewählt wurden, Zusammenfassungen vorab abfragen
+    if (selectedTabIds && selectedTabIds.length > 1) {
+      sidebarUI.notify(`🔍 Erfasse Inhalte aus ${selectedTabIds.length} ausgewählten Tabs...`);
+      try {
+        const tabExtractResp = await new Promise((resolve) => {
+          chrome.runtime.sendMessage({
+            action: 'AGENT_EXTRACT_MULTI_TAB_CONTENT',
+            tabIds: selectedTabIds,
+          }, resolve);
+        });
+        if (tabExtractResp && tabExtractResp.success && Array.isArray(tabExtractResp.summaries)) {
+          crossTabSummaries = tabExtractResp.summaries;
+          sidebarUI.notify(`✅ ${crossTabSummaries.length} Tabs erfolgreich erfasst und im Modell-Kontext verankert.`);
+        }
+      } catch (err) {
+        console.warn('[CompAInion] Fehler bei Multi-Tab-Extraktion:', err);
+      }
+    }
 
     chrome.runtime.sendMessage({
       action: 'AGENT_START_TASK',
@@ -1166,6 +1553,8 @@ Beobachtung: ${this.escape(observation || 'Erfolgreich ausgeführt')}</code></pr
       action: 'AGENT_GET_NEXT_STEP',
       snapshot,
       lastObservation: lastObs,
+      crossTabSummaries: crossTabSummaries.length > 0 ? crossTabSummaries : undefined,
+      availableTabs: sidebarUI.availableTabs && sidebarUI.availableTabs.length > 0 ? sidebarUI.availableTabs : undefined,
     }, async (resp) => {
       if (!isExecuting) return;
 
@@ -1281,6 +1670,35 @@ Beobachtung: ${this.escape(observation || 'Erfolgreich ausgeführt')}</code></pr
       runLoop(lastObs);
     }, 1000);
   }
+
+  // Nachrichten-Listener für externe Steuerung & Tab-Zusammenfassungen
+  chrome.runtime.onMessage.addListener((request, _sender, sendResponse) => {
+    if (request.action === 'AGENT_TOGGLE_SIDEBAR') {
+      sidebarUI.toggle();
+      sendResponse({ success: true });
+      return false;
+    }
+    if (request.action === 'AGENT_GET_PAGE_SUMMARY') {
+      try {
+        const snap = snapshotExtractor.getSnapshot();
+        sendResponse({
+          success: true,
+          title: snap ? snap.title : document.title,
+          url: window.location.href,
+          content: snap ? snap.textSummary : document.title,
+        });
+      } catch (e) {
+        sendResponse({ success: false, error: e.message });
+      }
+      return false;
+    }
+    return false;
+  });
+
+  // Globale Schnittstelle zum Öffnen der Sidebar mit vorgegebenem Prompt & Tab-Auswahl
+  window.__compainionOpenSidebarWithPrompt = (promptText, options) => {
+    sidebarUI.openWithPrompt(promptText, options);
+  };
 
   // Globale Referenz für Tastaturkürzel / Debugging
   window.compainionAutopilot = {

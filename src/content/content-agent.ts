@@ -12,7 +12,13 @@ import { ActionExecutor } from './action-executor';
 import { ChatSidebar } from './chat-sidebar';
 import { DOMSnapshotExtractor } from './dom-snapshot';
 import { LongPressDetector } from './long-press';
-import { AgentAction, AgentConfig, DOMSnapshot, TaskState } from '../types/agent';
+import {
+  AgentAction,
+  AgentConfig,
+  DOMSnapshot,
+  TabContentSummary,
+  TaskState,
+} from '../types/agent';
 
 export class ContentAgentController {
   private sidebar: ChatSidebar;
@@ -21,13 +27,15 @@ export class ContentAgentController {
   private longPressDetector: LongPressDetector | null = null;
   private isExecutingLoop = false;
   private pendingActionToConfirm: AgentAction | null = null;
+  private selectedTabIds: number[] = [];
+  private crossTabSummaries: TabContentSummary[] = [];
 
   constructor() {
     this.actionExecutor = new ActionExecutor();
     this.snapshotExtractor = new DOMSnapshotExtractor();
 
     this.sidebar = new ChatSidebar({
-      onStartTask: (goal, model) => this.handleStartTask(goal, model),
+      onStartTask: (goal, model, selectedTabIds) => this.handleStartTask(goal, model, selectedTabIds),
       onStopTask: () => this.handleStopTask(),
       onPauseTask: () => this.handlePauseTask(),
       onResumeTask: () => this.handleResumeTask(),
@@ -86,9 +94,39 @@ export class ContentAgentController {
 
   // ------------------ TASK EXECUTION CYCLE ------------------
 
-  private async handleStartTask(goal: string, model: string): Promise<void> {
+  private async handleStartTask(
+    goal: string,
+    model: string,
+    selectedTabIds?: number[]
+  ): Promise<void> {
     try {
       this.isExecutingLoop = true;
+      this.selectedTabIds = selectedTabIds || [];
+      this.crossTabSummaries = [];
+
+      // Falls mehrere Tabs ausgewählt wurden, Inhalte vorab laden
+      if (this.selectedTabIds.length > 1) {
+        this.sidebar.addNotification(
+          `📑 Lese Inhalte aus ${this.selectedTabIds.length} Tabs für Multi-Tab Kontext ein...`
+        );
+        try {
+          const extResp = await this.sendMessageAsync<{
+            success: boolean;
+            summaries?: TabContentSummary[];
+          }>({
+            action: 'AGENT_EXTRACT_MULTI_TAB_CONTENT',
+            tabIds: this.selectedTabIds,
+          });
+          if (extResp && extResp.success && Array.isArray(extResp.summaries)) {
+            this.crossTabSummaries = extResp.summaries;
+            this.sidebar.addNotification(
+              `✅ ${this.crossTabSummaries.length} Tabs erfolgreich in den Analyse-Kontext geladen.`
+            );
+          }
+        } catch (e) {
+          console.warn('[ContentAgent] Cross-tab extraction failed:', e);
+        }
+      }
 
       // 1. Task im Background initialisieren
       const initResp = await this.sendMessageAsync<{ success: boolean; state: TaskState; error?: string }>({
@@ -145,6 +183,8 @@ export class ContentAgentController {
         action: 'AGENT_GET_NEXT_STEP',
         snapshot,
         lastObservation,
+        crossTabSummaries: this.crossTabSummaries,
+        availableTabs: this.sidebar.getAvailableTabs(),
       });
 
       if (!nextStepResp.success || !nextStepResp.llmResponse) {
@@ -360,6 +400,17 @@ export class ContentAgentController {
       if (request.action === 'AGENT_TOGGLE_SIDEBAR') {
         this.sidebar.toggle();
         sendResponse({ success: true });
+        return false;
+      }
+      if (request.action === 'AGENT_GET_PAGE_SUMMARY') {
+        const snap = this.snapshotExtractor.getSnapshot();
+        sendResponse({
+          success: true,
+          title: snap.title,
+          url: snap.url,
+          content: snap.textSummary,
+        });
+        return false;
       }
       return false;
     });
