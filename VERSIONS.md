@@ -10,6 +10,7 @@ Jede Version wird als **Git Tag** gespeichert. Das bedeutet: Der gesamte Code-St
 
 | Tag | Datum | Highlights |
 |-----|-------|------------|
+| `v2.11.1` | 2026-11-17 | "Benötige ich das wirklich?": Überarbeitet als Digitaler Gegenspieler vor größeren Käufen (Folgekosten, Reparierbarkeit, Alternativen, Nichtkauf-Empfehlung) |
 | `v2.11.0` | 2026-11-11 | Cross-Tab-Kontext & Vergleiche, Browser-Tab-Automatisierung (Tab-Gruppen & Bereinigung) & Strukturierte Synthese-Workflows (Decision Brief / Matrix) |
 | `v2.10.1` | 2026-10-14 | "The Control Freak": Extrahiert nur das eigentliche Rezept aus Blogs (ohne Drumherum), voller Seitenkontext |
 | `v2.10.0` | 2026-10-14 | Rezept-Menü: Neuer Prompt "The Control Freak" (Breville/Sage Temperaturen pro Schritt), One-Pot-Prompt entfernt |
@@ -71,7 +72,14 @@ git push origin vX.Y
 
 ## 📋 Changelog
 
-### v2.11.0 (aktuell)
+### v2.11.1 (aktuell)
+- **"Benötige ich das wirklich?" Prompt (`doINeedThis`):**
+  - Überarbeitet zum **Digitalen Gegenspieler** vor größeren Käufen statt allgemeiner Kaufentscheidungshilfe.
+  - Sucht gezielt die stärksten Gegenargumente: Marketing-Lücken, versteckte Folgekosten & Lock-in-Effekte, Reparierbarkeit/Haltbarkeit/Obsoleszenz, günstigere & klügere Alternativen sowie Gründe, noch zu warten.
+  - Schließt mit 5 unbequemen Kontrollfragen und einer klar begründeten Nichtkauf-Empfehlung (bzw. Abwarten / strengen Ausnahmebedingungen).
+  - Clippy-Aktionsbeschreibung (`candidateActions`) und Dokumentation in `PROMPTS.md` / `PROMPTS_VOLLSTAENDIG.md` synchronisiert.
+
+### v2.11.0
 - **Cross-Tab-Kontext & Vergleiche (Multi-Tab Context):**
   - Gezieltes Abgreifen und Zusammenfassen von Inhalten aus mehreren geöffneten Browser-Tabs ohne manuelles Kopieren.
   - Dynamischer `+ Tabs`-Context-Pill-Button in der Autopilot-Sidebar und im AI-Befehlsmenü zum bequemen Auswählen der gewünschten Tabs.

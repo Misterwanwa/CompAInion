@@ -1167,37 +1167,53 @@ Für jede Alternative nenne:
 ### Benötige ich das wirklich? (`doINeedThis`)
 
 ```
-Hilf mir zu entscheiden, ob ich dieses Produkt wirklich brauche.
+Du bist mein "Digitaler Gegenspieler" (Devil's Advocate) vor größeren Käufen.
+Statt weitere Kaufargumente zu sammeln oder Marketing-Versprechen zu wiederholen, ist es deine Aufgabe, diesen Kauf kritisch zu hinterfragen und gezielt die stärksten Gegenargumente zu finden. Dein Ziel ist es, mich vor Fehlkäufen, Impulskäufen und unnötigen Ausgaben zu schützen – mit einer begründeten Nichtkauf-Empfehlung, falls angebracht.
 
-Produkt/Website: ${context.url}
+URL: ${context.url}
 
-Produktinformationen:
+Angebot / Produktinformationen:
 """
-${context.text.substring(0, 3000)}
+${context.text.substring(0, 6000)}
 """
 
-Stelle mir folgende Entscheidungsfragen:
+Analysiere das Angebot schonungslos ehrlich nach folgender Struktur:
 
-**1. Verwendungszweck**
-- Hast du ein konkretes Problem, das dieses Produkt löst?
-- Wie oft würdest du es nutzen (täglich/wöchentlich/nie)?
+## 🛑 1. Stärkste Gegenargumente auf einen Blick
+- Was verschweigt das Marketing oder stellt es beschönigt dar?
+- Welche konkreten Schwächen, Haken oder typischen Enttäuschungen gibt es bei diesem Produkt bzw. dieser Produktkategorie?
 
-**2. Alternativen**
-- Was nutzt du aktuell stattdessen?
-- Gibt es kostenlose/billigere Alternativen?
+## 💸 2. Versteckte Folgekosten & Lock-in-Effekte
+- **Laufende Kosten:** Abos, Cloud-/App-Zwang, Lizenzen, Strom-/Energieverbrauch, Wartung oder Versicherungen
+- **Zubehör & Verschleiß:** Teure Ersatzteile, proprietäres Zubehör, Verbrauchsmaterialien (z.B. Filter, Kapseln, Tinte, Adapter)
+- **Ökosystem & Wertverlust:** Abhängigkeit vom Hersteller (Vendor Lock-in) und voraussichtlicher Wiederverkaufswert
 
-**3. Kosten-Nutzen**
-- Preis pro Nutzung (geschätzt)
-- Lebensdauer vs. Preis
+## 🔧 3. Reparierbarkeit, Haltbarkeit & Obsoleszenz
+- **Reparierbarkeit:** Fest verbaute Akkus, verklebte Gehäuse, Ersatzteilverfügbarkeit, Spezialwerkzeug nötig?
+- **Lebensdauer & Schwachstellen:** Typische Verschleißteile, geplante Obsoleszenz, Dauer von Software-/Sicherheits-Updates
+- **Garantie & Support:** Mögliche Haken bei Gewährleistung, Garantiebedingungen oder Rückgabe
 
-**4. Impulskauf-Check**
-- Würdest du es auch in 3 Tagen noch kaufen?
-- Ist es ein "Nice to have" oder "Must have"?
+## 🔄 4. Günstigere & klügere Alternativen
+- **Preis-Leistungs-Alternativen:** Günstigere Konkurrenzmodelle oder Vorgängergenerationen, die 80–90 % derselben Leistung bieten
+- **Gebraucht / Mieten / Teilen:** Lohnt sich Refurbished, Gebrauchtkauf, Ausleihen oder Mieten für den tatsächlichen Nutzungszeitraum?
+- **Kostenlose / Vorhandene Lösung:** Lässt sich das Problem mit Dingen lösen, die man bereits besitzt, oder durch eine Gratis-/DIY-Alternative?
 
-**5. Fazit**
-Empfehlung: Kaufen / Warten / Nicht kaufen
+## ⏳ 5. Gründe, noch zu warten (Timing & Impulskauf-Check)
+- **Markt- & Preis-Timing:** Stehen Nachfolgemodelle, typische Preisverfälle oder Rabattaktionen (Sales, Saisonende) bevor?
+- **Psychologische Trigger:** Wird hier mit künstlicher Verknappung, FOMO, Hype oder Scheinrabatten gearbeitet?
+- **Impulskauf-Realitätscheck:** Wie oft wird das Produkt nach 4 Wochen realistisch noch genutzt (Kosten pro Nutzung)?
 
-Antworte auf Deutsch und stelle mir die Fragen interaktiv.
+## 🤔 6. 5 unbequeme Kontrollfragen vor dem Klick auf "Kaufen"
+1. [Produktspezifische Frage zum echten Problem vs. künstlichem Wunsch]
+2. [Frage zu bereits vorhandenen Dingen im Haushalt/Alltag, die denselben Zweck erfüllen]
+3. [Frage zur realistischen Nutzungshäufigkeit nach dem Abklingen der Anfangseuphorie]
+4. [Frage zu den Gesamtkosten inkl. Folgekosten im Verhältnis zum Budget]
+5. [Frage: "Würdest du es in 14 Tagen zum Vollpreis immer noch aktiv suchen und kaufen?"]
+
+## ⚖️ 7. Fazit: Begründete Nichtkauf-Empfehlung (oder Ausnahmebedingung)
+- **Urteil:** [🛑 **Klare Nichtkauf-Empfehlung** / ⏳ **Jetzt nicht kaufen – Abwarten** / ⚠️ **Nur unter strengen Bedingungen kaufen**]
+- **Begründung:** [Klare, direkte Zusammenfassung, warum du vom Kauf abrätst (bzw. warum man warten oder zur Alternative greifen sollte)]
+- **Einzige Ausnahme (Kauf nur sinnvoll, wenn...):** [Eng begrenzte Bedingungen, unter denen der Kauf trotz aller Gegenargumente tatsächlich gerechtfertigt wäre]
 ```
 
 ---

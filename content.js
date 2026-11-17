@@ -2150,41 +2150,53 @@ Quelle: [Quelle oder "nicht angegeben"]
       startScreenshotSelection();
       return;  // Frühzeitiger Return, da wir async arbeiten
     case 'doINeedThis':
-      promptText = `Hilf mir zu entscheiden, ob ich dieses Produkt/Dienstleistung wirklich brauche.
+      promptText = `Du bist mein "Digitaler Gegenspieler" (Devil's Advocate) vor größeren Käufen.
+Statt weitere Kaufargumente zu sammeln oder Marketing-Versprechen zu wiederholen, ist es deine Aufgabe, diesen Kauf kritisch zu hinterfragen und gezielt die stärksten Gegenargumente zu finden. Dein Ziel ist es, mich vor Fehlkäufen, Impulskäufen und unnötigen Ausgaben zu schützen – mit einer begründeten Nichtkauf-Empfehlung, falls angebracht.
 
 URL: ${context.url}
 
-Angebot:
+Angebot / Produktinformationen:
 """
-${context.text.substring(0, 4000)}
+${context.text.substring(0, 6000)}
 """
 
-Entscheidungshilfe:
+Analysiere das Angebot schonungslos ehrlich nach folgender Struktur:
 
-## 🤔 Brauchst du das wirklich?
+## 🛑 1. Stärkste Gegenargumente auf einen Blick
+- Was verschweigt das Marketing oder stellt es beschönigt dar?
+- Welche konkreten Schwächen, Haken oder typischen Enttäuschungen gibt es bei diesem Produkt bzw. dieser Produktkategorie?
 
-**Stelle dir diese Fragen:**
-1. [Spezifische Frage zum Produkt - z.B. "Hast du bereits ein ähnliches Produkt, das denselben Zweck erfüllt?"]
-2. [Frage zu bestehenden Alternativen - z.B. "Könntest du das Problem auch kostenlos oder günstiger lösen?"]
-3. [Frage zum tatsächlichen Nutzen - z.B. "Wie oft wirst du dieses Produkt wirklich nutzen?"]
-4. [Frage zur Häufigkeit der Nutzung - z.B. "Ist der Nutzen langfristig oder nur kurzfristig?"]
-5. [Frage zur finanziellen Priorität - z.B. "Steht das im Verhältnis zum Preis und deinem Budget?"]
+## 💸 2. Versteckte Folgekosten & Lock-in-Effekte
+- **Laufende Kosten:** Abos, Cloud-/App-Zwang, Lizenzen, Strom-/Energieverbrauch, Wartung oder Versicherungen
+- **Zubehör & Verschleiß:** Teure Ersatzteile, proprietäres Zubehör, Verbrauchsmaterialien (z.B. Filter, Kapseln, Tinte, Adapter)
+- **Ökosystem & Wertverlust:** Abhängigkeit vom Hersteller (Vendor Lock-in) und voraussichtlicher Wiederverkaufswert
 
-## ✅ Ja, wenn...
-- [Situationen, wo es Sinn macht]
-- [Konkrete Use-Cases]
+## 🔧 3. Reparierbarkeit, Haltbarkeit & Obsoleszenz
+- **Reparierbarkeit:** Fest verbaute Akkus, verklebte Gehäuse, Ersatzteilverfügbarkeit, Spezialwerkzeug nötig?
+- **Lebensdauer & Schwachstellen:** Typische Verschleißteile, geplante Obsoleszenz, Dauer von Software-/Sicherheits-Updates
+- **Garantie & Support:** Mögliche Haken bei Gewährleistung, Garantiebedingungen oder Rückgabe
 
-## ❌ Nein, wenn...
-- [Situationen, wo es unnötig ist]
-- [Warnsignale]
+## 🔄 4. Günstigere & klügere Alternativen
+- **Preis-Leistungs-Alternativen:** Günstigere Konkurrenzmodelle oder Vorgängergenerationen, die 80–90 % derselben Leistung bieten
+- **Gebraucht / Mieten / Teilen:** Lohnt sich Refurbished, Gebrauchtkauf, Ausleihen oder Mieten für den tatsächlichen Nutzungszeitraum?
+- **Kostenlose / Vorhandene Lösung:** Lässt sich das Problem mit Dingen lösen, die man bereits besitzt, oder durch eine Gratis-/DIY-Alternative?
 
-## 💡 Alternativen zum Kauf
-- [Möglichkeiten, den Bedarf anders zu decken]
-- [Gratis-Optionen]
-- [DIY-Lösungen]
-- [Leih- oder Mietoptionen]
+## ⏳ 5. Gründe, noch zu warten (Timing & Impulskauf-Check)
+- **Markt- & Preis-Timing:** Stehen Nachfolgemodelle, typische Preisverfälle oder Rabattaktionen (Sales, Saisonende) bevor?
+- **Psychologische Trigger:** Wird hier mit künstlicher Verknappung, FOMO, Hype oder Scheinrabatten gearbeitet?
+- **Impulskauf-Realitätscheck:** Wie oft wird das Produkt nach 4 Wochen realistisch noch genutzt (Kosten pro Nutzung)?
 
-**Ehrliche Empfehlung:** [Klare Aussage, für wen das sinnvoll ist und für wen nicht]`;
+## 🤔 6. 5 unbequeme Kontrollfragen vor dem Klick auf "Kaufen"
+1. [Produktspezifische Frage zum echten Problem vs. künstlichem Wunsch]
+2. [Frage zu bereits vorhandenen Dingen im Haushalt/Alltag, die denselben Zweck erfüllen]
+3. [Frage zur realistischen Nutzungshäufigkeit nach dem Abklingen der Anfangseuphorie]
+4. [Frage zu den Gesamtkosten inkl. Folgekosten im Verhältnis zum Budget]
+5. [Frage: "Würdest du es in 14 Tagen zum Vollpreis immer noch aktiv suchen und kaufen?"]
+
+## ⚖️ 7. Fazit: Begründete Nichtkauf-Empfehlung (oder Ausnahmebedingung)
+- **Urteil:** [🛑 **Klare Nichtkauf-Empfehlung** / ⏳ **Jetzt nicht kaufen – Abwarten** / ⚠️ **Nur unter strengen Bedingungen kaufen**]
+- **Begründung:** [Klare, direkte Zusammenfassung, warum du vom Kauf abrätst (bzw. warum man warten oder zur Alternative greifen sollte)]
+- **Einzige Ausnahme (Kauf nur sinnvoll, wenn...):** [Eng begrenzte Bedingungen, unter denen der Kauf trotz aller Gegenargumente tatsächlich gerechtfertigt wäre]`;
       break;
     case 'accessibility':
       promptText = `Prüfe die Barrierefreiheit (Accessibility) dieser Website.
@@ -3930,7 +3942,7 @@ async function triggerClippyAssistant(apiKey, apiModel, authToken, clippyMode) {
 
       const candidateActions = [
         { key: 'aiDetection', desc: 'AI-Erkennung (Prüfen ob Text von KI stammt — Blogs, Social Media, Artikel)' },
-        { key: 'doINeedThis', desc: 'Kaufberatung / Impulskauf-Check (Amazon, eBay, Online-Shops)' },
+        { key: 'doINeedThis', desc: 'Digitaler Gegenspieler vor Käufen: Gegenargumente, Folgekosten, Reparierbarkeit & Nichtkauf-Check (Amazon, eBay, Shops)' },
         { key: 'priceCompare', desc: 'Preisvergleich & günstigere Alternativen finden' },
         { key: 'productProsCons', desc: 'Vor- und Nachteile eines Produkts oder Themas abwägen' },
         { key: 'shoppingAssistant', desc: 'Shopping-Assistent: Gutscheine, Cashback, Deals aufspüren' },

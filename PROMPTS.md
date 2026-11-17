@@ -205,7 +205,7 @@ Direkte, Open-Source, Budget- und Premium-Alternativen.
 
 ### Benötige ich das wirklich?
 **Key:** `doINeedThis`  
-Interaktive Entscheidungshilfe mit 5 Fragen.
+Digitaler Gegenspieler vor größeren Käufen: Sucht gezielt die stärksten Gegenargumente (versteckte Folgekosten, schlechte Reparierbarkeit, günstigere Alternativen, Gründe zu warten) und liefert eine begründete Nichtkauf-Empfehlung, falls angebracht.
 
 ---
 
@@ -456,7 +456,7 @@ Clippy verwendet folgenden generativen System-Prompt zur Aktions- und Spruch-Aus
 
 ### Auswahlliste der Clippy-Aktionen (39 `candidateActions`)
 1. `aiDetection` - AI-Erkennung bei Blogs, Social Media & Artikeln
-2. `doINeedThis` - Kaufberatung / Impulskauf-Check für Shopping-Seiten
+2. `doINeedThis` - Digitaler Gegenspieler vor Käufen / Impulskauf-Check für Shopping-Seiten
 3. `priceCompare` - Preisvergleich & günstigere Alternativen
 4. `productProsCons` - Neutrale Pro & Contra Gegenüberstellung
 5. `shoppingAssistant` - Gutscheine, Deals & Cashback aufspüren
